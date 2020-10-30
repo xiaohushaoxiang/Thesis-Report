@@ -1,0 +1,7 @@
+Name,Brief Explanation,Advantage,Disadvantage
+Thresholding,"acceleration magnitude is monitored for the passing of certain values \cite{Davidson2017,Harle2013}. Typically determines when foot is on the floor \cite{Harle2013}, but has also been applied to pitch angle of upper leg, where the sensor then has to be placed \cite{Diaz2014a}.","\begin{itemize}
+	\item ability to use the norm of IMU signals, making it robust to sensor orientation \cite{Davidson2017}.
+\end{itemize}
+",
+Zero Crossing,"acceleration magnitude is monitored for sign changes \cite{Davidson2017}. Exploit the period in which the foot impacts on the floor, during which clear vertical acceleration peaks can be perceived.",,
+Peak Detection,recognize local maximum or minimum within a sliding window \cite{Susi2013},,
