@@ -100,11 +100,49 @@ A similar smaller scale experiment was performed with three different people als
 
 {\color{red} still need to add comment on results }
 
-\section{Indoor Orientation Estimation}
+\newpage
 
-\section{Step and Heading System}
+\section{Indoor Experiments}
+
+Due to restriction caused by the COVID-19 pandemic, indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand, and recording the IMU signals in the phone through an app, while also filming the path that is being walked. During the experiment a smartwatch was worn around of the not smartphone hand and used to open doors. This opening of doors was also recorded using the app running on the smartphone, which had a button to record timestamps. The full experimental process can be found in \cref{appendix:shs_experiment}. \par 
+In order to use map information with the particle filter, different sources were combined to generate a map. Rudimentary paper blueprints of the building were available and could be photographed and traced in software to generate a picture of the indoor environment. This image has clear color distinction between the different structures within the building, including walls, doors and furniture. The positioning and size of furniture was estimated. The final image is seen in \cref{fig:indoor_blueprint}. This image is in pixel coordinates and needs to be transformed into meter coordinates. It then needs to represent a 2D probability density function so that it can be used in the particle filter measurement update. \\
+The OccupancyMap in the MATLAB Robotics Tool box is suitable for this. An occupancy grid is a grid in which each cell has a value representing the probability of the occupancy of that cell. By measuring a known structure in Google Maps using the measurement tool and comparing with its pixel length in the image, a meter to pixel ratio can be defined. The Google Maps measurement can be found in \cref{fig:house_google_maps}. This pixel to meter ratio combined with the image, allows MATLAB to generate an occupancy grid as shown in \cref{fig:pf_map}. This same process can be used to get the meter position of all doors.
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.3\textwidth}
+	\centering
+	\includegraphics[width=0.9\linewidth]{images/indoor_blueprint}
+	\caption[Image from building blueprints]{Image from building blueprints. Black, grey and red represent walls, furniture, and doors, respectively.}
+	\label{fig:indoor_blueprint}
+\end{subfigure} \quad
+\begin{subfigure}[t]{.3\textwidth}
+	\centering
+	\includegraphics[width=0.9\linewidth]{images/house_google_maps}
+	\caption{Measurement from Google Maps}
+	\label{fig:house_google_maps}
+\end{subfigure} \quad
+\begin{subfigure}[t]{.3\textwidth}
+	\centering
+	\includegraphics[width=0.9\linewidth]{images/20201030_1157_pf_map_1}
+	\caption{Particle Filter map result}
+	\label{fig:pf_map}
+\end{subfigure}
+\label{fig:particle_map_construction}
+\caption{particle filter map creation}
+\end{figure}
+
+During the experiment, a total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can be used in postprocessing to get a ground truth. This was done by replaying the video and at set intervals manually indicating approximately where on the map the test subject was located. The position and time elapsed were recorded.
+
+
+
+\subsection{Indoor Orientation Estimation}
+
+
+
+\subsection{Step and Heading System}
 All components of the step and heading system have been tested separately. giving an indication of their limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the whole system performance. The output of the step and heading system will be the relative position change from a start point, known as dead reckoning.
-Due to restriction caused by the COVID-19 pandemic, testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand, and recording the IMU signals in the phone through an app, while also filming the path that is being walked. The full experimental process can be found in \cref{appendix:shs_experiment}. A total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can then be used in postprocessing to get a ground truth. For every trial the smartphone imu data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building.
+For every trial the smartphone imu data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building.
 
 \begin{figure}[H]
 	\centering
@@ -143,13 +181,7 @@ Due to restriction caused by the COVID-19 pandemic, testing was located at the h
 \end{figure}
 
 
-\section{Particle Filter}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.4\linewidth]{images/house_google_maps}
-	\caption{}
-	\label{fig:house_google_maps}
-\end{figure}
+\subsection{Particle Filter}
 
 \begin{figure}[H]
 	\centering
