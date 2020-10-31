@@ -132,17 +132,43 @@ The OccupancyMap in the MATLAB Robotics Tool box is suitable for this. An occupa
 \caption{particle filter map creation}
 \end{figure}
 
-During the experiment, a total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can be used in postprocessing to get a ground truth. This was done by replaying the video and at set intervals manually indicating approximately where on the map the test subject was located. The position and time elapsed were recorded.
+During the experiment, a total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can be used in postprocessing to get a ground truth. This was done by replaying the video and at set intervals manually indicating approximately where on the map the test subject was located. The position and time elapsed were recorded. The output of these trials can be used to test certain SHS components individually and the system as a whole.
 
 
 
 \subsection{Indoor Orientation Estimation}
+The indoor orientation estimation method outlined in \cref{sec:method-EKF} can be compared with the output of the android operating system. Two examples can be found in 
 
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+	\centering
+	\includegraphics[width=0.7\textwidth]{example-image-a}
+	\caption{Orientation estimation of trial 1 compared to android orientation estimation}
+	\label{fig:trail1 - shs}
+\end{subfigure}\quad
+\begin{subfigure}[t]{.45\textwidth}
+	\centering
+	\includegraphics[width=0.7\textwidth]{example-image-b}
+	\caption{Orientation estimation of trial 2 compared to android orientation estimation}
+	\label{fig:trail2 - shs}
+\end{subfigure}
+\end{figure}
 
+The error between each trial can be found in \cref{fig:orientation_comparison}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{example-image-c}
+	\caption{}
+	\label{fig:orientation_comparison}
+\end{figure}
+
+From these results it is shown that the error between my own orientation estimation and that calculated by the android system has similar performance.
 
 \subsection{Step and Heading System}
-All components of the step and heading system have been tested separately. giving an indication of their limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the whole system performance. The output of the step and heading system will be the relative position change from a start point, known as dead reckoning.
-For every trial the smartphone imu data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building.
+All components of the step and heading system have been tested separately, giving an indication of their strengths and limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the whole system performance. The output of the step and heading system will be the relative position change from a start point, known as dead reckoning.
+For every trial the smartphone imu data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this sections. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building.
 
 \begin{figure}[H]
 	\centering
@@ -182,6 +208,9 @@ For every trial the smartphone imu data is passed through the different componen
 
 
 \subsection{Particle Filter}
+Using the output of the SHS and the method outlined in \cref{sec:method-pf} for the particle filter, the indoor localization particle filter could be constructed 
+
+\subsubsection{With activity }
 
 \begin{figure}[H]
 	\centering
