@@ -1,0 +1,52 @@
+To do list:
+
+Introduction:
+[] Write the whole introduction
+[] Add research questions
+[] Add Thesis Contributions
+
+Related Work:
+
+[] general outline of localization using the funnel approach
+[] remove advantages and disadvantages from table
+[] add table of different step length estimation
+[] complete the part on step heading estimation
+[] Add part on drift reduction methods
+[] Finish part on Pedestrian dead reckoning using AR
+
+Method:
+[] General introduction
+[] Activity recognition
+[] Step Length estimation
+[] Orientation estimation:
+	[] general introduction
+
+Results
+
+PF:
+[] get a bar chart of the performance of the different particle filter trials
+[] show that MAP and RMSE are not good enough estimates for the PF
+
+Discussion
+[]
+
+Future Work
+[x] make bullet points on what can be changed
+
+General
+
+Run all of it through grammarly
+
+THINGS TO DO TODAY:
+
+with trial 1 determine if more particles improve estimates
+
+do all trails without the AR
+
+for first three trials get better rmse by using more particles
+
+outline why for trial 5 this is not working
+
+write research questions
+
+bullet point the discussion
