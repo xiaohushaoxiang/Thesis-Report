@@ -1,1 +1,56 @@
 \chapter{Discussion}
+
+\section{Answering Research Questions}
+
+\section{Future Work}
+\textbf{Step detection}
+\begin{itemize}
+	\item using data from \cite{Salvi2018} determine if parameters found are also the best parameters for the implementation used in this thesis.
+	\item Step detection is a form of activity recognition, investigate if machine learning techniques can perform better  
+	\item testing was performed walking on a hard floor and it will be necessary to investigate softer surfaces like carpet or grass.
+	\item Determine robustness against more complex movements
+\end{itemize}
+
+\textbf{Step length estimation}
+\begin{itemize}
+	\item generate more first hand data, maybe in a motion capture lab  
+	\item use \cite{Bayev2019}, a data set that has recently been made to develop smartphone based pedestrian navigation 
+	\item make the assumption that step length is constant and determine effect on performance
+	\item when making a turn both feet do not travel the same distance. The inside foot will make a smaller step, while the outer a large one. Determine how turning affects the step length estimation.
+\end{itemize}
+
+\textbf{Orientation estimation}
+\begin{itemize}
+	\item use the method of \cite{Michel2018} to handle magnetic field disturbances
+\end{itemize}
+
+\textbf{Step heading estimation}
+\begin{itemize}
+	\item The testing was limited to one carrying mode, so that the yaw of the device would represent the direction in which the test subject is moving. Step heading estimation will need to be applied in order for the phone to be in other carrying modes.
+\end{itemize}
+
+\textbf{Particle filter}
+\begin{itemize}
+	\item Test without furniture or with a different probability density
+	\item decrease probability close to walls
+	\item different representation of map, instead of grid based more node and edge approach 
+	\item be able to detect when moving to a different floor
+	\item combine other drift reduction methods
+	\item initialize particles over whole map instead of defining a starting point.
+	\item find a way to use less particles in order to be implementable on portable device
+\end{itemize}
+
+\textbf{Activity Recognition}
+\begin{itemize}
+	\item Detect more useful activities that can be used as additional particle filter measurement update. For example, climbing stairs for only smartphone sensors, or more intricate activities such as cooking
+	\item implement activity recognition locally on device so little inter device communication is required.
+\end{itemize}
+
+
+\textbf{Testing}
+\begin{itemize}
+	\item different building testing. The current contained may different ways of walking around, while other buildings with more corridor structures are more restrictive. Potentially the SHS-PF technique could have better performance in these settings.
+	\item better ground truth determination for both positioning and orientation. ORB-SLAM2 was tried but could not get it to work with footage from phone.
+	\item online calculation of position on device
+	\item test with different people to determine how user sensitive this is.
+\end{itemize}

@@ -179,20 +179,33 @@ The indoor orientation estimation method outlined in \cref{sec:method-EKF} can b
 \end{subfigure}
 \end{figure}
 
-The error between each trial can be found in \cref{fig:orientation_comparison}.
+These two examples indicate that the two estimation techniques have a similar performance. There is no reason for a direct comparison between the orientation estimation outline in \cref{sec:method-EKF} and the attitude estimation of the, since this will be relative to each other and not to the ground truth which is not available. 
+
+A rudimentary comparison could be made using the ground truth of the experiment, where the assumption is made that the angle of the displacement vector can be considered the orientation of the phone. The different orientations can be compared by showing the difference in angle for the initial orientation. An example of this can be found in \cref{fig:orientation_comparison}, also showing the orientation estimations of the phone and the EKF method.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{example-image-c}
+	\includegraphics[width=0.6\textwidth]{example-image-c}
 	\caption{}
 	\label{fig:orientation_comparison}
 \end{figure}
 
-From these results it is shown that the error between  orientation estimation outlined in \cref{sec:method-EKF} and the estimate calculated by the android system has similar performance.
+
+{\color{red}As can be seen this plot has not been generated yet. Depending on the outcome a comparison can be made over all trials to determine performance of the different methods.}
+
+%The error between each trial can be found in \cref{fig:orientation_comparison}.
+%
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=0.7\textwidth]{example-image-c}
+%	\caption{}
+%	\label{fig:orientation_comparison}
+%\end{figure}
+
 
 \subsection{Step and Heading System}
 All components of the step and heading system have been tested separately, giving an indication of their strengths and limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the complete system performance.
-For every trial the smartphone IMU data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this sections. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building. Since this heuristic rotating is only used to give an indication of the shs output compared to the ground truth, it is not possible to compare it quantitatively with the ground truth, since it is not a standalone solution for indoor localization.
+For every trial the smartphone IMU data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this section. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building. Since this heuristic rotating is only used to give an indication of the shs output compared to the ground truth, it is not possible to compare it quantitatively with the ground truth, since it is not a standalone solution for indoor localization.
 
 \begin{figure}[H]
 	\centering

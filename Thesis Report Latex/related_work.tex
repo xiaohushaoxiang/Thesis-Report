@@ -1,5 +1,9 @@
 \chapter{Related Work}
 
+Within the research field of indoor localization there are generally two approaches that use sensors on the user or machine to localize them, one that is infrastructure dependent and the other that is not. Solutions have also been presented that use a combination to try and improve localization \cite{Gu2019}.
+The infrastructure dependent methods imitate the GPS method on a local scale. Here they often replace the GPS constellation with signal producing devices available within the indoor environment. Examples of such systems are  wireless fidelity(Wifi), Bluetooth, wireless sensor networks (WSN), and ultra wide band (UWB) \cite{Wu2019,Jackermeier2018,Davidson2017}. These solution naturally only in work in buildings with the installed equipment, requiring some initial investment and setup.\\
+The infrastructure independent solution generally leverage sensors that do not need to receive signals from external devices. Such solutions include the use of cameras and inertial sensors. Camera based systems recognize features in the video feed, and combined with known characteristic of the camera and features found in a previous frame, displacement can be determined \cite{Gu2019}. For portable devices continuous use of a camera is not beneficial for battery life, limiting the time duration in which this method can be used.these sensors are \ac{MEMS}, which consist of triaxial orthogonal accelerometers and gyroscopes, and can include a triaxial magnetometer \cite{Yang2014}
+
 
 \section{Pedestrian Dead Reckoning}
 %TODO: this section looks too much like the paper it is from
@@ -140,7 +144,9 @@ Here $A_{\max}$ is the largest measured acceleration measured within a step inte
 Step heading determines the direction of a detected step. It requires the orientation of the sensor in the navigation frame and determining in what direction the sensor is moving in the sensor frame. This provides an estimate in which direction the sensor is moving in the navigation frame.  Step heading estimation is currently the component within SHS whose performance is the most limiting for positioning purposes \cite{Diez2018b, Qian2013,Combettes2017}.
 Even though the phone orientation may be known accurately, the direction in which the user is moving is not instantly clear. There are two approaches to determining the heading. The first is knowing beforehand what the orientation of the phone is with respect to heading.  This would constrain the carrying mode that can be used.  With the use of motion classification, this method could be expanded, where different carrying modes can be sensed,which changes the heading accordingly. Heading per carrying mode would need to be derivedbeforehand, through the training of the necessary model. 
 
-\section{Pedestrian Dead Reckoning using Activity Recognition}
+\section{Drift Reduction}
+
+\subsection{Pedestrian Dead Reckoning using Activity Recognition}
 Research has been done previously on using activity recognition in order to improve indoor localization. \citet{Hardegger2012} created ActionSLAM which uses Simultaneous Localization And Mapping (SLAM) in combination with body mounted error to determine indoor location. It uses a foot mounted sensor to estimate how the user is moving in combination with location-related actions to compensate 
 
 

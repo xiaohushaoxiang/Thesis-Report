@@ -1,6 +1,14 @@
 
 \chapter{Introduction} \label{chap:intro}
 
+Indoor localization is an ongoing research field where there is yet a solution to be found that is widely accepted as the state of the art \cite{Davidson2017}. For outdoor localization the de facto solution is the Global Positioning System \cite{Jackermeier2018}. The GPS solution can not be applied reliably in an indoor environment, due to the difficulty of the system's radio waves in traversing solid structure and if recieved the possibility of them being rebounded off of surfaces, causing erroneous positioning estimates. As with outdoor localization, indoor localization has a large range of possible applications. Examples include navigation in unknown environments, such as firefighters in an emergency situation or personal navigation through large public buildings, and the tracking of individuals, such as within elderly homes or workers in a factory setting. For wide applicability it is preferable that an indoor localization method has as little dependencies as possible, ensuring that little to no installation is required for it to work. \par 
+Indoor localization requires a portable platform on which to perform position estimation. The most obvious platform for this is the smartphone, a device ubiquitous in the developed world. It contains a wide range of different sensors combined with computing capabilities, while being untethered. Creating a system that works well on this device will be crucial to launching indoor localization on a global scale \cite{Gu2019}. Focusing on this platform brings additional restrictions to what any eventual solution can use. This includes carrying modes and computational requirements. \par 
+While the smartphone market has matured, the market of wearable devices has been growing steadily \cite{jung2016consumer}, with the smart watch being the most prominent. Similarly to the smartphone, these devices are fused with different sensors gathering information. In addition these devices often have communication capabilities, allowing them transfer and receive information from an external device. This provides a new source of data that can be combined with smartphone based solution to potentially help improve indoor localization. The use of these sensors within localization have not been studied much so far, and deserve further investigation.
+%A solution with the potential to meeting the above requirements is Pedestrian Dead Reckoning (PDR), a technique where the displacement from an initial location is calculated for a pedestrian. This technique often uses inertial sensors, with different possible placements on the body \cite{Gu2019}. These sensors are \ac{MEMS}, and consist of triaxial orthogonal accelerometers and gyroscopes, and can include a triaxial magnetometer \cite{Yang2014}. These sensors are small, lightweight and cheap, and are found in almost all smartphone brands.
+%While able to generate a position estimate for the pedestrian, position estimation drift is inevitable
+
+
+
 %Dead reckoning (DR) presents an interesting, incremen­tal positioning modality for pedestrians, complementary to absolute positioning of modern mobile phones (GPS, WiFi, Bluetooth and others). Many location aware applications can profit from greater accuracy and indoor availability, that can be achieved by combining DR with absolute positioning modalities. While dead reckoning is limited for long-term use due to error accumulation, it can achieve high short- to mid-term accuracy, and can be used to gap non-availability phases ^citation from Dead Reckoning from the Pocket - An Experimental StudyUlrich Steinhoff* and Bernt Schiele*t
  
 %Although global positioning system (GPS)–based outdoor localization is very common, indoor localization remains a challenge because GPS signals are unavailable indoors. Many indoor localization methods are based on wireless radio systems, such as Wi-Fi [2], radio-frequency identity [3], ultra-wideband [4], and Bluetooth [5]. These localization methods can be categorized into two types [6]: triangulation and fingerprinting. The former relies on installed expensive hardware, making it neither scalable nor universal. The latter requires pretraining, which is time-consuming. citation from A Robust Step Detection and Stride Length Estimation for Pedestrian Dead Reckoning Using a Smartphone 
@@ -11,7 +19,14 @@
 
 \section{Research Questions}
 
-Can indoor localization be achieved with realistic phone placement?
-Can activity recognition improve the above derived method 
+In order to tackle the subject, two main research question can be defined, with further explanation below them.
+
+\begin{itemize}
+	\item \textbf{How can indoor localization be achieved with realistic smartphone placement, while taking computation capabilities into account?}
+	\item\textbf{How can wearable devices improve the above derived method?}
+\end{itemize}
 
 \section{Thesis Contributions}
+This thesis will explore the different possibilities for realistic smartphone based indoor localization and how wearable devices can aid in improving a position estimate. It will explore a proof of concept with the intention of showing the increased performance when data from wearable technology is available. This thesis will test the designed system's performance in experiments, highlight the different advantages, disadvantage and limitations. Future steps are outlined on how to improve the derived method for future research.
+
+\section{Thesis Outline}
