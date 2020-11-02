@@ -38,7 +38,7 @@ An example of this step detection method and its different stages can be found i
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/20200924_1204_All_stages_of_step_detection}
-	\caption{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the steps taken }
+	\caption[All stages of step detection ]{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the steps taken }
 	\label{fig:all_stages_of_step_detection}
 \end{figure}
 
@@ -373,13 +373,14 @@ Once a measurement update occurs the resulting quaternion is not necessarily a u
 
 Using steps outlined in \cite{Kok2017} and \cite{Linkoping2013}, the above outlined EKF was implemented in MATLAB. It was preliminarily  tested in a limited case with actual smartphone sensors. Calibration and testing occurred in the same room, where the phone was continuously randomly orientated while recording sensor data. This data was afterwards exported and entered into the EKF. The results can be seen in \cref{fig:simple_stationary_ekf}, where it is compared with the orientation estimation calculated by the android system. It is clear that the orientation estimation is almost identical to the system derived orientation.
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\linewidth]{images/20201025_2015_simple_stationary_ekf}
-	\caption{ simple orientation estimation comparison between own EKF and android orientation estimation}
+	\caption[Simple orientation estimation comparison]{ Simple orientation estimation comparison between own EKF and android orientation estimation}
 	\label{fig:simple_stationary_ekf}
 \end{figure}
 
+\newpage
 \section{Particle Filter}
 \label{sec:method-pf}
 The step and heading system,which combines step detection and length estimation with orientation estimation, generates an estimate of the trajectory walked by the pedestrian. Since there are uncertainties in all aspects of the SHS, it is inevitable that drift will occur within. The estimate then no longer accurately represents reality. In order to counter this drift, one method is to use map information in combination with a Particle Filter. This is a numerical Bayes estimator able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypothesis for the system that it is modeling. In the case of localization, it may therefore indicate that there are two position estimates are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}. \\
@@ -431,14 +432,14 @@ The initialization of the particle cloud depends on information known beforehand
 			\caption{ Particles with a multivariate normal probability density function to determine weighting depending on position of a door}
 			\label{fig:pfdiagram}
 		\end{subfigure}
-		\caption{Using map information for measurement updates in the particle filter}
+		\caption[Map information use in Particle Filter]{Map information for measurement updates in the particle filter}
 		\label{fig:pf_meas_update}
 	\end{figure}
 	
 	\item  \textbf{Estimation} \\
 	Using the weightings and positions of the particle cloud, an estimate can be made of the posterior probability density of the process that is being modeled  \cite{gustafsson2010particle}. There a different ways of defining the. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior probability function \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009} as
 	\begin{equation}
-	\hat{x}_{k | k} =\sum_{i=1}^{N} w_{k}^{i} x_{k}^{i}
+	\hat{x}_{k | k} =\sum_{i=1}^{N} w_{k}^{i} x_{k}^{i}.
 	\end{equation}
 	
 	\item \textbf{Resampling}\\
@@ -453,16 +454,16 @@ The initialization of the particle cloud depends on information known beforehand
 	\end{subequations}
 	
 	Here $x^{i*}$ represents the newly sample particle with index $i$ and $F^{-1}$ represents the generalized inverse of the cumulative probability distribution of the normalized particle weights, $N$ is the total number of particles. \par
-	Resampling inevitably destroys information and therefore increases uncertainty by the random sampling \cite{gustafsson2010particle}. Resampling should therefore occur only when it is needed. \citet{gustafsson2010statistical} proposes the use of  \textit{effective number of samples} to trigger a  resampling. This can be calculated as followed
+	Resampling inevitably destroys information and therefore increases uncertainty by the random sampling \cite{gustafsson2010particle}. Resampling should therefore occur only when it is needed. \citet{gustafsson2010statistical} proposes the use of  \textit{effective number of samples} to trigger a  resampling. This can be calculated as 
 	\begin{subequations}
 		\begin{equation}
-		N_{\mathrm{eff}}=\frac{1}{\sum_{i=1}^{N}\left(w^{i}\right)^{2}}
+		N_{\mathrm{eff}}=\frac{1}{\sum_{i=1}^{N}\left(w^{i}\right)^{2}},
 		\end{equation}
 		
 		where
 		
 		\begin{equation}
-		1 \leq N_{\mathrm{cff}} \leq N
+		1 \leq N_{\mathrm{cff}} \leq N.
 		\end{equation}
 	\end{subequations}
 	
@@ -485,6 +486,6 @@ The initialization of the particle cloud depends on information known beforehand
 	\end{equation}
 \end{enumerate}
 
-where $x(*)$ indicates the index of the state vector defined in \cref{eq:pf_state}. The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous time step.
+where $x(*)$ indicates the index of the state vector defined in \cref{eq:pf_state}. The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous time step, found through the orientation estimation in \cref{sec:method-EKF}.
 
 \section{Activity Recognition}

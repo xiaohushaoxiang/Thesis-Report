@@ -1,18 +1,41 @@
 \chapter{Results}
 
 \section{Step Detection}
-\citet{Salvi2018} have opensourced the data used for their step detection algorithm. This includes validation data made with a ground truth device and the output of the devised algorithm on an android device. This allows for comparison between the two but also with eventual other techniques. The raw data consists of sampling time, three accelerometer axis signals, when a new step has been detected by the ground truth device, and step detected by the designed algorithm. The validation sets consist of two users carrying the phones in the carrying modes outlined in \cref{sec:rw - step detection}. The device is carried in each carrying mode individually, not simultaneously. An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude and points indicating the ground truth step and the steps detected by the \citet{Salvi2018} algorithm. The figure also shows how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes.  
+\citet{Salvi2018} have opensourced the data used for their step detection algorithm. This includes validation data made with a ground truth device and the output of the devised algorithm on an android device. The ground truth device consisted of hardware attached to the feet of the test subjects that could exactly measure when the foot came into contact with the floor, hence when a step is taken. The use of this ground truth allows for comparison between the method devised but also with any eventual future techniques.\\
+The raw data of the validation set consists of sampling time, three accelerometer axis signals, when a new step has been detected by the ground truth device, and step detected by the designed algorithm. The validation sets contains data of two users carrying the phones in the carrying modes outlined in \cref{sec:rw - step detection}. The device is carried in each carrying mode individually, not simultaneously. An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude and points indicating the ground truth step and the steps detected by the \citet{Salvi2018} algorithm. The figure also shows how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes.  
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{images/20200929_0951_gt_steps_vs_salvi_steps}
-	\caption{extract of validation dataset from \citet{Salvi2018}, indicating ground truth steps and step detected by their algorithm.}
+	\caption[Step detection validation data]{Extract of validation dataset from \citet{Salvi2018}, indicating ground truth steps and step detected by their algorithm.}
 	\label{fig:gt_steps_vs_salvi_steps}
 \end{figure}
 
 
-The matlab algorithm, outlined in \cref{sec:meth - step detection}, could be applied on the validation data of the researchers. This allows it to be compared with a ground truth and with the solution of the researchers. \cref{fig:sd_comparison} shows how the matlab algorithm compares to the results in the validation datasets. \cref{fig:sd_abs_comparison} indicates the absolute number of steps detected. \cref{fig:sd_percent_comparison}  shows the percentage error compared to the ground truth, where  
-positive percent error indicates over counting, while negative under counting. 
+The step detection method outlined in \cref{sec:meth - step detection} was applied to the validation data of the researchers, allowing for direct comparison between the ground truth and the solution of the researchers. The parameters used for the process coincide with those found by the researchers, an overview of which can be found in \cref{tab:parameters_used}.
+
+\begin{table}
+	\centering
+\begin{tabular}{clc} 
+	\hline
+	Stage & Parameters & Value \\
+	\hline & Window size & $\mathrm{M}=13$ \\
+	Filtering & Filter type & Gaussian \\
+	& Filter SD & 0.35 \\
+	\multirow{2}{*} { Scoring } & & \\
+	& Type & Mean Difference \\
+	& Window size & $N=35$ \\
+	Detection & Threshold & 1.2 \\
+	Post-Processing & $t_{\text {window}}$ & $200 \mathrm{ms}$ \\
+	\hline
+\end{tabular}
+\caption{Parameters used}
+\label{tab:parameters_used}
+\end{table}
+
+
+\cref{fig:sd_comparison} shows how the method, referred to as Matlab algorithm, compares to the results in the validation datasets. \cref{fig:sd_abs_comparison} indicates the absolute number of steps detected. \cref{fig:sd_percent_comparison}  shows the percentage error compared to the ground truth, where positive percent error indicates over counting, while negative under counting. The results indicate that the method devised performs overall similarly to the method of the researchers. In some cases the error is slightly larger, as with user1 bag, while in others it is smaller as with user 2 bag. It is also apparent that with the case of user1 backpocket that there is a large percentage error for both cases. The researchers attribute this to the pocket being loose and allowing the phone to rebound when a step was taken. This would introduce nefarious components in the accelerometer signal, leading to false positives. \citet{Brajdic2013} encountered similar problems with this carrying position, hypothesizing that the relaxing of the gluteus maximus during locomotion could influence the acceleration trace.
+
 %TODO argument why it is different than what the research achieved.
 
 \begin{figure}[H]
@@ -29,23 +52,24 @@ positive percent error indicates over counting, while negative under counting.
 		\caption{Percentage error from ground truth number of steps. }
 		\label{fig:sd_percent_comparison}
 	\end{subfigure}
-	\caption{Comparison between \citet{Salvi2018} step detection algorithm, matlab algorithm and ground truth for different carrying modes.}
+	\caption[Step detection comparison]{Comparison between \citet{Salvi2018} step detection algorithm, matlab algorithm and ground truth for different carrying modes.}
 	\label{fig:sd_comparison}
 \end{figure}
 
-In addition to the data made available online, original data was gathered in which a subject walked exactly 60 steps while having a smartphone in 3 different carrying modes, backpocket, frontpocket and in hand. The percentage error from the ground truth can be seen in \cref{fig:202009291013step_counting_error_of_60_steps}.
+In addition to the data made available online, original data was gathered in which a subject walked exactly 60 steps while having a smartphone in 3 different carrying modes, backpocket, frontpocket and in hand. The percentage error from the ground truth can be seen in \cref{fig:202009291013step_counting_error_of_60_steps}. Here the backpocket show similar error as with the validation data, further supporting that the method does not work reliably in this carrying position.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\linewidth]{images/20200929_1013_step_counting_error_of_60_steps}
-	\caption{}
+	\includegraphics[width=0.55\linewidth]{images/20200929_1013_step_counting_error_of_60_steps}
+	\caption{Original data step counting}
 	\label{fig:202009291013step_counting_error_of_60_steps}
 \end{figure}
 
-For a PDR SHS it is not enough for the amount of steps to be accurate, but also the time when a step actually occurs. A step detection combined with the heading orientation at the moment of occurrence determines the vector in which the position estimate of the pedestrian will move. In order to ascertain how both the \citet{Salvi2018} algorithm and the algorithm from \cref{sec:meth - step detection} perform in this respect, true positive step detection was determined. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both a step occurs and is detected, the detection counts as a true positive. If in this interval two steps are detected, both detections are not considered true positive, and are considered a true positive double count. The time interval is increase itteratively in attempt to find the highest true positive count for both algorithms. The results can be found in \cref{fig:sd_tp_fp_comparison}
+For a PDR SHS it is not enough for the amount of steps to be accurate, but also the time when a step actually occurs. A step detection combined with the heading orientation at the moment of occurrence determines the vector in which the position estimate of the pedestrian will move. \\
+In order to ascertain how both the \citet{Salvi2018} algorithm and the algorithm from \cref{sec:meth - step detection} perform in this respect, and approach to true positive step detection was determined. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both a step occurs and is detected, the detection counts as a true positive. If in this interval two steps are detected, both detections are not considered true positive, and are considered a true positive double count. The time interval is increase itteratively in attempt to find the highest true positive count for both algorithms. The results with the highest amount of true positives for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\linewidth]{images/20200930_1510_tp_fp_abs_comparison}
-\caption{Comparison between \citet{Salvi2018} step detection algorithm, matlab algorithm and ground truth for different carrying modes.}
+\caption[False positives and true positives step detection comparison]{Comparison between false positives and true positives for \citet{Salvi2018} step detection algorithm, Matlab algorithm and ground truth for different carrying modes.}
 \label{fig:sd_tp_fp_comparison}
 \end{figure}
 
@@ -84,7 +108,7 @@ Using the open source data has not come without problems, as can be seen in \cre
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth]{images/20201028_1344_Step_Length_Estimation_Validation}
-	\caption{}
+	\caption{Step length estimation using validation dataset}
 	\label{fig:step_length_estimation_validation}
 \end{figure}
 
@@ -94,7 +118,7 @@ A similar smaller scale experiment was performed with three different people als
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\textwidth]{example-image-a}
-	\caption{}
+	\caption{Original data step length estimation}
 	\label{fig:step_length_personal_testing}
 \end{figure}
 
@@ -129,7 +153,7 @@ The OccupancyMap in the MATLAB Robotics Tool box is suitable for this. An occupa
 	\label{fig:pf_map}
 \end{subfigure}
 \label{fig:particle_map_construction}
-\caption{particle filter map creation}
+\caption{Particle filter map creation}
 \end{figure}
 
 During the experiment, a total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can be used in postprocessing to get a ground truth. This was done by replaying the video and at set intervals manually indicating approximately where on the map the test subject was located. The position and time elapsed were recorded. The output of these trials can be used to test certain SHS components individually and the system as a whole.
@@ -164,11 +188,11 @@ The error between each trial can be found in \cref{fig:orientation_comparison}.
 	\label{fig:orientation_comparison}
 \end{figure}
 
-From these results it is shown that the error between my own orientation estimation and that calculated by the android system has similar performance.
+From these results it is shown that the error between  orientation estimation outlined in \cref{sec:method-EKF} and the estimate calculated by the android system has similar performance.
 
 \subsection{Step and Heading System}
-All components of the step and heading system have been tested separately, giving an indication of their strengths and limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the whole system performance. The output of the step and heading system will be the relative position change from a start point, known as dead reckoning.
-For every trial the smartphone imu data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this sections. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building.
+All components of the step and heading system have been tested separately, giving an indication of their strengths and limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the complete system performance.
+For every trial the smartphone IMU data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this sections. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building. Since this heuristic rotating is only used to give an indication of the shs output compared to the ground truth, it is not possible to compare it quantitatively with the ground truth, since it is not a standalone solution for indoor localization.
 
 \begin{figure}[H]
 	\centering
@@ -187,7 +211,7 @@ For every trial the smartphone imu data is passed through the different componen
 	\caption{SHS comparison of trial 1 with ground truth}
 	\label{fig:trial1_shs_gt_comparison}
 \end{figure}
-
+\newpage
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
@@ -206,12 +230,17 @@ For every trial the smartphone imu data is passed through the different componen
 	\label{fig:trial2_shs_gt_comparison}
 \end{figure}
 
-
+\newpage
 \subsection{Particle Filter}
-Using the output of the SHS and the method outlined in \cref{sec:method-pf} for the particle filter, the indoor localization particle filter could be constructed 
+Using the output of the SHS, the method outlined in \cref{sec:method-pf} for the particle filter, and the map constructed for the indoor experiments, the indoor localization particle filter could be constructed. For initialization a known location on the map was available, around which the particles were distributed with a Bayesian profile. The output of the SHS was used to propagate the particles, with the map information removing particles that collided with the walls.  During the experiment the possibility existed of recording at timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of bypassing the activity recognition. At the different timestamps recorded, a particle filter measurement update can be initiated. Using this method the potential affect of activity recognition can be evaluated, by comparing the use of the timestamps with when they are not used. \\
+Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate. For  
 
-\subsubsection{With activity }
+\subsubsection{Without activity}
 
+\subsubsection{With activity}
+
+
+Using the 
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
@@ -226,7 +255,7 @@ Using the output of the SHS and the method outlined in \cref{sec:method-pf} for 
 		\caption{axis comparison}
 		\label{fig:shspf_trial2_comparison}
 	\end{subfigure}
-	\caption{SHS comparison of trial 2 with ground truth}
+	\caption{SHS-PF comparison of trial 2 with ground truth}
 	\label{fig:shspf_trial2_shs_gt_comparison}
 \end{figure}
 
@@ -244,8 +273,16 @@ Using the output of the SHS and the method outlined in \cref{sec:method-pf} for 
 		\caption{axis comparison}
 		\label{fig:shspf_trial3_comparison}
 	\end{subfigure}
-	\caption{SHS comparison of trial 5 with ground truth}
+	\caption{SHS-PF comparison of trial 5 with ground truth}
 	\label{fig:shspf_trial3_shs_gt_comparison}
 \end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{images/20201101_1739_RMSE_per_trial}
+	\caption{Box and wisker plot for Particle Filter}
+	\label{fig:pf_boxplot}
+\end{figure}
+
 
 \section{Activity Recognition}
