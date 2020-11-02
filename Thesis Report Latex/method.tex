@@ -14,8 +14,7 @@ The method used for step detection is similar to the one presented by \cite{Salv
 	A gaussian window is applied with a window size of 13 frames and a standard deviation of 0.35.
 	
 	\item \textbf{Scoring }\\
-	With the scoring stage the "peakiness" of a given sample is evaluated. The result
-	of this stage should increase the magnitude of any peaks. This makes it easier for the subsequent peak detection. The scoring used is that of mean difference 
+	With the scoring stage the "peakiness" of a given sample is evaluated. The result of this stage should increase the magnitude of any peaks. This makes it easier for subsequent peak detection. The scoring used is that of mean difference 
 	\begin{equation}
 		p_{i}=\frac{\sum_{k=-N, k \neq i}^{N}\left(x_{i}-x_{i+k}\right)}{2 N}
 		\label{eq:mean difference}
