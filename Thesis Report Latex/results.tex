@@ -2,7 +2,7 @@
 
 \section{Step Detection}
 \citet{Salvi2018} have opensourced the data used for their step detection algorithm. This includes validation data made with a ground truth device and the output of the devised algorithm on an android device. The ground truth device consisted of hardware attached to the feet of the test subjects that could exactly measure when the foot came into contact with the floor, hence when a step is taken. The use of this ground truth allows for comparison between the method devised but also with any eventual future techniques.\\
-The raw data of the validation set consists of sampling time, three accelerometer axis signals, when a new step has been detected by the ground truth device, and step detected by the designed algorithm. The validation sets contains data of two users carrying the phones in the carrying modes outlined in \cref{sec:rw - step detection}. The device is carried in each carrying mode individually, not simultaneously. An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude and points indicating the ground truth step and the steps detected by the \citet{Salvi2018} algorithm. The figure also shows how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes.  
+The raw data of the validation set consists of sampling time, three raw accelerometer axis signals, when a new step has been detected by the ground truth device, and step detected by the designed algorithm. The validation sets contains data of two users carrying the phones in the carrying modes outlined in \cref{sec:rw - step detection}. The device is carried in each carrying mode individually, not simultaneously. An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude and points indicating the ground truth step and the steps detected by the \citet{Salvi2018} algorithm. The figure also shows how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes. 
 
 \begin{figure}
 	\centering
@@ -66,7 +66,10 @@ In addition to the data made available online, original data was gathered in whi
 
 For a PDR SHS it is not enough for the amount of steps to be accurate, but also the time when a step actually occurs. A step detection combined with the heading orientation at the moment of occurrence determines the vector in which the position estimate of the pedestrian will move. \\
 In order to ascertain how both the \citet{Salvi2018} algorithm and the algorithm from \cref{sec:meth - step detection} perform in this respect, and approach to true positive step detection was determined. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both a step occurs and is detected, the detection counts as a true positive. If in this interval two steps are detected, both detections are not considered true positive, and are considered a true positive double count. The time interval is increase itteratively in attempt to find the highest true positive count for both algorithms. The results with the highest amount of true positives for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
-\begin{figure}[H]
+
+\textcolor{cyan}{discuss what the results indicate}
+
+\begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{images/20200930_1510_tp_fp_abs_comparison}
 \caption[False positives and true positives step detection comparison]{Comparison between false positives and true positives for \citet{Salvi2018} step detection algorithm, Matlab algorithm and ground truth for different carrying modes.}
@@ -113,18 +116,18 @@ Using the open source data has not come without problems, as can be seen in \cre
 \end{figure}
 
 What is noticeable from the results is that there is a large outlier. This is with dataset 42, which corresponds to the slow walking speed of test subject 14, which is also the setting in which the tunable parameter estimation had an outlier. This further supports that there is something significantly different when this test subject is performing at this walking speed. With this outlier the mean absolute error is 11.8 percent with a standard deviation of 17.1 percent. Without the outlier, the mean absolute error is 9.7 percent with a standard deviation of 8.0 percent. Both results are worse than those cited by \cite{Vezocnik2019}, which indicate a mean of 7 percent with a standard deviation of 5 percent.
-The results also indicate that the different tunable parameters do not make a significant difference in accuracy. \par 
+The results also indicate that the different tunable parameters do not make a significant difference in accuracy. The difference in performance is likely to the difference in step detection, which the research do specify exactly. \par 
 A similar smaller scale experiment was performed with three different people also walking at three different walking speeds. The results can be found in \cref{fig:step_length_personal_testing}. 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{example-image-a}
+	\includegraphics[width=0.5\textwidth]{example-image-a}
 	\caption{Original data step length estimation}
 	\label{fig:step_length_personal_testing}
 \end{figure}
 
-{\color{red} still need to add comment on results }
+{\color{cyan} still need to add comment on results of test with original data and see how it compares with the data from \cite{Vezocnik2019}... The results so far show that general parameters are not good. In the experiments indoor }
 
-\newpage
+\textcolor{red}{I think that step length estimation is one of the largest error sources ATM. Is it work while switching to a different technique? \citet{Vezocnik2019} also indicate on that is good for personalized parameters ....? I think that this could be fixed quickly}
 
 \section{Indoor Experiments}
 
@@ -186,24 +189,31 @@ A rudimentary comparison could be made using the ground truth of the experiment,
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\textwidth]{example-image-c}
-	\caption{}
+	\caption{Orientation distilled from ground truth compared to orientation estimation of android system and EKF}
 	\label{fig:orientation_comparison}
 \end{figure}
 
+The error between each trial and the orientation distilled from the ground truth trajectory can be found in \cref{fig:orientation_error_comparison}.
 
-{\color{red}As can be seen this plot has not been generated yet. Depending on the outcome a comparison can be made over all trials to determine performance of the different methods.}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{example-image-c}
+	\caption{Error between ground truth orientation and android system and EKF}
+	\label{fig:orientation_error_comparison}
+\end{figure}
 
-%The error between each trial can be found in \cref{fig:orientation_comparison}.
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=0.7\textwidth]{example-image-c}
-%	\caption{}
-%	\label{fig:orientation_comparison}
-%\end{figure}
 
+{\color{red}As can be seen this plot has not been generated yet. Depending on the outcome a comparison can be made over all trials to determine performance of the different methods. What do you think, is this a valid way of comparing orientation estimate?}
+
+
+\subsection{Step Length Estimation}
+
+\textcolor{red}{is it worthwhile to compare step length estimation with the video ground truth generated?}
 
 \subsection{Step and Heading System}
+
+\textcolor{cyan}{trial naming at this point is not consistent, also not in the plots ... needs to be changed}
+
 All components of the step and heading system have been tested separately, giving an indication of their strengths and limitations. Now the whole system can be combined and tested in an indoor environment to evaluate the complete system performance.
 For every trial the smartphone IMU data is passed through the different components of the SHS outlined in this report. Each trajectory can then be compared to the ground truth generate through post processing as outlined at the beginning of this section. Two trials with their trajectory projected onto the map and side by side comparison with the ground truth can be found in \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial2_shs_gt_comparison}. Note that the shs trajectories in these images have been rotated heuristically in order to fit the map as best as possible. This needs to be done since there is no way for the step and heading system output to know how to orient itself with respect to the building. This is because it does not have pre-existing knowledge on the orientation of the magnetic field inside the building. Since this heuristic rotating is only used to give an indication of the shs output compared to the ground truth, it is not possible to compare it quantitatively with the ground truth, since it is not a standalone solution for indoor localization.
 
@@ -221,11 +231,10 @@ For every trial the smartphone IMU data is passed through the different componen
 		\caption{axis comparison}
 		\label{fig:trial1_comparison}
 	\end{subfigure}
-	\caption{SHS comparison of trial 1 with ground truth}
+	\caption{Qualitative SHS comparison of trial 1 with ground truth}
 	\label{fig:trial1_shs_gt_comparison}
 \end{figure}
-\newpage
-\begin{figure}[H]
+\begin{figure}[]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
@@ -239,26 +248,51 @@ For every trial the smartphone IMU data is passed through the different componen
 		\caption{axis comparison}
 		\label{fig:trial2_comparison}
 	\end{subfigure}
-	\caption{SHS comparison of trial 2 with ground truth}
+	\caption{Qualitative SHS comparison of trial 2 with ground truth}
 	\label{fig:trial2_shs_gt_comparison}
 \end{figure}
 
 \newpage
-\subsection{Particle Filter}
-Using the output of the SHS, the method outlined in \cref{sec:method-pf} for the particle filter, and the map constructed for the indoor experiments, the indoor localization particle filter could be constructed. For initialization a known location on the map was available, around which the particles were distributed with a Bayesian profile. The output of the SHS was used to propagate the particles, with the map information removing particles that collided with the walls.  During the experiment the possibility existed of recording at timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of bypassing the activity recognition. At the different timestamps recorded, a particle filter measurement update can be initiated. Using this method the potential affect of activity recognition can be evaluated, by comparing the use of the timestamps with when they are not used. \\
-Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate. For  
+\subsection{Activity Recognition}
+\textcolor{cyan}{
+\begin{itemize}
+	\item calculate the difference between the ground truth start of door interaction and the begin of the simple decision tree method outlined in the thesis
+\end{itemize}}
 
-\subsubsection{Without activity}
+\textcolor{red}{What do you think is also important to show about activity recognition}
+
+\subsection{Particle Filter}
+Using the output of the SHS, the method outlined in \cref{sec:method-pf} for the particle filter, and the map constructed for the indoor experiments, the indoor localization particle filter could be constructed. For initialization a known location on the map was available, around which the particles were distributed with a Bayesian profile. The output of the SHS was used to propagate the particles, with the map information removing particles that collided with the walls. \\
+ 
+
+\subsubsection{Determining the estimate}
+Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate. Another approach was used in which the particles that survived the whole SHS trajectory made during the experiment were used. By recording the ancestors of these particles, the whole trajectory could be calculated by backtrack [\qn ?].
+
+\textcolor{cyan}{
+\begin{itemize}
+	\item For this section I want to show MAP, RMSE and Ancestor Tracking (AT) on an example particle filter output to show why AT is better than th other two.
+\end{itemize}}
+
+\textcolor{red}{Do you think that I need a quantitative comparison between the different position estimate methods?}
 
 \subsubsection{With activity}
+During the experiment the possibility existed of recording at timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of bypassing the activity recognition. At the different timestamps recorded, a particle filter measurement update can be initiated. Using this method the potential affect of activity recognition can be evaluated, by comparing the use of the timestamps with when they are not used. Two examples can be found in \cref{fig:shspf_trial2_shs_gt_comparison} and \cref{fig:shspf_trial3_shs_gt_comparison} which show the ground truth generated from video and the output of the particle filter using their respective SHS trajectories as input.
 
+\textcolor{red}{the results here are only using the "ground truth" door detection method, but can be replaced by the actual activity recognition algorithm. I suspect that the results will not be very different since from AR testing, door activity is detected well using the method in \cref{sec:method-AR}}
 
-Using the 
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
-		\includegraphics[width=0.9\linewidth]{images/20201029_1603_shs-pf_trial_1_2}
+		\begin{tikzpicture}
+		\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201029_1603_shs-pf_trial_1_2}};
+		\begin{scope}[x={(image.south east)},y={(image.north west)}]
+		\draw[green,ultra thick,rounded corners] (0.6,0.625) rectangle (0.73,0.66);
+		\end{scope}
+		\end{tikzpicture}
+		
+		
+%		\includegraphics[width=0.9\linewidth]{images/20201029_1603_shs-pf_trial_1_2}
 		\caption{trajectory comparison}
 		\label{fig:shspf_trial2_on_map}
 	\end{subfigure}
@@ -290,12 +324,43 @@ Using the
 	\label{fig:shspf_trial3_shs_gt_comparison}
 \end{figure}
 
+Running the particle filters with the same settings for lopen1.1-1.3 generated the following results.
+
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{images/20201101_1739_RMSE_per_trial}
-	\caption{Box and wisker plot for Particle Filter}
+	\includegraphics[width=0.6\textwidth]{images/20201103_1128_with_doors_2}
+	\caption[Particle Filter position estimation performance with door interaction]{Particle Filter position estimation performance with door interaction measurment update, 5 itterations per trial. Number under "completed" indicates how many trials had particles surviving for the whole SHS trajectory. }
+	
 	\label{fig:pf_boxplot}
 \end{figure}
 
+\textcolor{purple}{
+Things to notice:
+\begin{itemize}
+	\item All particle filters generate similar results and complete the whole trajectory
+	\item the RMSE of lopen1.2 is quite high. The reason for this can be found in figure \cref{fig:shspf_trial2_shs_gt_comparison}, with the table that is circled in green. For all particle filter cases this object could not be circle, drastically adding to the RMSE of this trial.
+	\item The particle did not perform consistently for lopen1.5 where it either worked well an example of which can be found in \cref{fig:shspf_trial3_shs_gt_comparison} , or diverged completely. I think this is due to the SHS trajectory input, with a focus on wrong step length estimation. This can be shown in a plot. What do you think?
+\end{itemize}}
 
-\section{Activity Recognition}
+\textcolor{red}{there are about 4 more trials that can be processed, do you think that this is worthwhile?} \\
+\textcolor{red}{I do not yet know how the particle filter will handle false positives. Can I discuss this with you during the meeting?}
+
+\newpage
+\subsubsection{Without activity}
+The same SHS trajectory were used, however now door interaction landmarks were not used as measurement update. The results can be found in \cref{fig:pf_boxplot_no_doors}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{images/20201103_1128_with_doors_1}
+	\caption[Particle Filter position estimation performance without door interaction]{Particle Filter position estimation performance without door interaction measurment update, 5 itterations per trial. Number under "completed" indicates how many trials had particles surviving for the whole SHS trajectory.}
+	\label{fig:pf_boxplot_no_doors}
+\end{figure}
+
+\textcolor{purple}{
+things to notice
+\begin{itemize}
+	\item Trial one has very different RMSE value per run
+	\item Strangely it did not have much effect on lopen1.2
+	\item Although the RMSE of lopen1.3 is similar to the one with door activity two of the 5 trials did not complete the SHS track. This means that all particles.
+	\item So far this does indicate that having activity recognition does help with position estimation within a particle filter
+\end{itemize}}

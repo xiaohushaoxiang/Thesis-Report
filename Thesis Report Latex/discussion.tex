@@ -1,12 +1,19 @@
 \chapter{Discussion}
 
+\textcolor{red}{I thought it best to first discuss the discussion during the meeting, since I am not completely sure what I should write here. Furthermore I also think that this is very dependent on the results that I will be showing throughout this thesis, which is also not yet set at the moment}
+
+
 \section{Answering Research Questions}
 
+\textcolor{cyan}{this will depend on the the eventual research questions that are found}
+
 \section{Future Work}
+
+{\color{purple}
 \textbf{Step detection}
 \begin{itemize}
 	\item using data from \cite{Salvi2018} determine if parameters found are also the best parameters for the implementation used in this thesis.
-	\item Step detection is a form of activity recognition, investigate if machine learning techniques can perform better  
+	\item Step detection is a form of activity recognition, investigate if other machine learning techniques can perform better  
 	\item testing was performed walking on a hard floor and it will be necessary to investigate softer surfaces like carpet or grass.
 	\item Determine robustness against more complex movements
 \end{itemize}
@@ -31,13 +38,13 @@
 
 \textbf{Particle filter}
 \begin{itemize}
-	\item Test without furniture or with a different probability density
-	\item decrease probability close to walls
-	\item different representation of map, instead of grid based more node and edge approach 
+	\item Test without furniture or with a different probability density for furniture
+	\item decrease probability close to walls since people do not generally walk close to walls
+	\item different representation of map, instead of grid based more node and edge approach. 
 	\item be able to detect when moving to a different floor
 	\item combine other drift reduction methods
 	\item initialize particles over whole map instead of defining a starting point.
-	\item find a way to use less particles in order to be implementable on portable device
+	\item find a way to use less particles in order to be implementable on portable device. Above solutions could already help with this.
 \end{itemize}
 
 \textbf{Activity Recognition}
@@ -46,11 +53,10 @@
 	\item implement activity recognition locally on device so little inter device communication is required.
 \end{itemize}
 
-
 \textbf{Testing}
 \begin{itemize}
 	\item different building testing. The current contained may different ways of walking around, while other buildings with more corridor structures are more restrictive. Potentially the SHS-PF technique could have better performance in these settings.
 	\item better ground truth determination for both positioning and orientation. ORB-SLAM2 was tried but could not get it to work with footage from phone.
 	\item online calculation of position on device
 	\item test with different people to determine how user sensitive this is.
-\end{itemize}
+\end{itemize}}

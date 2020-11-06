@@ -1,11 +1,26 @@
 \chapter{Method}
 
-\section{Step Detection}
+In the previous chapter different indoor localization methods were introduced. From this information an initial system design was destilled. The details of the different components can be found in the following sections.
+
+\section{Step Detection and Step Length Estimation}
+
+\textcolor{cyan}{introductory text}
+
+\subsection*{Step Detection}
 \label{sec:meth - step detection}
-The method used for step detection is similar to the one presented by \cite{Salvi2018}, introduced in \secref{sec:rw - step detection}. It differs from the referenced paper in that the data is being handled offline, not having to wait for data buffers to fill. It also differs in that it adds the walk detection method from \cite{Brajdic2013}. The values used for the different parameters are based on those found by \cite{Salvi2018}. The implemented method consists of five steps:
+The method used for step detection is similar to the one presented by \cite{Salvi2018}, introduced in \secref{sec:rw - step detection}. 
+ An overview of the different components of this windowed peak detection method is shown in \cref{fig:step_detection} . To optimize the algorithm, different combinations of stage components were compared in \cite{Salvi2018}. A custom made, electronic ground truth device was worn by test subjects for easy comparison with the different parameter settings. A dataset of 36 recordings was made,  where three researchers walking for two to three minutes with the phone held in six different carrying modes. This includes in hand, in a front pocket, in a back pocket, in an armband, in a shoulder purse, and in a neck pouch on a string. Each set contains around 2.5 minutes of accelerometer and ground truth data.
+\begin{figure}
+	\centering
+	\includegraphics[trim=20 100 50 80, clip, width=0.7\linewidth]{images/step_detection}
+	\caption{Windowed peak detection components and parameters used by \cite{Salvi2018}}
+	\label{fig:step_detection}
+\end{figure}
+
+ This thesis uses the method and parameters found by \citet{Salvi2018} as basis for step detection. The eventually implemented method differs slightly from the referenced paper in that the data is being handled offline, not having to wait for data buffers to fill. It also differs in that it adds the walk detection method from \cite{Brajdic2013}. The values used for the different parameters are based on those found by \cite{Salvi2018}. The implemented method consists of five steps:
 \begin{enumerate}
 	\item \textbf{Pre-processing} \\
-	The IMU used in most smartphones provide acceleration information over three orthogonal axes. For the step detection algorithm the magnitude of the combined signal from the three orthogonal axes is used. Since MEMS IMUs are subject to potential noise from different sources  the signal is put through a lowpass filter with a cutoff frequency of 5 hertz.
+	The IMU used in most smartphones provide acceleration information over three orthogonal axes. For the step detection algorithm the magnitude of the combined signal from the three orthogonal axes is used.
 	
 	\item \textbf{Walk detection} \\
 	Since a person is not walking continuously, the regions in which it does occur need to be indicated. \cite{Brajdic2013} determined that thresholding on the standard deviation of the norm the accelerometer signal was sufficient. This is done using the parameters found by the paper, which is determining the standard deviation over a moving frame of 0.8 seconds, with all standard deviation magnitude levels above $0.6 m/s^2$ being considered walking.
@@ -41,10 +56,13 @@ An example of this step detection method and its different stages can be found i
 	\caption[All stages of step detection ]{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the steps taken }
 	\label{fig:all_stages_of_step_detection}
 \end{figure}
+\subsection*{Step Length Estimation}
+For step length estimation the method outlined as working best by \cite{Vezocnik2019} will be used. This is \cref{eq:Tian2016_sle} in \cref{sec:rw-SHS}. Within this method there is a tuneable parameter that needs to be estimate in order for the method to be applied. One way of doing this is by using the data that \cite{Vezocnik2019} have made available online. Running this data through the above outlined step detection, the result can be used for parameter estimation.
 
-\section{Step Length Estimation}
+\textcolor{red}{this section is pretty small at the moment, should it require a heading? What else to add?}
 
 \section{Orientation Estimation}
+\textcolor{cyan}{introductory text}
 \subsection{Coordinate Frames}
 Within orientation estimation there are  different coordinate frames to be considered. There are two frames that are of importance for localization: the body frame and the navigation frame.\\
 The body frame ($b$) is the coordinate frame of the IMU, the origin of which is at the center of the triaxial accelerometers found in the device \cite{Kok2017}. The navigation frame ($n$) is the geographical frame in which the user is moving. It is also the frame in which we want to determine the pose, consisting of orientation and position, of the body frame. For a localization application it is considered stationary \cite{Kok2017}.
@@ -54,6 +72,9 @@ $R^{nb}$ is a rotation matrix that maps from the body frame to the navigation fr
 
 
 \subsection{Orientation Parametrization}
+While position is often represented by a point in a 3D orthogonal axis frame, orientation has different parametrizations, each able to map to one another. This chapter will introduce rotation matrices ($R$) and quaternions ($q$), which will be used in the following section to determine orientation from IMU sensor data.
+
+\subsubsection{Rotation Matrix}
 Rotation matrices $R \in \mathbb{R}^{3 \times 3}$ have the following properties:
 
 \begin{equation}
@@ -77,6 +98,7 @@ Transposing a rotation matrix represent a rotation back to it's original coordin
 	\end{align}
 \end{subequations}
 
+\subsubsection{Quaternion}
 A quarternion is a common parametrization of orientation frequently used by attitude estimation algorithms. This is because it is free of non-singularity in attitude representation \cite{Hashim2019}, also known as wrapping. A unit quaternion can be described by
 
 \begin{equation}
@@ -154,10 +176,13 @@ Another assumption is that the sensor does not travel over significant distances
 
 \subsection{Calibration}
 
-For proper orientation estimation . \citet{Moder2017} indicates that it is  beneficial for PDR systems to have the gyroscope and magnetometer bias  calibrated, while the accelerometer bias and scale factor is optional. In addition it is advised to estimate the gyroscope bias frequently before testing.
+For proper orientation estimation, sensor calibration is required. \\
+\textcolor{cyan}{elaboration need to introduce the subject} 
+
+%\citet{Moder2017} indicates that it is  beneficial for PDR systems to have the gyroscope and magnetometer bias  calibrated, while the accelerometer bias and scale factor is optional. In addition it is advised to estimate the gyroscope bias frequently before testing.
 
 \subsubsection{Gyroscope Calibration}
-Gyroscope measurements from MEMS IMUs are generally offset by a bias ($o_\omega$) resulting in
+Gyroscope measurements from MEMS IMUs are generally offset by a bias ($o_\omega$) and influenced by noise ($e_{\omega, t}$)  resulting in
 
 \begin{equation}
 	y_{\omega, t}=\omega_{t}+o_{\omega}+e_{\omega, t},
@@ -166,10 +191,10 @@ Gyroscope measurements from MEMS IMUs are generally offset by a bias ($o_\omega$
 where $e_{\omega, t}$ is assumed to have the same noise properties as in \cref{eq:orient_ss_noise}. The gyroscope bias is slowly time varying but for relatively short experiments can be assumed to be constant \cite{Kok2016}. It can be measured by placing the gyroscope on a flat surface for some time and recording data from the sensor. Since the sensor is not moving, the biases are the means of the data over the three axis and the covariance is the square of the standard deviation of the data to the previously mentioned means.
 
 \subsubsection{Accelerometer and Magnetometer Calibration}
- In outdoor environments, mn is equal to the local earth magnetic field and is accurately
-known from geophysical studies, see e.g. [29]. In indoor environments, however, the local magnetic
-field can differ quite significantly from the local earth magnetic field. Because of that, we treat mn as
-an unknown constant. 
+% In outdoor environments, mn is equal to the local earth magnetic field and is accurately
+%known from geophysical studies, see e.g. [29]. In indoor environments, however, the local magnetic
+%field can differ quite significantly from the local earth magnetic field. Because of that, we treat mn as
+%an unknown constant. 
 
 For magnetometer and accelerometer calibration the method outlined by \citet{Kok2016} can be used. This method indicates that for a perfect calibration a magnetometer measures the local magnetic field, no matter the orientation. Any measurement will then lie on a sphere with a radius  equal to the local magnetic field. The same applies for a perfect calibration with an accelerometer, replacing the local magnetic field with the gravity vector. Any sensor calibration should strive to achieve this sphere as best as possible.\\
 MEMS sensor are imperfect sensors, with sensor specific errors that can differ per sensor. These errors, including non orthogonality of sensor axis, the presence of zero bias, and difference in sensitivity on different axis \cite{Kok2016} can be combined into a distortion matrix $D$ and offset vector $o$.
@@ -287,7 +312,7 @@ An example of this calibration can be found in \cref{fig:calibration_magnetomete
 	\label{fig:calibration_magnetometer}
 \end{figure}
 
-
+\newpage
 \subsection{Extended Kalman Filter}
 \label{sec:method-EKF}
 The Kalman Filter (KF) uses a linear state space model in combination with measurements and its characteristics to make an unbiased minimum-variance estimator \cite{verhaegen2007filtering}. The KF assumes that the noise affecting the state space model is additive and that both process and measurement noise are Gaussian and zero mean.
@@ -380,13 +405,16 @@ Using steps outlined in \cite{Kok2017} and \cite{Linkoping2013}, the above outli
 	\label{fig:simple_stationary_ekf}
 \end{figure}
 
+\textcolor{red}{what other metrics are important to show to proof the performance of the EKF?}
+
 \newpage
 \section{Particle Filter}
 \label{sec:method-pf}
-The step and heading system,which combines step detection and length estimation with orientation estimation, generates an estimate of the trajectory walked by the pedestrian. Since there are uncertainties in all aspects of the SHS, it is inevitable that drift will occur within. The estimate then no longer accurately represents reality. In order to counter this drift, one method is to use map information in combination with a Particle Filter. This is a numerical Bayes estimator able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypothesis for the system that it is modeling. In the case of localization, it may therefore indicate that there are two position estimates are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}. \\
+The step and heading system,which combines step detection and length estimation with orientation estimation, generates an estimate of the trajectory walked by the pedestrian. Since there are uncertainties in all aspects of the SHS, it is inevitable that drift will occur. The estimate then no longer accurately represents reality. In order to counter this drift, one method is to use map information in combination with a Particle Filter. This is a numerical Bayes estimator able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypothesis for the system that it is modeling. In the case of localization, it may therefore indicate that there are two position estimates are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}. \\
 The particle filter is known to work well in three dimensional state space \cite{gustafsson2010particle}, with higher dimensions making the particle representation too sparse to be a meaningfully represent the posterior distribution. Since for indoor localization only y position, x position and heading are needed, the particle filter is sufficient.
 \par
-As the name suggests, the particle filter uses a finite amount of particles to determine a state estimate. These particles are weighted and are propagated through a motion model, augmented with a noise realization on relevant variables. These noise realizations represent uncertainty of certain components of the motion model. The probability density function of these noise realizations are defined beforehand. Taking the weighting of each particle into account a prior estimate can be made. The particle cloud is then, when possible, compared with measurements, adjusting the weightings accordingly. These measurements may come from different sources. This process is familiar to the reader as it closely resembles that of the previously mentioned Kalman Filter, also a Bayes estimator.\par
+As the name suggests, the particle filter uses a finite amount of particles to determine a state estimate. These particles are weighted and are propagated through a motion model, augmented with a noise realization on relevant variables. These noise realizations represent uncertainty of certain components of the motion model. The probability density function of these noise realizations are defined beforehand. Taking the weights of each particle into account a prior estimate can be made. \\
+Measurement updates are used to calibrate the particles throughout their trajectory. These measurements may come from different sources, including map information and landmark detection. When a measurement occurs the particle cloud is compared with the measurements, adjusting the individual weights accordingly. This process is familiar to the reader as it closely resembles that of the previously mentioned Kalman Filter, also a Bayes estimator.\par
 For indoor localization on one floor the state space is defined as $\mathbb{R}^{2}$, and in combination with map information is limited by the outer perimeter of the building the user is located in. The particle is defined by 
 
 \begin{equation}
@@ -398,7 +426,7 @@ heading
 \label{eq:pf_state}
 \end{equation}
 where $x^i_k$ is the state of particle $i$ at time $k$.\\
-The initialization of the particle cloud depends on information known beforehand. If there is a known initial position, all particles can be initialized around that point. Otherwise the particles can be initialized by spreading them evenly within the outer perimeter of the building. The initial weight of  once initialized the following four steps are performed recursively \cite{Wu2019,Woodman2008}: 
+The initialization of the particle cloud depends on information known beforehand. If there is a known initial position, all particles can be initialized around that point. Otherwise the particles can be initialized by spreading them evenly within the outer perimeter of the building. The initial weight of each particle is $1/N$, where $N$ is the total number of particles. Once initialized the following four steps are performed recursively \cite{Wu2019,Woodman2008}: 
 
 \begin{enumerate}
 	\item \textbf{Measurement update} \\
@@ -415,10 +443,10 @@ The initialization of the particle cloud depends on information known beforehand
 	\end{subequations}
 	
 	
-	Here $\omega^i_k$ is the weighting for particle $i$ at time $k$, $y_k$ is the measurement at time $k$,  and $N$ is the total number of particles. For localization, the state of the particle is its xy position. With a map, the position of physical structures can be compared with the trajectory of particles as a measurement. For example, if these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses this structure is incorrect. Regions in which the user cannot be found have a likelihood of 0, while all indoor accessible regions have a likelihood of 1. This form of measurement turns wall information into a two dimensional probability density function, an example of which can be found in \cref{fig:pf_walls}.\par
-	A map can also be used to compare particle position with landmark position of detectable activities. For example, maps indicate where doors are located. If a door opening activity can be detected a conditional probability can be used to determine the weighting of each particle. This conditional probability can be a multivariate normal probability density function. This is defined by a mean in x and y position, which is the xy position of each particle, and a standard deviation along both axis. This is shown visually by \cref{fig:pfdiagram}. Here there are three particles each with a multivariate normal probability density function represented by the different colored circle, with a gradient in opacity. The more opaque the higher the likelihood is. When compared to the position of the door the weight of particle P3 and P2 will be higher than that of P2. If a door activity is detected the weighting of P1 and P3 will be higher than P2. This increases the likelihood of these two particles being resampled in the next step. 
+	Here $\omega^i_k$ is the weighting for particle $i$ at time $k$, $y_k$ is the measurement at time $k$,  and $N$ is the total number of particles. With a map, the position of physical structures can be compared with the trajectory of particles as a measurement update. For example, if these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses this structure is incorrect. Regions in which the user cannot be found have a likelihood of 0, while all indoor accessible regions have a likelihood of 1. This form of measurement turns wall information into a two dimensional probability density function, an example of which can be found in \cref{fig:pf_walls}.\par
+	A map can also be used to compare particle position with landmark position of detectable activities. For example, maps indicate where doors are located. If a door opening activity can be detected a conditional probability can be used to determine the weighting of each particle. This conditional probability can be a multivariate normal probability density function. This is defined by a mean in x and y position, which is the xy position of each particle, and a standard deviation along both axis, defined beforehand. This is shown visually by \cref{fig:pfdiagram}. Here there are three particles each with a multivariate normal probability density function represented by the different colored circle, with a gradient in opacity. The more opaque the higher the likelihood is. This represent that the closer a particle is to a detected landmark, in this case a door, the likelier the position estimate is around there as well. This is reflected in the weighting that the particle receives. If a door activity is detected the weighting of P1 and P3 will be higher than P2. This increases the likelihood of these two particles being resampled in the next step. 
 	
-	\begin{figure}[H]
+	\begin{figure}[]
 		\centering
 		\begin{subfigure}[t]{.4\textwidth}
 			\centering
@@ -437,7 +465,7 @@ The initialization of the particle cloud depends on information known beforehand
 	\end{figure}
 	
 	\item  \textbf{Estimation} \\
-	Using the weightings and positions of the particle cloud, an estimate can be made of the posterior probability density of the process that is being modeled  \cite{gustafsson2010particle}. There a different ways of defining the. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior probability function \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009} as
+	Using the weightings and positions of the particle cloud, an estimate can be made of the posterior probability density of the process that is being modeled  \cite{gustafsson2010particle}. There are different ways of defining the eventual position estimate. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior probability function \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009} as
 	\begin{equation}
 	\hat{x}_{k | k} =\sum_{i=1}^{N} w_{k}^{i} x_{k}^{i}.
 	\end{equation}
@@ -489,3 +517,22 @@ The initialization of the particle cloud depends on information known beforehand
 where $x(*)$ indicates the index of the state vector defined in \cref{eq:pf_state}. The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous time step, found through the orientation estimation in \cref{sec:method-EKF}.
 
 \section{Activity Recognition}
+\label{sec:method-AR}
+
+\textcolor{purple}{ section overview:
+\begin{itemize}
+	\item Many different type of activity recognition methods, from simple to complex. 
+	\item Depends on what needs to be detected. For activities with a clear time based foot print, simple method can be good enough. It is possible to construct own decision tree.
+	\item \cref{fig:stand_still_detection_from_shs} shows ground truth first door interaction and the accelerometer traces from a smartwatch and a standstill detection from SHS.
+	\item standstill detection from SHS is made by determining when the period buildup between steps exceeds over 3 seconds.
+	\item A simple manually constructed decision tree can be used to indicate door interaction. Using both smartwatch data and shs standstill detection the system can distinguish between standing still and interaction with a door.  
+\end{itemize}}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201103_1325_Standstill_detection_from_SHS}
+	\caption{Smartwatch accelerometer data and SHS stand still detection}
+	\label{fig:stand_still_detection_from_shs}
+\end{figure}
+
+\textcolor{red}{I have more data on smartwatch accelerometer also from different people. I can use that data to determine the threshold on accelerometer data that would work on different people. Do you think that this is a good idea?}

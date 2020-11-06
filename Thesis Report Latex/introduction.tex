@@ -1,9 +1,10 @@
 
 \chapter{Introduction} \label{chap:intro}
 
-Indoor localization is an ongoing research field where there is yet a solution to be found that is widely accepted as the state of the art \cite{Davidson2017}. For outdoor localization, the de facto solution is the Global Positioning System \cite{Jackermeier2018}. The GPS solution can not be applied reliably in an indoor environment, due to the difficulty of the system's radio waves in traversing solid structure and if received the possibility of them being rebounded off of surfaces, causing erroneous positioning estimates. As with outdoor localization, indoor localization has a large range of possible applications. Examples include navigation in unknown environments, such as firefighters in an emergency situation or personal navigation through large public buildings, and the tracking of individuals, such as within elderly homes or workers in a factory setting. For wide applicability it is preferable that an indoor localization method has as little dependencies as possible, ensuring that little to no installation is required for it to work. \par 
-Indoor localization requires a portable platform on which to perform position estimation. The most obvious platform for this is the smartphone, a device ubiquitous in the developed world. It contains a wide range of different sensors combined with computing capabilities while being untethered. Creating a system that works well on this device will be crucial to launching indoor localization on a global scale \cite{Gu2019}. Focusing on this platform brings additional restrictions to what any eventual solution can use. This includes carrying modes and computational requirements. \par 
-While the smartphone market has matured, the market for wearable devices has been growing steadily \cite{jung2016consumer}, with the smartwatch being the most prominent. Similarly to the smartphone, these devices are fused with different sensors gathering information. In addition, these devices often have communication capabilities, allowing them to transfer and receive information from an external device. This provides a new source of data that can be combined with a smartphone-based solution to potentially help improve indoor localization. The use of these sensors within localization has not been studied much so far and deserves further investigation.
+Indoor localization is an ongoing research field where there is yet a solution to be found that is widely accepted as the state of the art \cite{Davidson2017}. For outdoor localization, the de facto solution is the Global Positioning System \cite{Jackermeier2018}. The GPS solution can not be applied reliably in an indoor environment, due to the difficulty of the system's radio waves in traversing solid structure. Additionally if the signal is received the possibility of them being rebounded off of surfaces, causing erroneous positioning estimates \cite{Jackermeier2018}. As with outdoor localization, indoor localization has a large range of possible applications. Examples include navigation in unknown environments, such as firefighters in an emergency situation or personal navigation through large public buildings, and the tracking of individuals, such as within elderly homes or workers in a factory setting \cite{Correa2017}. For wide applicability it is preferable that an indoor localization method provide accurate position estimations, is easily scalable, and the cost of the
+system infrastructure low \cite{Correa2017}. Meeting this wishes makes the barrier to entry lower, hence more likely crossed. \par 
+Indoor localization requires a portable platform on which to perform position estimation. The most obvious platform for this is the smartphone, a device ubiquitous in the developed world \cite{Correa2017}. It contains a wide range of different sensors combined with computing capabilities while being untethered. Creating a system that works well on this device will be crucial to launching indoor localization on a global scale \cite{Gu2019}. Focusing on this platform brings additional restrictions to what any eventual solution can use. This includes robustness in carrying modes and computational requirements. \par 
+While the smartphone market has matured, the market for wearable devices has been growing steadily \cite{jung2016consumer}, with the smartwatch being the most prominent. Similarly to the smartphone, these devices are fused with different sensors gathering information. In addition, these devices often have communication capabilities, allowing them to transfer and receive information from an external device. This provides a new source of data that can be combined with a smartphone-based solution to potentially help improve indoor localization. The use of these sensors within localization has not been studied much so far and deserves further investigation. This thesis will explore this new opportunity while taking the wishes for wide applicability in mind.
 %A solution with the potential to meeting the above requirements is Pedestrian Dead Reckoning (PDR), a technique where the displacement from an initial location is calculated for a pedestrian. This technique often uses inertial sensors, with different possible placements on the body \cite{Gu2019}. These sensors are \ac{MEMS}, and consist of triaxial orthogonal accelerometers and gyroscopes, and can include a triaxial magnetometer \cite{Yang2014}. These sensors are small, lightweight and cheap, and are found in almost all smartphone brands.
 %While able to generate a position estimate for the pedestrian, position estimation drift is inevitable
 
@@ -18,15 +19,23 @@ While the smartphone market has matured, the market for wearable devices has bee
 
 
 \section{Research Questions}
+\textcolor{red}{ATM I am not very sure on these research questions. I would like to discuss with you better options!}
 
-In order to tackle the subject, two main research questions can be defined, with further explanation below them.
+In order to tackle the subject, two main research questions can be defined, with further subquestions and explanation below them.
 
 \begin{itemize}
 	\item \textbf{How can indoor localization be achieved with realistic smartphone placement, while taking computation capabilities into account?}
-	\item\textbf{How can wearable devices improve the derived method?}
+	\begin{itemize}
+		\item What indoor localization methods consider realistic smartphone carrying modes? 
+	\end{itemize}
+	\item\textbf{How can wearable devices improve indoor localization?}
+	\begin{itemize}
+		\item What information can be derived from wearable devices?
+	\end{itemize}
 \end{itemize}
 
 \section{Thesis Contributions}
-This thesis will explore the different possibilities for realistic smartphone-based indoor localization and how wearable devices can aid in improving a position estimate. It will explore a proof of concept with the intention of showing the increased performance when data from wearable technology is available. This thesis will test the designed system's performance in experiments, highlight the different advantages, disadvantages, and limitations. Future steps are outlined on how to improve the derived method for future research.
+This thesis will explore the different possibilities for realistic smartphone-based indoor localization and how wearable devices can aid in improving a position estimate. It will explore a proof of concept with the intention of showing how data from wearable technology can improve localization. This thesis will test the designed system's performance in experiments, highlight the different advantages, disadvantages, and limitations. Future steps are outlined on how to improve the derived method for future research.
 
 \section{Thesis Outline}
+\textcolor{cyan}{Thesis outline will be completed once thesis structure has solidified}
