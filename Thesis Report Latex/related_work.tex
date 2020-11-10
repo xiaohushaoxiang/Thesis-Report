@@ -1,11 +1,6 @@
 \chapter{Related Work}
 
-Within the research field of indoor localization, there are generally two approaches that use sensors on the user or machine to localize them, one that is infrastructure dependent and the other that is not. Solutions have also been presented that use a combination to try and improve localization \cite{Gu2019, Correa2017}.
-The infrastructure dependent methods imitate the GPS method on a local scale. Here they often replace the GPS constellation with signal-producing devices available within the indoor environment. Examples of such systems are wireless fidelity(Wifi), Bluetooth, wireless sensor networks (WSN), and ultra-wideband (UWB) \cite{Wu2019,Jackermeier2018,Davidson2017}. Position estimation using these systems can be ranged based, leveraging time, angle or received signal strength. They can also be range free using proximity and fingerprinting to estimate position \cite{Correa2017, Tariq2017}. For many of these solutions detailed information on the position of these signal producing external devices is needed for proper estimation. These solutions naturally only in work in buildings with the installed equipment, requiring them to already be present or some initial investment and setup. In some cases this can not be expected, for example within subway systems, due to legal or investment issues, potential vandalism \cite{Torok2014}. \\
-The infrastructure independent solution generally leverages sensors that do not need to receive signals from external devices. Such solutions include the use of cameras and inertial sensors. Camera-based systems recognize features in the video feed and combined with known characteristics of the camera and features found in a previous frame, displacement can be determined \cite{Gu2019}. For portable devices continuous use of a camera is not beneficial for battery life, limiting the time duration in which this method can be used \cite{Yang2014}. Furthermore, privacy concerns and computing complexity need to be considered. Another PDR solution uses \ac{IMU} sensors to estimate position. These sensors are \ac{MEMS},  consisting of triaxial orthogonal accelerometers and gyroscopes, and can include a triaxial magnetometer \cite{Yang2014}. These sensors are   relatively small, cheap and have low power consumption \cite{Olsson2016}, and are currently found in many smartphones and increasing in wearable devices.\par
 
-A truly ubiquitous indoor localization will struggle if the used 
-solution leads to vendor lock-in due to a specific technology \cite{Torok2014}. To mitigate this, localization infrastructure dependency must be loosened, with completely infrastructure-free solutions having a preference. With this reasoning, this thesis will focus on an infrastructure free solution with the IMU sensors found in most smartphone and wearables as backbone.
 
 
 \section{Pedestrian Dead Reckoning}
@@ -71,7 +66,7 @@ A step and heading system is a form of dead reckoning that detects steps, estima
 
 where $x_{t}$  and  $y_{t}$ represent the position in the $x$-axis and $y$-axis at time  $t$, respectively. $l_{t}$ stands for the step length, while $\theta_{t}$ is the step heading of the pedestrian at time $t$.
 There are three components needed to apply this system. These are walk and step detection, step length estimation and step heading estimation.
-Similarly to INS, SHS position error is proportional to the number of steps taken. The largest difference is that this error growth does not have a preference of using foot-based sensors, allowing for other sensor placements \cite{Diez2018b}. However, other of sources of error can be introduced due to errors in the detection of steps and their length estimation.  Since other sensor placements ar possible, SHS is the PDR technique often used with smartphones as the base for sensing [\qn]. This indicates that this technique is appropriate for further investigation in answering the thesis research questions.\\
+Similarly to INS, SHS position error is proportional to the number of steps taken. The largest difference is that this error growth does not have a preference of using foot-based sensors, allowing for other sensor placements \cite{Diez2018b}. However, other of sources of error can be introduced due to errors in the detection of steps and their length estimation.  Since other sensor placements are possible, SHS is the PDR technique often used with smartphones as the base for sensing [\qn]. This indicates that this technique is appropriate for further investigation in answering the thesis research questions.\\
 Each component of a step and heading system can be investigated individually in attempt to find the best solution for each. The assumption made is that combining the best solution for each component will lead to the best overall step and heading system. The individual components will be investigated next.
 
 \subsubsection{Walk and Step Detection}
@@ -139,18 +134,14 @@ An overview of different step length estimation methods can be found in \cref{ta
 	\label{tab:step_length_methods}
 \end{table}
 
-\citet{Vezocnik2019} compared different existing step length estimation algorithms. The review focuses on the methods applicable to smartphone use. This means methods that do not require training and do not require the sensor to be placed on the foot. This, therefore, excludes machine learning and INS systems. The models used are either based on an inverted pendulum model or relate predictors to step length. Examples of step length predictors are step frequency and acceleration range within a step. The robustness of the methods was tested by having the smartphone in different carrying modes. This includes front pants pocket, in-hand while reading, in-hand while  swinging carrying arm; and in a bag. Furthermore, a comparison was made between the use of global variables, which are variables constant for every user, and personalized variables, where they are tuned per user. The comparison concludes that for global variables the method from \cite{Tian2016} was best, defined as
+\citet{Vezocnik2019} compared different existing step length estimation algorithms. The review focuses on the methods applicable to smartphone use. This means methods that do not require training and do not require the sensor to be placed on the foot. This, therefore, excludes machine learning and INS systems. The models used are either based on an inverted pendulum model or relate predictors to step length. Examples of step length predictors are step frequency and acceleration range within a step. The robustness of the methods was tested by having the smartphone in different carrying modes. This includes front 
 
-\begin{equation}
-	\label{eq:Tian2016_sle}
-	\text{step size} = K \cdot h \cdot \sqrt{F}.
-\end{equation}
 
 Here $K$ is a tunable parameter, $h$ is the height of the user and $F$ is the step frequency. This method reported an average error of  4.59 \% for personalized variables and 6.96 \% for global ones. For personally tuned variables the method of \cite{Weinberg2002} was best. This is an inverted pendulum model in which the human center of mass is used, located approximately at the pelvis. The center of mass rotates as an inverted pendulum when taking a step. This is followed by a forward horizontal displacement when both feet are on the ground \cite{Diez2018}. The model is defined as 
 
 \begin{equation}
-	\text{step size} =K \sqrt[4]{A_{\max }-A_{\min }}.
-	\label{eq:weinberg_stepsize}
+\text{step size} =K \sqrt[4]{A_{\max }-A_{\min }}.
+\label{eq:weinberg_stepsize}
 \end{equation}
 
 Here $A_{\max}$ is the largest measured acceleration measured within a step interval, while $A_{\min}$ is the smallest. $K$ is a calibration variable  \cite{Weinberg2002,Diez2018}. The model had an average error of  10.64 \% for global variables and  3.60 \% for personalized \cite{Vezocnik2019}.
@@ -176,7 +167,6 @@ CHAH assumes that most buildings have a square or rectangular construction and t
 Topological map matching is a technique in which the indoor environment is represented by a set of links and nodes, respecting the indoor structure of the building \cite{Davidson2017}. Using this technique the users position estimate is restricted to only lie on a node or link. This constrains the  degrees op freedom an estimate can have. Large open spaces present a challenge since user can walk in what ever direction they please \cite{Davidson2017}. 
 %
 %This method can be combined with a particle filter \cite{Koivisto2016, Jackermeier2018}. This allows for more constraints, consequently requiring less particles for localization.
-
 \subsection*{Landmark Detection}
 Another approach to drift reduction is through the use of landmark detection. Landmarks are locations with a unique footprint detectable in sensor data. When the user visits a landmark and this is detected, the location of the landmark can be used to calibrate the position estimate of the user, hence compensating drift \cite{Diaz2017}. In addition drift reduction by position comparison, landmarks can also be used in determining the user specific parameters of \ac{SHS}, such as step length estimation parameters \cite{Gu2019,Shang2015}. \par
 Depending on the sensors available, different landmarks become detectable. Examples of landmarks are doors and stairs \cite{Diaz2017,Gu2019,Torok2014}, but also unique magnetic footprints \cite{MunozDiaz2019}, and electromagentic signal footprints \cite{Gu2019}. Some landmarks can be easily determined beforehand, through the use of available building blueprints \cite{Gu2019}. Others can be detected online \cite{Hardegger2012, Hardegger2016}, not requiring a map representation to be available beforehand, using technique such as \ac{SLAM}. 
