@@ -1,6 +1,18 @@
 \chapter{Method}
-
+\label{chap:method}
 In the previous chapter different indoor localization methods were introduced. From this information an initial system design was destilled. The details of the different components can be found in the following sections.
+
+\section{Proof of Concept System Overview}
+Summarizing the information and the decision made so far, the overall proof of concept can be found in \cref{fig:system_design}.
+\textcolor{cyan}{further explanation}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{images/system_design}
+	\caption{Overview of proof of concept SHS-PF with activity recognition from wearable device}
+	\label{fig:system_design}
+\end{figure}
+
 
 \section{Step Detection and Step Length Estimation}
 
@@ -47,6 +59,16 @@ The method used for step detection is similar to the one presented by \cite{Salv
 	The final stage of step detection is determining local maxima of the outliers detected in the previous stage. Here local maxima are found that have a minimum separation duration of 0.2 seconds.
 	
 \end{enumerate}
+
+\begin{algorithm}[]
+	\SetAlgoLined
+	\caption{Bootstrap Particle Filter}
+	\label{algo:step_detect}
+	\underline{initialization:}\\
+	\For{k = 1,2,...}{
+		\underline{measurement update:}\\		
+	}
+\end{algorithm}
 
 An example of this step detection method and its different stages can be found in \cref{fig:all_stages_of_step_detection}.
 
@@ -413,8 +435,38 @@ Using steps outlined in \cite{Kok2017} and \cite{Linkoping2013}, the above outli
 The step and heading system,which combines step detection and length estimation with orientation estimation, generates an estimate of the trajectory walked by the pedestrian. Since there are uncertainties in all aspects of the SHS, it is inevitable that drift will occur. The estimate then no longer accurately represents reality. In order to counter this drift, one method is to use map information in combination with a Particle Filter. This is a numerical Bayes estimator able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypothesis for the system that it is modeling. In the case of localization, it may therefore indicate that there are two position estimates are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}. \\
 The particle filter is known to work well in three dimensional state space \cite{gustafsson2010particle}, with higher dimensions making the particle representation too sparse to be a meaningfully represent the posterior distribution. Since for indoor localization only y position, x position and heading are needed, the particle filter is sufficient.
 \par
-As the name suggests, the particle filter uses a finite amount of particles to determine a state estimate. These particles are weighted and are propagated through a motion model, augmented with a noise realization on relevant variables. These noise realizations represent uncertainty of certain components of the motion model. The probability density function of these noise realizations are defined beforehand. Taking the weights of each particle into account a prior estimate can be made. \\
+As the name suggests, the particle filter uses a finite amount of particles to determine a state estimate. These particles are weighted and are propagated through a motion model, augmented with a noise realization on relevant variables. These noise realizations represent uncertainty of certain components of the motion model. The probability density function of these noise realizations are defined beforehand. Taking the weights of each particle into account a prior estimate can be made. \par 
 Measurement updates are used to calibrate the particles throughout their trajectory. These measurements may come from different sources, including map information and landmark detection. When a measurement occurs the particle cloud is compared with the measurements, adjusting the individual weights accordingly. This process is familiar to the reader as it closely resembles that of the previously mentioned Kalman Filter, also a Bayes estimator.\par
+
+\textbf{Map creation}\\
+In order to use map information with the particle filter, different sources were combined to generate a map. Rudimentary paper blueprints of the building were available and could be photographed and traced in software to generate a picture of the indoor environment. This image has clear color distinction between the different structures within the building, including walls, doors and furniture. The positioning and size of furniture was estimated. The final image is seen in \cref{fig:indoor_blueprint}. This image is in pixel coordinates and needs to be transformed into meter coordinates. It then needs to represent a 2D probability density function so that it can be used in the particle filter measurement update. \\
+An occupancy grid is suitable for this, which is a grid in which each cell has a value representing the probability of being in that cell. By measuring a known structure in Google Maps using the measurement tool and comparing with its pixel length in the image, a meter to pixel ratio can be defined. The Google Maps measurement can be found in \cref{fig:house_google_maps}. This pixel to meter ratio combined with the image, is used to generate an occupancy grid as shown in \cref{fig:pf_map}. This same process can be used to get the meter position of all doors.
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.3\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/indoor_blueprint}
+		\caption[Image from building blueprints]{Image from building blueprints. Black, grey and red represent walls, furniture, and doors, respectively.}
+		\label{fig:indoor_blueprint}
+	\end{subfigure} \quad
+	\begin{subfigure}[t]{.3\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/house_google_maps}
+		\caption{Measurement from Google Maps}
+		\label{fig:house_google_maps}
+	\end{subfigure} \quad
+	\begin{subfigure}[t]{.3\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/20201030_1157_pf_map_1}
+		\caption{Particle Filter map result}
+		\label{fig:pf_map}
+	\end{subfigure}
+	\label{fig:particle_map_construction}
+	\caption{Particle filter map creation}
+\end{figure}
+
+\textbf{Initialization}\\
 For indoor localization on one floor the state space is defined as $\mathbb{R}^{2}$, and in combination with map information is limited by the outer perimeter of the building the user is located in. The particle is defined by 
 
 \begin{equation}
@@ -516,6 +568,26 @@ The initialization of the particle cloud depends on information known beforehand
 
 where $x(*)$ indicates the index of the state vector defined in \eqref{eq:pf_state}. The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous time step, found through the orientation estimation in \cref{sec:method-EKF}.
 
+\subsubsection{Determining the estimate}
+Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate.
+First, MMSE does not work well in situations in which there are multiple equal likely hypotheses. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{labellist}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{images/20201108_1751_lopen1_1_MMSE_estimator}
+	\caption{}
+	\label{fig:lopen_11_mmse_estimator}
+\end{figure}
+
+
+Another approach was used in which the particles that survived the whole SHS trajectory made during the experiment were used. By recording the ancestors of these particles, the whole trajectory could be calculated by backtrack [\qn ?].
+
+\textcolor{cyan}{
+	\begin{itemize}
+		\item For this section I want to show MAP, RMSE and Ancestor Tracking (AT) on an example particle filter output to show why AT is better than th other two.
+\end{itemize}}
+
+\textcolor{red}{Do you think that I need a quantitative comparison between the different position estimate methods?}
+
 \section{Activity Recognition}
 \label{sec:method-AR}
 
@@ -533,6 +605,27 @@ where $x(*)$ indicates the index of the state vector defined in \eqref{eq:pf_sta
 	\includegraphics[width=0.7\linewidth]{images/20201103_1325_Standstill_detection_from_SHS}
 	\caption{Smartwatch accelerometer data and SHS stand still detection}
 	\label{fig:stand_still_detection_from_shs}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201114_1820_smartwatch_acc_with_gt_door_and_door_detect_1}
+	\caption{}
+	\label{fig:202011141820smartwatchaccwithgtdooranddoordetect1}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201114_1858_Axis_acceleration_per_activity_segment}
+	\caption{}
+	\label{fig:202011141858axisaccelerationperactivitysegment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201114_1820_smartwatch_acc_with_gt_door_and_door_detect_2}
+	\caption{}
+	\label{fig:202011141820smartwatchaccwithgtdooranddoordetect2}
 \end{figure}
 
 \textcolor{red}{I have more data on smartwatch accelerometer also from different people. I can use that data to determine the threshold on accelerometer data that would work on different people. Do you think that this is a good idea?}
