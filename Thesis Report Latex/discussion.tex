@@ -2,6 +2,12 @@
 
 \textcolor{red}{I thought it best to first discuss the discussion during the meeting, since I am not completely sure what I should write here. Furthermore I also think that this is very dependent on the results that I will be showing throughout this thesis, which is also not yet set at the moment}
 
+For step detection the implementation of Algorithm \ref{algo:step_detect} was compared with that of \citet{Salvi2018}, who had continued the work of \cite{Harle2013}. Within the results there were two observations made. The first was that the performance of both implementations were similar for the different carrying modes in the number of steps that were taken. This is to be expect since \cref{algo:step_detect} is heavily based on the research implementation. The only real difference is that a simple walk detection threshold was added. The  \par 
+
+One of the largest differences is that \cref{algo:step_detect} was applied to the data after recording while the researchers had implemented their method in a real time fashion on an android device. It must also be noted that the researchers did focus on step counting, and did no measurements themselves to determine how close their detections were to the actual steps. \par 
+
+It is unsure what effects the online implement may have had on performance. If a lag was introduced due to computation time, it may also explain the second observation in the results. Here it was found that \cref{algo:step_detect} was able to detect more "unique steps" than the \cite{Salvi2018} approach. It is also debatable how well the unique step approach as a metric is to determining the performance of determining how close a detection is to a step. Another approach could be to calculate the time between each detection and the closest ground truth point
+
 
 \section{Answering Research Questions}
 
