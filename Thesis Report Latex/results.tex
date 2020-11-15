@@ -1,21 +1,27 @@
-\chapter{Results}
+\chapter{Concept Testing}
+
+\textit{In this chapter, different components of the proof of concept outlined in \cref{chap:method} will be tested and the results shown. This will be done using a combination of data made available online under an open license and original data. First, step detection and step length estimation will be tested individually. Here after the whole SHS-PF with activity recognition will be treated. The following discussion chapter will analyze the results.}
 
 \section{Step Detection}
-\citet{Salvi2018} have opensourced the data used for their step detection algorithm. This includes validation data made with a ground truth device and the output of the devised algorithm on an android device. The ground truth device consisted of hardware attached to the feet of the test subjects that could exactly measure when the foot came into contact with the floor, hence when a step is taken. The use of this ground truth allows for comparison between the method devised but also with any eventual future techniques.\\
-The raw data of the validation set consists of sampling time, three raw accelerometer axis signals, when a new step has been detected by the ground truth device, and step detected by the designed algorithm. The validation sets contains data of two users carrying the phones in the carrying modes outlined in \cref{sec:rw - step detection}. The device is carried in each carrying mode individually, not simultaneously. An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude and points indicating the ground truth step and the steps detected by the \citet{Salvi2018} algorithm. The figure also shows how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes. 
+\citet{Salvi2018} have released the data used for their step detection algorithm under an open license. This includes a validation dataset where a ground truth device was used. The ground truth device consisted of hardware attached to the feet of the test subjects that could exactly measure when the foot came into contact with the floor, hence when a step is taken. This dataset provides the opportunity to assess the performance of different step detection techniques with the ground truth.\par
+
+The raw data of the validation set consists of sampling time and three raw accelerometer axis signals. In addition it indicates when a new step has been detected by the ground truth device, and steps detected by the researchers algorithm. The validation sets contains data of two users carrying the phones in an armband, back pocket, bag, front pocket, hand, and neckpouch. The device is carried in each carrying mode individually, not simultaneously.\par
+
+An extract of this data can be found in \cref{fig:gt_steps_vs_salvi_steps}, showing the accelerometer magnitude of each carrying mode. It also contains points indicating the ground truth steps and the steps detected by the \citet{Salvi2018} algorithm. The figure highlights how the carrying mode affects the characteristics of acceleration magnitude. For example, between carrying the smartphone in an armband and frontpocket, the former has a much more gradual change with a clear sinusoidal form, while the latter has a larger range of accelerations with much more abrupt changes. 
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\linewidth]{images/20200929_0951_gt_steps_vs_salvi_steps}
+	\includegraphics[width=\linewidth]{images/20201112_1318_gt_steps_vs_salvi_steps_1}
 	\caption[Step detection validation data]{Extract of validation dataset from \citet{Salvi2018}, indicating ground truth steps and step detected by their algorithm.}
 	\label{fig:gt_steps_vs_salvi_steps}
 \end{figure}
 
 
-The step detection method outlined in \cref{sec:meth - step detection} was applied to the validation data of the researchers, allowing for direct comparison between the ground truth and the solution of the researchers. The parameters used for the process coincide with those found by the researchers, an overview of which can be found in \cref{tab:parameters_used}.
+The step detection method outlined in Algorithm \ref{algo:step_detect} was applied to the validation data of the researchers, allowing for direct comparison. The parameters used for the process coincide with those found by the researchers, an overview of which can be found in \cref{tab:parameters_used}.
 
 \begin{table}
 	\centering
+	\footnotesize
 \begin{tabular}{clc} 
 	\hline
 	Stage & Parameters & Value \\
@@ -29,85 +35,104 @@ The step detection method outlined in \cref{sec:meth - step detection} was appli
 	Post-Processing & $t_{\text {window}}$ & $200 \mathrm{ms}$ \\
 	\hline
 \end{tabular}
-\caption{Parameters used}
+\caption{Parameters used in \cref{algo:step_detect}}
 \label{tab:parameters_used}
 \end{table}
 
-
-\cref{fig:sd_comparison} shows how the method, referred to as Matlab algorithm, compares to the results in the validation datasets. \cref{fig:sd_abs_comparison} indicates the absolute number of steps detected. \cref{fig:sd_percent_comparison}  shows the percentage error compared to the ground truth, where positive percent error indicates over counting, while negative under counting. The results indicate that the method devised performs overall similarly to the method of the researchers. In some cases the error is slightly larger, as with user1 bag, while in others it is smaller as with user 2 bag. It is also apparent that with the case of user1 backpocket that there is a large percentage error for both cases. The researchers attribute this to the pocket being loose and allowing the phone to rebound when a step was taken. This would introduce nefarious components in the accelerometer signal, leading to false positives. \citet{Brajdic2013} encountered similar problems with this carrying position, hypothesizing that the relaxing of the gluteus maximus during locomotion could influence the acceleration trace.
-
-%TODO argument why it is different than what the research achieved.
-
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[t]{.5\textwidth}
+ \cref{fig:sd_abs_comparison} indicates the absolute number of steps detected. \cref{fig:sd_percent_comparison}  shows the percentage error compared to the ground truth, where positive percent error indicates over counting, while negative under counting. The results indicate that the method devised performs overall similarly to the method of the researchers. In some cases the error is slightly larger, as with "user1 bag", while in others it is smaller as with "user 2 bag". It is also apparent that with the case of user1 backpocket that there is a large percentage error for both approaches. The researchers attribute this to the pocket being loose and allowing the phone to rebound when a step was taken \cite{Salvi2018}. This would introduce nefarious components in the accelerometer signal, leading to false positives. \citet{Brajdic2013} encountered similar problems with this carrying position, hypothesizing that the relaxing of the gluteus maximus during locomotion could influence the acceleration trace.
+ 
+	\begin{figure}[htbp]
 		\centering
-		\includegraphics[width=\linewidth]{images/20200930_1214_step_counting_comparison}
+		\includegraphics[width=0.7\linewidth]{images/20201112_1347_step_counting_comparison_1}
+		\setlength{\belowcaptionskip}{-20pt}
 		\caption{Absolute number of steps counted.}
 		\label{fig:sd_abs_comparison}
-	\end{subfigure}%
-	\begin{subfigure}[t]{0.5\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{images/20200928_1248_step_counting_error}
-		\caption{Percentage error from ground truth number of steps. }
-		\label{fig:sd_percent_comparison}
-	\end{subfigure}
-	\caption[Step detection comparison]{Comparison between \citet{Salvi2018} step detection algorithm, matlab algorithm and ground truth for different carrying modes.}
-	\label{fig:sd_comparison}
-\end{figure}
+	\end{figure}
+\restoregeometry
 
-In addition to the data made available online, original data was gathered in which a subject walked exactly 60 steps while having a smartphone in 3 different carrying modes, backpocket, frontpocket and in hand. The percentage error from the ground truth can be seen in \cref{fig:202009291013step_counting_error_of_60_steps}. Here the backpocket show similar error as with the validation data, further supporting that the method does not work reliably in this carrying position.
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/20201112_1401_Step_counting_error}
+		\caption{Percentage error from ground truth number of steps. }
+		\setlength{\belowcaptionskip}{-2cm}
+		\label{fig:sd_percent_comparison}
+	\end{figure}
+%	\caption[Step detection comparison]{Comparison between \citet{Salvi2018} step detection algorithm, \cref{algo:step_detect} and ground truth for different carrying modes.}
+%	\label{fig:sd_comparison}
+In addition to the data made available online, original data was gathered in which I walked exactly 60 steps while having a smartphone in 3 different carrying modes, backpocket, frontpocket and in hand. Two trials per carrying mode were performed. The steps were counted manually. The percentage error from the ground truth can be seen in \cref{fig:202009291013step_counting_error_of_60_steps}. Here the backpocket show similar error as with the validation data, further supporting that the method does not work reliably in this carrying position.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.55\linewidth]{images/20200929_1013_step_counting_error_of_60_steps}
+	\includegraphics[width=0.55\linewidth]{images/20201112_1406_Step_counting_error_of_60_steps_using_Algorithm_1}
+%	\setlength{\abovecaptionskip}{-20pt}
+	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Original data step counting}
 	\label{fig:202009291013step_counting_error_of_60_steps}
 \end{figure}
 
-For a PDR SHS it is not enough for the amount of steps to be accurate, but also the time when a step actually occurs. A step detection combined with the heading orientation at the moment of occurrence determines the vector in which the position estimate of the pedestrian will move. \\
-In order to ascertain how both the \citet{Salvi2018} algorithm and the algorithm from \cref{sec:meth - step detection} perform in this respect, and approach to true positive step detection was determined. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both a step occurs and is detected, the detection counts as a true positive. If in this interval two steps are detected, both detections are not considered true positive, and are considered a true positive double count. The time interval is increase itteratively in attempt to find the highest true positive count for both algorithms. The results with the highest amount of true positives for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
+For a PDR SHS it is not enough for the amount of steps to be accurate, but also the time when a step actually occurs. Detecting a step, combined with the heading orientation at that moment, determines the vector in which the position estimate of the pedestrian will move. It is therefore preferable for a detection to be as close as possible to when a step actual occurs, with no other detections close to it. \par
+Using the online data, the time difference between a step detection and its closest ground truth point was calculate per trial. The mean and standard deviation of the time difference was calculated, shown in \cref{fig:202011130914smallest_diff_to_gt_1}. Looking at the results this metric indicates that there is no real performance difference between the two approaches as in sometimes one is better than the other and vice versa. The large standard deviations for user2 armband is caused by both step detection methods having already counted multiple steps before the ground truth device has registered any.
 
-\textcolor{cyan}{discuss what the results indicate}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201113_0914_smallest_diff_to_gt_1}
+	\caption{mean smallest time different between step detection}
+	\label{fig:202011130914smallest_diff_to_gt_1}
+\end{figure}
+
+One problem with this metric is that two subsequent detections may have the same ground truth point as closest point, indicating that there is no unique indication of the step occurring. In order to ascertain how both the \citet{Salvi2018} algorithm and \cref{algo:step_detect} in this respect, an approach to unique step detection was determined. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both an actual step occurs and is detected within the interval, the detection counts as a unique step. An illustrative representation of this can be found in \cref{fig:202011121558_true_positive_example_1}. Here an interval, represented by the green region in the graph is made around one of the ground truth points, visible in the middle of the region and circled in red. If in this interval two steps are detected, no unique step is indicated. In the example of  \cref{fig:202011121558_true_positive_example_1},  \cref{algo:step_detect} would be considered a unique step, while the \citet{Salvi2018} algorithm would not, since there are two detection within the interval.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20200930_1510_tp_fp_abs_comparison}
-\caption[False positives and true positives step detection comparison]{Comparison between false positives and true positives for \citet{Salvi2018} step detection algorithm, Matlab algorithm and ground truth for different carrying modes.}
+	\includegraphics[width=0.75\linewidth]{images/20201112_1809_true_positive_example_2}
+	\caption{Representation of interval search method. The light green region represents the search interval around the \citet{Salvi2018} point in the middle.}
+	\label{fig:202011121558_true_positive_example_1}
+\end{figure}
+
+The time interval is increase itteratively in an attempt to find the highest unique step counts for both algorithms. The results for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. The results show that while the total number of steps detected are similar between the two approaches, Algorithm \ref{algo:step_detect} has a higher "unique" step detection. This discrepancy between approaches can potentially be explained by the android implementation of the researchers. The results will be further discussed in the following chapter. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201112_1857_Step_detection_unique_steps_vs_total_steps_}
+\caption[False positives and true positives step detection comparison]{Comparison between false positives and true positives for \citet{Salvi2018} step detection and Algorithm \ref{algo:step_detect}}
 \label{fig:sd_tp_fp_comparison}
 \end{figure}
 
-\newpage
-
 \section{Step Length Estimation}
 
-\citet{Vezocnik2019} have also made the data they used open source. This data consist of accelerometer data of 15 different people for three walking speeds and in four smartphone carrying modes. Metrics for each test subject are collected, including height, gender and leg length. The walking modes were qualitative, in that they were either slow, normal, or fast walking speed. The carrying modes include the smartphone in pocket, in a bag, in the hand with the phone screen parallel to the floor, and in hand will swinging the carrying arm. Each person has two measurements for each combination, one for a 15 meter long straight path and another for 108 meter long straight path. The test subjects are not forced to walk these distances exactly, allowing for natural termination of their trial. \\
-As done in \cite{Vezocnik2019} the smaller length set can be used to determine the parameter and the second to assess the performance.The best performing algorithm for global parameters is reiterated in \eqref{eq:Tian2016_sle2} for convenience, where $h$ is the users height and $F$ is the step frequency. 
+\citet{Vezocnik2019} have also made their data available under an open license. This data consists of accelerometer data of 15 different people for three walking speeds and in four smartphone carrying modes. Metrics for each test subject are collected, including height, gender and leg length. The walking speed were qualitative, in that they were either slow, normal, or fast. The carrying modes include the smartphone in a front pocket, in a bag, in the hand with the phone screen parallel to the floor, and in hand will swinging the carrying arm. Each person has two measurements for each combination, one for a 15 meter long straight path and another for 108 meter long straight path. The smaller set is used to determine parameters, while the longer is used to determine performance with the generated parameters. This same process is used in this thesis.\\
+The best performing algorithm for global parameters is reiterated in \eqref{eq:Tian2016_sle2} for convenience, where $h$ is the users height and $F$ is the step frequency. The best algorithm for individual parameters is reiterated in  \eqref{eq:weinberg_stepsize2}, where $A_{max}$ and $A_{min}$ are the maximum and minimum acceleration within a step interval. Both approaches will be used and compared to see if similar results are achieved as within \cite{Vezocnik2019}.
 
 \begin{equation}
 \label{eq:Tian2016_sle2}
 \text{step size} = K \cdot h \cdot \sqrt{F}.
 \end{equation}
 
-In order to determine the tunable parameter $K$ correctly for the SHS, it needs to be used with the output of the step detection algorithm. This is because step detection will have a direct effect on the step frequency. The step detection algorithm cannot guarantee that all steps are counted, potentially affecting the tunable parameter. 
-From the results of step detection, the most accurate results came from holding a smartphone in the hand. This carrying mode is present in the data from \cite{Vezocnik2019}, and can therefore be used for analysis. The results are shown in \cref{fig:step_length_estimation}. Here the parameters for \eqref{eq:Tian2016_sle2} of all three walking speeds are plotted. In order to find $K$ as a universal constant a least square estimation is performed, shown by the green striped line in the plot.
-\begin{figure}[H]
+\begin{equation}
+	\text{step size} =K \sqrt[4]{A_{\max }-A_{\min }}.
+	\label{eq:weinberg_stepsize2}
+\end{equation}
+
+In order to determine the tunable parameter $K$ correctly for both approaches, it needs to be used with the output of the step detection algorithm. This is because step detection will have a direct effect on the step frequency. The step detection algorithm cannot guarantee that all steps are counted, potentially affecting the tunable parameter. 
+From the results of step detection, the most accurate results came from holding a smartphone in the hand. This carrying mode is present in the data from \cite{Vezocnik2019}, and will therefore be used for further analysis. \par
+
+The results are shown in \cref{fig:step_length_tian,fig:step_length_weinberg}. Each test subject is shown as a different color with the form of the different markers indicating the speed at which that trial was walked at. In \cref{fig:step_length_tian}, the parameters for \eqref{eq:Tian2016_sle2} of all three walking speeds are plotted. In order to find $K$ as a universal constant, a least square estimation is performed The result is shown by the green striped line in the plot. \cref{fig:step_length_weinberg} shows the same, with the difference being that the parameter is calculate per test subject, instead of all together. 
+
+	\begin{figure}[H]
 	\centering
-	\begin{subfigure}[t]{.45\textwidth}
-	\centering
-	\includegraphics[width=\linewidth]{images/20201028_1050_step_length_all_data}
+	\includegraphics[width=\linewidth]{images/20201113_1634_tian}
 	\caption{step length estimation constant = 0.3116}
-	\label{fig:step_length_all_data}
-	\end{subfigure}
-	\begin{subfigure}[t]{.45\textwidth}
+	\label{fig:step_length_tian}
+	\end{figure}
+	\begin{figure}[H]
 		\centering
-		\includegraphics[width=0.95\linewidth]{images/20201028_1051_step_length_good_data}
+		\includegraphics[width=\linewidth]{images/20201113_1639_weinberg}
 		\caption{step length estimation constant = 0.3080}
-		\label{fig:step_length_without_faults}
-	\end{subfigure}
-	\caption{step length estimation}
-	\label{fig:step_length_estimation}
-\end{figure}
-Using the open source data has not come without problems, as can be seen in \cref{fig:step_length_all_data}. While most data seems to have relatively good step detection, there are two samples that do not conform to the general trend suggesting that step detection is not working correctly. The two potentially faulty data points are the slow walking sample of both person 10 and 14. For the former, no steps have been detected and is therefore not visible in the plots, while for the latter too little steps have been detected. For person 14, 14 steps have been detected for slow walking, which is less steps than when the subject was walking fast. This clearly suggests that a wrong step detection occurred. It is difficult to determine why this is occurring since the exact details. It could be that during this sample, the test subject was holding the phone incorrectly, the person had a very different step strategy when performing at this speed, or the phone was malfunctioning. This outlier affects the eventual tunable parameter. Removing it will change the estimate, as shown in \cref{fig:step_length_without_faults}. The performance of the step length estimate can be checked by using the validation dataset, where all users walked a longer distance, but with the same experimental setup. Here the accelerometer data can be passed through step detection and step length estimation to estimate the total distance traveled. This can then be compared with the actual distance traveled to determine the error. The data can also be used to determine if the difference in tunable parameter has a significant affect on the estimate. The results are found in  \cref{fig:step_length_estimation_validation}, where the absolute distance error for all walking speeds for all test subjects are shown, indicated by the dataset ID.
+		\label{fig:step_length_weinberg}
+	\end{figure}
+
+Using the open source data has not come without problems. While most data seems to follow the general linear relationship, there are two samples that do not. The two potentially faulty data points are the slow walking sample of both person 10 and 14. For the former, no steps have been detected and is therefore not visible in the plots, while for the latter too little steps have been detected. For person 14, 14 steps have been detected for slow walking, which is less steps than when the subject was walking fast. This is either a wrong step detection occurring, or the user walks slowly with very large steps. It is difficult to determine why this is occurring. It could be that during this sample, the test subject was holding the phone incorrectly, the person had a very different step strategy when performing at this speed, or the phone was malfunctioning. This outlier affects the eventual tunable parameter. Removing it will change the estimate from 0.3116 to 0.3080. \par 
+
+The validation dataset can be used to determine if the difference in tunable parameter has a significant affect on the estimate. The results are found in  \cref{fig:step_length_estimation_validation}, where the absolute distance error for all walking speeds for all test subjects are shown, indicated by the dataset ID.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth]{images/20201028_1344_Step_Length_Estimation_Validation}
@@ -116,12 +141,22 @@ Using the open source data has not come without problems, as can be seen in \cre
 \end{figure}
 
 What is noticeable from the results is that there is a large outlier. This is with dataset 42, which corresponds to the slow walking speed of test subject 14, which is also the setting in which the tunable parameter estimation had an outlier. This further supports that there is something significantly different when this test subject is performing at this walking speed. With this outlier the mean absolute error is 11.8 percent with a standard deviation of 17.1 percent. Without the outlier, the mean absolute error is 9.7 percent with a standard deviation of 8.0 percent. Both results are worse than those cited by \cite{Vezocnik2019}, which indicate a mean of 7 percent with a standard deviation of 5 percent.
-The results also indicate that the different tunable parameters do not make a significant difference in accuracy. The difference in performance is likely to the difference in step detection, which the research do specify exactly. \par 
-A similar smaller scale experiment was performed with three different people also walking at three different walking speeds. The results can be found in \cref{fig:step_length_personal_testing}. 
+The results also indicate that the different tunable parameters do not make a significant difference in accuracy. The difference in performance is likely to the difference in step detection, which the research do specify exactly. \par
+
+The performance of the both step length estimator, applied to the validation set is shown in  \cref{fig:202011131943_wienberg_vs_tian_vezocnik_data1}. This data surprisingly shows that depending on the test subject one or the other method is better at estimating distance traveled. This does not coincide with the results of \cite{Vezocnik2019}, where personal parameters performed better than general parameters.
+
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\textwidth]{example-image-a}
-	\caption{Original data step length estimation}
+	\includegraphics[width=\linewidth]{images/20201113_1943_wienberg_vs_tian_vezocnik_data_1}
+	\caption{}
+	\label{fig:202011131943_wienberg_vs_tian_vezocnik_data1}
+\end{figure}
+ 
+A small scale experiment was performed where the same process as in \cite{Vezocnik2019} was used. Original data was collected from the same person and device used in the eventual indoor localization experiment. Three trials of 30 meters were walked at different qualitative walking speeds, slow, normal and fast, while recording accelerometer data. Three longer trials of 300 meters were walked, to determine performance. The \citet{Tian2016} method used the same parameter determined for the online data. The \citet{Weinberg2002} parameter was based on the smaller distance data. The results are shown in \cref{fig:step_length_personal_testing}. The results seem to suggest that for slow to normal walking the \citet{Tian2016} method works best, while from normal to fast walking \citet{Weinberg2002} works better. 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{images/20201113_1920_wienberg_vs_tian_og_data_1}
+	\caption{Original data step length estimation \\ }
 	\label{fig:step_length_personal_testing}
 \end{figure}
 
@@ -129,35 +164,9 @@ A similar smaller scale experiment was performed with three different people als
 
 \textcolor{red}{I think that step length estimation is one of the largest error sources ATM. Is it work while switching to a different technique? \citet{Vezocnik2019} also indicate on that is good for personalized parameters ....? I think that this could be fixed quickly}
 
-\section{Indoor Experiments}
+\section{Indoor Localization Experiments}
 
 Due to restriction caused by the COVID-19 pandemic, indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand, and recording the IMU signals in the phone through an app, while also filming the path that is being walked. During the experiment a smartwatch was worn around of the not smartphone hand and used to open doors. This opening of doors was also recorded using the app running on the smartphone, which had a button to record timestamps. The full experimental process can be found in \cref{appendix:shs_experiment}. \par 
-In order to use map information with the particle filter, different sources were combined to generate a map. Rudimentary paper blueprints of the building were available and could be photographed and traced in software to generate a picture of the indoor environment. This image has clear color distinction between the different structures within the building, including walls, doors and furniture. The positioning and size of furniture was estimated. The final image is seen in \cref{fig:indoor_blueprint}. This image is in pixel coordinates and needs to be transformed into meter coordinates. It then needs to represent a 2D probability density function so that it can be used in the particle filter measurement update. \\
-The OccupancyMap in the MATLAB Robotics Tool box is suitable for this. An occupancy grid is a grid in which each cell has a value representing the probability of the occupancy of that cell. By measuring a known structure in Google Maps using the measurement tool and comparing with its pixel length in the image, a meter to pixel ratio can be defined. The Google Maps measurement can be found in \cref{fig:house_google_maps}. This pixel to meter ratio combined with the image, allows MATLAB to generate an occupancy grid as shown in \cref{fig:pf_map}. This same process can be used to get the meter position of all doors.
-
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[t]{.3\textwidth}
-	\centering
-	\includegraphics[width=0.9\linewidth]{images/indoor_blueprint}
-	\caption[Image from building blueprints]{Image from building blueprints. Black, grey and red represent walls, furniture, and doors, respectively.}
-	\label{fig:indoor_blueprint}
-\end{subfigure} \quad
-\begin{subfigure}[t]{.3\textwidth}
-	\centering
-	\includegraphics[width=0.9\linewidth]{images/house_google_maps}
-	\caption{Measurement from Google Maps}
-	\label{fig:house_google_maps}
-\end{subfigure} \quad
-\begin{subfigure}[t]{.3\textwidth}
-	\centering
-	\includegraphics[width=0.9\linewidth]{images/20201030_1157_pf_map_1}
-	\caption{Particle Filter map result}
-	\label{fig:pf_map}
-\end{subfigure}
-\label{fig:particle_map_construction}
-\caption{Particle filter map creation}
-\end{figure}
 
 During the experiment, a total of 8 trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. The video recorded during the experiment can be used in postprocessing to get a ground truth. This was done by replaying the video and at set intervals manually indicating approximately where on the map the test subject was located. The position and time elapsed were recorded. The output of these trials can be used to test certain SHS components individually and the system as a whole.
 
@@ -263,27 +272,6 @@ For every trial the smartphone IMU data is passed through the different componen
 
 \subsection{Particle Filter}
 Using the output of the SHS, the method outlined in \cref{sec:method-pf} for the particle filter, and the map constructed for the indoor experiments, the indoor localization particle filter could be constructed. For initialization a known location on the map was available, around which the particles were distributed with a Bayesian profile. The output of the SHS was used to propagate the particles, with the map information removing particles that collided with the walls. \\
- 
-
-\subsubsection{Determining the estimate}
-Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate.
-First, MMSE does not work well in situations in which there are multiple equal likely hypotheses. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{labellist}
-\begin{figure}
-	\centering
-	\includegraphics[width=0.5\linewidth]{images/20201108_1751_lopen1_1_MMSE_estimator}
-	\caption{}
-	\label{fig:lopen_11_mmse_estimator}
-\end{figure}
-
-
-Another approach was used in which the particles that survived the whole SHS trajectory made during the experiment were used. By recording the ancestors of these particles, the whole trajectory could be calculated by backtrack [\qn ?].
-
-\textcolor{cyan}{
-\begin{itemize}
-	\item For this section I want to show MAP, RMSE and Ancestor Tracking (AT) on an example particle filter output to show why AT is better than th other two.
-\end{itemize}}
-
-\textcolor{red}{Do you think that I need a quantitative comparison between the different position estimate methods?}
 
 \subsubsection{With activity}
 During the experiment the possibility existed of recording at timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of bypassing the activity recognition. At the different timestamps recorded, a particle filter measurement update can be initiated. Using this method the potential affect of activity recognition can be evaluated, by comparing the use of the timestamps with when they are not used. Two examples can be found in \cref{fig:shspf_trial2_shs_gt_comparison} and \cref{fig:shspf_trial3_shs_gt_comparison} which show the ground truth generated from video and the output of the particle filter using their respective SHS trajectories as input.
