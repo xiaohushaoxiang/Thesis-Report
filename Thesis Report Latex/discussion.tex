@@ -1,12 +1,51 @@
-\chapter{Discussion}
+\chapter{Evaluation}
 
-\textcolor{red}{I thought it best to first discuss the discussion during the meeting, since I am not completely sure what I should write here. Furthermore I also think that this is very dependent on the results that I will be showing throughout this thesis, which is also not yet set at the moment}
+\section{Discussion}
+Within the discussion the results of the different \ac{SHS} components and the overall system will be treated, postulating with supporting evidence what may have lead to certain outcomes. Different future avenues are outline to gain further insight.
 
-For step detection the implementation of Algorithm \ref{algo:step_detect} was compared with that of \citet{Salvi2018}, who had continued the work of \cite{Harle2013}. Within the results there were two observations made. The first was that the performance of both implementations were similar for the different carrying modes in the number of steps that were taken. This is to be expect since \cref{algo:step_detect} is heavily based on the research implementation. The only real difference is that a simple walk detection threshold was added. The  \par 
+\subsection*{Step Detection}
+For step detection the implementation of \cref{algo:step_detect} was compared with that of \citet{Salvi2018}, who had continued the work of \cite{Harle2013}.  \par 
+Within the step counting results there were two observations made. Firstly, the total number of steps counted by both implementations was similar in all carrying modes, many of which had 5\% or less in counting error. There was a large outlier for both cases with the step counting in the backpocket of "user1". Researchers attribute this to the pocket being loose and allowing the phone to rebound when a step was taken \cite{Salvi2018}. This would introduce nefarious components in the accelerometer signal, leading to false positives. \citet{Brajdic2013} encountered similar problems with this carrying position, hypothesizing that the relaxing of the gluteus maximus during locomotion could influence the acceleration trace.\\
+The similarity between the two approaches is further underlined by the results in which the time difference between a step detection and its closest ground truth point were calculated. Many detections were within 0.1 seconds from their closest ground truth point. Here the best performing option also changed per carrying mode and person.\par 
+Original data was also gathered for step counting and evaluated using the devised method. Here similar results were found to the opensource data. Bad performance in the backpocket was also found, with the best performance being when the smartphone is held in hand. The bad performance in the backpocket further underlines the reliability of step detection in this carrying mode. \par  
+A third metric for "unique" step detection was explained and applied, in an attempt to filter out detections detecting the same step. In contrast to the previous metric, this indicated that \cref{algo:step_detect} had more "unique" steps, which are steps closest to a ground truth point, without another detection at the same distance. This would suggest that the current implementation is better at determining the time at which a step occurs. \\
+This difference between the two implementations can potentially be explained by the goal and implementation of the \citet{Salvi2018} approach. This research was focused on only \textit{step counting} and did no measurements themselves to determine how close their detections were to the actual steps. Any eventual lag would not effect the step counting performance, as long as the steps are counted. Their android implementation, the output of which was indicated in the validation set, may have had some form of lag. Lag would shift all points, potentially putting them in between step occurrences. This could cause two of them to be in an interval around a ground truth point, which the metric then considers not "unique". \par 
 
-One of the largest differences is that \cref{algo:step_detect} was applied to the data after recording while the researchers had implemented their method in a real time fashion on an android device. It must also be noted that the researchers did focus on step counting, and did no measurements themselves to determine how close their detections were to the actual steps. \par 
+With step detection, the goal was to get similar or better performance than \cite{Salvi2018} . The same parameters found through a variable space search in \cite{Salvi2018}, were used in the step detection method, with the idea that same performance would be reached. While the results seem to show similar results, it may be worthwhile to run the same variable to check that the parameters are indeed the best for step detection.
 
-It is unsure what effects the online implement may have had on performance. If a lag was introduced due to computation time, it may also explain the second observation in the results. Here it was found that \cref{algo:step_detect} was able to detect more "unique steps" than the \cite{Salvi2018} approach. It is also debatable how well the unique step approach as a metric is to determining the performance of determining how close a detection is to a step. Another approach could be to calculate the time between each detection and the closest ground truth point
+\subsection*{Step Length Estimation}
+The step length estimation results show that the general linear relationships outlined in \cite{Vezocnik2019} were found, however the accuracy claimed was not, performing worse than expected. This is mostly likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly. A similar small scale experiment was performed. Results from this indicate that normal to slow walking worked best with the approach of \cite{Tian2016}, with a tendency to underestimate the distance traveled. \par 
+
+In contrast to the opensource data, the exact number of steps taken for the tunable parameter dataset was known. The number of steps detect was either exactly the same or two steps off. This suggests that the step detection is working correctly, and that the methods may be lacking. It may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there is any other differences between the outcomes. 
+
+\subsection*{Orientation Estimation}
+
+\subsection{Overall System Performance}
+
+Turning does not have same displacement as walking straight
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201029_1603_shs-pf_trial_1_2}};
+			\begin{scope}[x={(image.south east)},y={(image.north west)}]
+				\draw[green,ultra thick,rounded corners] (0.6,0.625) rectangle (0.73,0.66);
+			\end{scope}
+		\end{tikzpicture}		
+		\caption{trajectory comparison}
+		\label{fig:shspf_trial1_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201029_1603_shs-pf_trial_1_1}
+		\caption{axis comparison}
+		\label{fig:shspf_trial1_comparison}
+	\end{subfigure}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{SHS-PF comparison of trial 1 with ground truth}
+	\label{fig:shspf_trial1_shs_gt_comparison}
+\end{figure}
 
 
 \section{Answering Research Questions}
