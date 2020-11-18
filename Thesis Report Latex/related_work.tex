@@ -75,7 +75,79 @@ Activity recognition is large research field in which methods span a broad range
 The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. Considering the scope of this thesis, certain constraints can be applied, such as that the system should be able to function on a smartphone and must use comparable sensors to those found in such devices, thus MEMS IMUs. \citet{Shoaib2015} have performed an extensive survey that focuses on the online activity recognition solely using mobile phone sensors and onboard processing. Other metrics such as resource consumption were also presented. 30 papers were found to meet the requirements of the review. Within the review they indicate that most commonly used classification methods include Decision Tree, support vector machine (SVM), K-nearest neighbor (KNN) and Naive Bayes, in descending order. A third of the papers were found to use decision trees. All but 6 of the papers had the training process occurring offline. The classification process takes the method generated offline, and uses it online to classify new activities. The authors refrain from listing any performance measures, such as accuracy or precision, since no direct comparison between the different methods is made. \citet{Ahmad2020} specifically focuses on seeing whether smartphone activity recognition techniques are also applicable to smartwatches, and what parameters, including classifiers, work best. Activities to recognize included walking, up-stairs, down-stairs, running, and jogging. Their results indicated that  Decision Trees, SVM and KNN had around 90 percent accuracy a minor difference. \citet{Shoaib2016} show that combining information from both a smartwatch and smartphone, complex human activity recognition is improved compared to when only a smart watch is used. 
 
 \subsection{Particle Filter}
+\label{sec:method-pf}
+In order to counter estimate drift,  map information can be used in combination with a Particle Filter. This is a numerical Bayes estimator able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypothesis for the system that it is modeling. In the case of localization, it may therefore indicate that there are two position estimates are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}. \\
+The particle filter is known to work well in three dimensional state space \cite{gustafsson2010particle}, with higher dimensions making the particle representation too sparse to be a meaningfully represent the posterior distribution. Since for indoor localization only y position, x position and heading are needed, the particle filter is sufficient.
+\par
+As the name suggests, the particle filter uses a finite amount of particles to determine a state estimate. These particles are weighted and are propagated through a motion model, augmented with a noise realization on relevant variables. These noise realizations represent uncertainty of certain components of the motion model. The probability density function of these noise realizations are defined beforehand. Taking the weights of each particle into account a prior estimate can be made. \par 
+Measurement updates are used to calibrate the particles throughout their trajectory. These measurements may come from different sources, including map information and landmark detection. When a measurement occurs the particle cloud is compared with the measurements, adjusting the individual weights accordingly. This process is familiar to the reader as it closely resembles that of the previously mentioned Kalman Filter, also a Bayes estimator.\par
+
 \citet{Harle2013} can help limit drift and absolute position estimate
+
+\begin{enumerate}
+	\item \textbf{Measurement update} \\
+	Each particle is weighted against constraints or system evaluation function. The likelier the particle is within the system constraints, the higher the weighting is. Each particle's weight is redefined through \cref{eq:gen_pf_weight},	where the normalization weight ($c_k$) is given by \cref{eq:gen_pf_probability density}.
+	Here $\omega^i_k$ is the weighting for particle $i$ at time $k$, $y_k$ is the measurement at time $k$,  and $N$ is the total number of particles.
+	
+	\item  \textbf{Estimation} \\
+	Using the weightings and positions of the particle cloud, an estimate can be made of the posterior probability density of the process that is being modeled  \cite{gustafsson2010particle}. There are different ways of defining the eventual position estimate. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior probability function \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009} as in \cref{eq:gen_pf_estimation}.
+	
+	\item \textbf{Resampling} \\
+	Depending on the new weights of the different particles, a subset is taken and resampled to form a new set of particles, which will be used in the next iteration of the particle filter.
+\end{enumerate}
+
+%\begin{algorithm}[H]
+%	\SetAlgoLined
+%	\caption{Bootstrap Particle Filter}
+%	\label{algo:bootstrap_PF}
+%	choose the number of particles N.\\
+%	% choose a proposal distribution $ q(x_{k+1}|x_{1:k},y_{k+1})$, resampling strategy and the number of particles N.\\
+%	% \KwResult{Write here the result }
+%	\underline{initialization:}
+%	Generate 
+%	\begin{subequations}
+%		\begin{equation}
+%			x^i_1 \sim p_{x_1},
+%		\end{equation}
+%		and let
+%		\begin{equation}
+%			\omega^i_{1|0} = 1/N.
+%		\end{equation}
+%	\end{subequations}
+%	\;
+%	\For{k = 1,2,...}{
+%		\underline{measurement update:}\\
+%		\begin{subequations}
+%			
+%				
+%				\begin{equation}
+%					\omega^i_{k|k} = \frac{1}{c_k} \omega^i_{k|k-1} p(y_k|x^i_k),
+%			\label{eq:gen_pf_weight}	
+%			\end{equation}\\
+%				where the normalization weight is given by
+%				\begin{equation}
+%					c_{k}=\sum_{i=1}^{N} w_{k | k-1}^{i} p\left(y_{k} | x_{k}^{i}\right)
+%					\label{eq:gen_pf_probability density}
+%				\end{equation}
+%			
+%			\underline{estimation:}\\
+%			\begin{equation}
+%				\hat{x}_{k | k} =\sum_{i=1}^{N} w_{k}^{i} x_{k}^{i}.
+%				\label{eq:gen_pf_estimation}
+%			\end{equation}
+%			\underline{resampling:}\\
+%			take $N$ samples with replacement from the set $\{x^i_{1:k}\}^N_{i=1}$ where the probability to take sample i is $\omega^i_{k|k} = 1/N$.\\
+%			\underline{time update:}\\
+%			Generate predictions according to the dynamic model, using realizations of the process and measurement noise.
+%			\begin{equation}
+%				\label{eq:PF_dynamic model}
+%				x_{k+1}^{i} \sim p\left(x_{k+1}^{i} | x_{k}^{i}\right)
+%			\end{equation}
+%		\end{subequations}
+%		
+%	}
+%\end{algorithm}
+
 
 \section{SHS Components}
 \subsection{Walk and Step Detection}
