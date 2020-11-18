@@ -98,14 +98,14 @@ The best performing algorithm for global parameters is reiterated for convenienc
  where $A_{max}$ and $A_{min}$ are the maximum and minimum acceleration within a step interval. This will be refered to as the \citet{Weinberg2002} approach. The two approaches will be used and compared to see if similar results are achieved as within \cite{Vezocnik2019}.
 
 In order to determine the tunable parameter $K$ correctly for both approaches, it needs to be used with the output of the step detection algorithm. The step detection algorithm cannot guarantee that all steps are counted, potentially affecting the tunable parameter for both methods. 
-The smartphone in hand carrying mode in the data from \cite{Vezocnik2019} will be used for further analysis since step detection indicate it as a carrying mode with low step detection errors. \par
+The smartphone with the carrying mode in hand from the online data \cite{Vezocnik2019} will be used for further analysis since step detection indicate it as a carrying mode with low step detection errors. \par
 
 The results for the \citet{Tian2016} approach are shown in \cref{fig:step_length_tian}. Each test subject is shown as a different color with the form of the different markers indicating the speed at which that trial was walked at. The positive linear trend indicated in \cite{Tian2016} can be observed as walking speed increases. In order to find the universal constant $K$, a least square estimation is performed across all data points. The result is shown by the green striped line in the plot. 
 
 	\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201113_1634_tian}
-	\caption{Opensource step length data with \citet{Tian2016} parameters, indicating linear trend with increasing walking speed.}
+	\caption{Opensource step length data with \citet{Tian2016} parameters, indicating a linear trend with increasing walking speed.}
 	\label{fig:step_length_tian}
 	\end{figure}
 	
@@ -114,7 +114,7 @@ A similar plot is shown in \cref{fig:step_length_weinberg}, but for the \citet{W
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201113_1639_weinberg}
-	\caption{Opensource step length data with \citet{Weinberg2002} parameters, also indicating linear trend with increasing walking speed.}
+	\caption{Opensource step length data with \citet{Weinberg2002} parameters, also indicating a linear trend with increasing walking speed.}
 	\label{fig:step_length_weinberg}
 \end{figure}
 
@@ -155,11 +155,11 @@ The different step length estimation methods were applied to the original data. 
 \newpage
 \section{Indoor Orientation Estimation}
 
-The step detection and step length estimation experiments were performed outdoors since the location has no effect on accelerometer readings and outdoor testing allows for long walking distances. Orientation estimation and the whole system performance naturally are location-dependent, and will have to be tested indoors. \par
+The step detection and step length estimation experiments were performed outdoors since the location has no effect on accelerometer readings and outdoor testing allows for long walking distances. Orientation estimation and the whole system performance naturally are location-dependent and will have to be tested indoors. \par
 
-Indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand, and recording the IMU signals in the phone through a dedicated android app. Using the smartphone data, the SHS trajectory could be calculated. During the experiment, a total of 6 successful trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. Trials 4 and 8 had video that did not record the trajectory correctly, and could therefore not be used for comparison. The test subject is the same person that generated the original data for th step detection and step length estimation experiments.\par 
+Indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand and recording the IMU signals in the phone through a dedicated android app. Using smartphone data, the SHS trajectory could be calculated. During the experiment, a total of 6 successful trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. Trials 4 and 8 had video that did not record the trajectory correctly, and could therefore not be used for comparison. The test subject is the same person that generated the original data for the step detection and step length estimation experiments.\par 
 
-Determining the performance of  orientation estimation during the experiments is difficult, since no ground truth was available for comparison. One sanity check that can be performed is comparing the orientation estimation of the EKF with the orientation estimation calculated by the android system. The results will not be able to give an indication of which performed best with respect to reality, but could potentially highlight any very diverging behavior. In order to represent this orientation difference, a difference quaternion ($	\Delta q_t$) can be used, defined as \cite{Kok2017}
+Determining the performance of orientation estimation during the experiments is difficult since no ground truth was available for comparison. One sanity check that can be performed is comparing the orientation estimation of the EKF with the orientation estimation calculated by the android system. The results will not be able to give an indication of which performed best with respect to reality, but could potentially highlight any very diverging behavior. In order to represent this orientation difference, a difference quaternion ($	\Delta q_t$) can be used, defined as \cite{Kok2017}
 
 \begin{equation}
 	\Delta q_t = \hat{q}_{ekf,t}^{nb} \odot \left( \hat{q}_{and,t}^{nb}  \right)^c
@@ -179,7 +179,7 @@ where $\hat{q}_{ekf,t}^{nb}$ is the quaternion estimate from navigation frame to
 
 During the experiment, a smartwatch was worn around the wrist of the hand that was not holding the smartphone. This hand was used to open and close doors. The opening of doors was also recorded through the app on the smartphone, which had a button to record timestamps when pressed. The full experimental process can be found in \cref{appendix:shs_experiment}. \par
 
-The smartwatch accelerometer data was synchronized with the smartphone data. The activity recognition method in \cref{sec:method-AR} was used to try and detect door interaction. Combining the activity detection and  with the floor map generated in \cref{sec:method-pf}, the whole system could be tested. For initialization a known starting location on the map was indicated, around which the particles were distributed with a Bayesian profile.  \par 
+The smartwatch accelerometer data was synchronized with smartphone data. The activity recognition method in \cref{sec:method-AR} was used to try and detect door interaction. Combining the activity detection with the floor map generated in \cref{sec:method-pf}, the whole system could be tested. For initialization, a known starting location on the map was indicated, around which the particles were distributed with a Bayesian profile.  \par 
 
 In addition to recording IMU data from both smartphone and watch while the path was being walked, the trials were also being filmed from a breast pocket by another smartphone. The video recorded during the experiment was used to get a rough estimate of the path walked during the trial. This was done by replaying the video and pausing it at one second intervals. At the paused moments, the test subject position was manually indicating on the map The position and time elapsed since the start of the trial were recorded. The resulting trajectory can be used to give some performance indication of the devised method. A root mean square error can be calculated between an estimate and the rough trajectory as in
 
@@ -190,7 +190,7 @@ In addition to recording IMU data from both smartphone and watch while the path 
 
 where $T$ is the total time, $\hat{y_t}$ the estimate at time $t$ and $y_t$ the rough trajectory at time $t$.
 \subsection{With "perfect" activity recognition}
-During the experiment the possibility existed of recording a timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of representing perfect activity recognition. The recorded timestamps can be used as a particle filter measurement update. Using this method the potential affect of activity recognition for indoor localization can be evaluated, by comparing performance when this form of measurement is used and not used. \par 
+During the experiment, the possibility existed of recording a timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of representing perfect activity recognition. The recorded timestamps can be used as a particle filter measurement update. Using this method the potential effect of activity recognition for indoor localization can be evaluated, by comparing performance when this form of measurement is used and not used. \par 
 
 All trials were run through the complete system with the manually recorded door interactions, with 4000 particles. This was done for five iterations per trial, in order to show reproducibility. The results of which can be found in \cref{fig:pf_boxplot}.
 
@@ -201,7 +201,7 @@ All trials were run through the complete system with the manually recorded door 
 	\label{fig:pf_boxplot}
 \end{figure}
 
-The results show that for trials 1 to 3 and trial 7 that all five itterations were completed, with their individual itterations having similar RMSE values to the rough video estimate. The RMSE per trial do vary, which can be explained by looking at the trajectory that the system generates, which will be done in the discussion. The total SHS-PF solution was unable to get a reliable output for trials 5 and 6.\par 
+The results show that for trials 1 to 3 and trial 7 that all five iterations were completed, with their individual iterations having similar RMSE values to the rough video estimate. The RMSE per trial do vary, which can be explained by looking at the trajectory that the system generates, which will be done in the discussion. The total SHS-PF solution was unable to get a reliable output for trials 5 and 6.\par 
 \newpage
 \subsection{With activity recognition}
 
@@ -214,18 +214,18 @@ Using the activity recognition method outline in Algorithm 3, the results in \cr
 	\label{fig:rmse_per_trial_with_activity_recognition}
 \end{figure}
 
-Trials 1,2 and 7 show similar results as when "perfect" activity recognition was used. Also the inability to complete all itterations for trials 5 and 7 is present. In contrast trial 3 is also unable to complete all itterations, with some completed results leading to much larger RMSE values. 
+Trials 1,2 and 7 show similar results as when "perfect" activity recognition was used. Also the inability to complete all iterations for trials 5 and 7 is present. In contrast trial 3 is also unable to complete all iterations, with some completed results leading to much larger RMSE values. 
 
 \newpage
 \subsection{Without activity}
-In order to see what effect activity recognition measurement updates has on estimating the trajectory, the particle filter needs to be run without them. All other parameters were kept the same. The results can be found in \cref{fig:pf_boxplot_no_doors}.
+In order to see what effect activity recognition measurement updates have on estimating the trajectory, the particle filter needs to be run without them. All other parameters were kept the same. The results can be found in \cref{fig:pf_boxplot_no_doors}.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\textwidth]{images/20201118_1507_RMSE_per_trial_with_no_activity_recognition}
-	\caption[Particle Filter position estimation performance without door interaction]{Particle Filter position estimation performance without door interaction measurement update, 5 itterations per trial. Number under "completed" indicates how many trials had particles surviving for the whole SHS trajectory.}
+	\caption[Particle Filter position estimation performance without door interaction]{Particle Filter position estimation performance without door interaction measurement update, 5 iterations per trial. Number under "completed" indicates how many itteration had particles surviving for the whole SHS trajectory.}
 	\label{fig:pf_boxplot_no_doors}
 \end{figure}
 
-The results show that trials 3, and 5 to 7 were unable to complete all itterations. Trial 2 seems to have no difference in performance compared to when activity recognition is used. The RMSE value for trial 1 is similar to that when activity recognition is used, while the spread is larger.
+The results show that trials 3, and 5 to 7 were unable to complete all iterations. Trial 2 seems to have no difference in performance compared to when activity recognition is used. The RMSE value for trial 1 is similar to that when activity recognition is used, while the spread is larger.
 
