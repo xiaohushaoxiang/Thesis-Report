@@ -18,17 +18,53 @@ The step length estimation results show that the general linear relationships ou
 
 In contrast to the open-source data, the exact number of steps taken for the tunable parameter dataset was known. The number of steps detect was either exactly the same or two steps off. This suggests that the step detection is working correctly and that the methods may be lacking. It may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there are any other differences between the outcomes. 
 
+\newpage
+
+
 \subsection*{Orientation Estimation}
 
-\subsection{Overall System Performance}
+\begin{itemize}
+	\item There is no concrete way with the data available to check how well the EKF estimate is working in comparison to reality. Only comparing to the android system is possible.
+	\item trial 3 and trial 6 had the largest yaw difference of the trials. The yaw traces between the android system and EKF can be found in \cref{fig:202011181708yawdifferencebetweenmethods} and \cref{fig:202011181705yawdifferencebetweenmethods}
+	\item EKF for trial 6 has a weird jump and slowly gets back to the estimate of the android system. Not clear what is causing this. \textcolor{red}{How should I handle this further?}
+	\item for trial 3 there seems to be a slight offset between the orientation estimations.
+\end{itemize}
 
-Turning does not have same displacement as walking straight
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201118_1708_Yaw_difference_between_methods}
+	\caption{}
+	\label{fig:202011181708yawdifferencebetweenmethods}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201118_1705_Yaw_difference_between_methods}
+	\caption{}
+	\label{fig:202011181705yawdifferencebetweenmethods}
+\end{figure}
+
+
+
+\newpage
+\subsection*{Overall System Performance}
+
+\begin{itemize}
+	\item Using door interaction that were manually indicated, 4 out of 6 trials were able to complete all itterations. They do have a difference in median RMSE value and the spread between itterations. The reasoning why this is occurring can be spotted in the trajectories that the particle filter calculate.  
+	\item The particle for trial 1 and 2 complete all itterations, it does not follow the complete trajectory. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the particle filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the particle filter seems to walk too far and is unable to make the correct turn.
+	\item trial 3 and 7 are able to follow the whole route. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
+	\item theory that step length estimation is over estimating distance traveled in some cases. This can be cause by turning not having the same displacement as a straight step.
+	\item give a table of the distance walked according to rough video estimate and what the shs estimated.
+	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization, since more trials are able to survive the whole SHS trajectory when it is than when it is not. This is most apparent with trial 7, where with activity recognition it is able to complete the whole root, while with out it only one itteration survives, which is also has a large error with the video estimate. The results also shows that it is not a necessity in some cases to use this form of measurement update, with trial 1 and 2 completing all itterations with similar RMSE values as when AR is used.
+	\item When using the AR method outlined in \cref{chap:method}, trial 3 was unable to complete all itterations. The itterations that were completed had a large range of RMSE. This is likely caused by false positives. Plots still need to be made to show this.
+\end{itemize}
+
+
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
 		\begin{tikzpicture}
-			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201029_1603_shs-pf_trial_1_2}};
+			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201118_1900_trial1_output_2}};
 			\begin{scope}[x={(image.south east)},y={(image.north west)}]
 				\draw[green,ultra thick,rounded corners] (0.6,0.625) rectangle (0.73,0.66);
 			\end{scope}
@@ -38,7 +74,7 @@ Turning does not have same displacement as walking straight
 	\end{subfigure}
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{images/20201029_1603_shs-pf_trial_1_1}
+		\includegraphics[width=\linewidth]{images/20201118_1900_trial1_output_1}
 		\caption{axis comparison}
 		\label{fig:shspf_trial1_comparison}
 	\end{subfigure}
@@ -46,7 +82,85 @@ Turning does not have same displacement as walking straight
 	\caption{SHS-PF comparison of trial 1 with ground truth}
 	\label{fig:shspf_trial1_shs_gt_comparison}
 \end{figure}
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/20201118_1902_trial2_output_2}
+		\caption{trajectory comparison}
+		\label{fig:shspf_trial2_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201118_1902_trial2_output_1}
+		\caption{axis comparison}
+		\label{fig:shspf_trial2_comparison}
+	\end{subfigure}
+	\caption{SHS-PF comparison of trial 2 with ground truth}
+	\label{fig:shspf_trial2_shs_gt_comparison}
+\end{figure}
 
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/20201029_1804_shs-pf_trial_3_2}
+		\caption{trajectory comparison}
+		\label{fig:shspf_trial3_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201029_1804_shs-pf_trial_3_1}
+		\caption{axis comparison}
+		\label{fig:shspf_trial3_comparison}
+	\end{subfigure}
+	\caption{SHS-PF comparison of trial 3 with ground truth \textcolor{red}{change legends}}
+	\label{fig:shspf_trial3_shs_gt_comparison}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/20201118_1908_trial7_output_2}
+		\caption{trajectory comparison}
+		\label{fig:shspf_trial7_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201118_1908_trial7_output_1}
+		\caption{axis comparison}
+		\label{fig:shspf_trial7_comparison}
+	\end{subfigure}
+	\caption{SHS-PF comparison of trial 2 with ground truth}
+	\label{fig:shspf_trial7_shs_gt_comparison}
+\end{figure}
+\newpage
+\begin{figure}[H]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201107_1142_trial_comparison_3}
+		\caption{}
+		\label{fig:202011071142trialcomparison3}
+	\end{minipage}%
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201107_1142_trial_comparison_2}
+		\caption{}
+		\label{fig:202011071142trialcomparison2}
+	\end{minipage}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201107_1142_trial_comparison_1}
+		\caption{}
+		\label{fig:202011071142trialcomparison1}
+	\end{minipage}
+\end{figure}
 
 \section{Answering Research Questions}
 
@@ -95,7 +209,6 @@ Turning does not have same displacement as walking straight
 \textbf{Activity Recognition}
 \begin{itemize}
 	\item Detect more useful activities that can be used as additional particle filter measurement update. For example, climbing stairs for only smartphone sensors, or more intricate activities such as cooking
-	\item implement activity recognition locally on device so little inter device communication is required.
 \end{itemize}
 
 \textbf{Testing}
