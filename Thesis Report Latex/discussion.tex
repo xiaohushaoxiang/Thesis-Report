@@ -1,7 +1,7 @@
 \chapter{Evaluation}
 
 \section{Discussion}
-Within the discussion the results of the different \ac{SHS} components and the overall system will be treated, postulating with supporting evidence what may have lead to certain outcomes. Different future avenues are outlined to gain further insight.
+Within the discussion the results of the different \ac{SHS} components and the overall system will be treated, postulating what may have lead to certain outcomes with supporting evidence. Different future avenues are outlined to gain further insight.
 
 \subsection*{Step Detection}
 For step detection, the implementation of \cref{algo:step_detect} was compared with that of \citet{Salvi2018}, who had continued the work of \cite{Harle2013}.  \par 
@@ -14,7 +14,7 @@ This difference between the two implementations can potentially be explained by 
 With step detection, the goal was to get similar or better performance than \cite{Salvi2018} . The same parameters found through a variable space search in \cite{Salvi2018}, were used in the step detection method, with the idea that the same performance would be reached. While the results seem to show similar results, it may be worthwhile to run the same variable to check that the parameters are indeed the best for step detection.
 
 \subsection*{Step Length Estimation}
-The step length estimation results show that the general linear relationships outlined in \cite{Vezocnik2019} were found, however, the accuracy claimed was not, performing worse than expected. This is most likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly. A similar small scale experiment was performed. Results from this indicate that normal to slow walking worked best with the approach of \cite{Tian2016}, with a tendency to underestimate the distance traveled. \par 
+The step length estimation results show that the general linear relationships outlined in \cite{Vezocnik2019} were found, however, the accuracy claimed was not, performing worse than expected. This is most likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly. A similar small scale experiment was performed. Results from this indicate that normal to slow walking worked best with the approach of \citet{Tian2016}, with a tendency to underestimate the distance traveled. \par 
 
 In contrast to the open-source data, the exact number of steps taken for the tunable parameter dataset was known. The number of steps detect was either exactly the same or two steps off. This suggests that the step detection is working correctly and that the methods may be lacking. It may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there are any other differences between the outcomes. 
 
@@ -27,7 +27,8 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 	\item There is no concrete way with the data available to check how well the EKF estimate is working in comparison to reality. Only comparing to the android system is possible.
 	\item trial 3 and trial 6 had the largest yaw difference of the trials. The yaw traces between the android system and EKF can be found in \cref{fig:202011181708yawdifferencebetweenmethods} and \cref{fig:202011181705yawdifferencebetweenmethods}
 	\item EKF for trial 6 has a weird jump and slowly gets back to the estimate of the android system. Not clear what is causing this. \textcolor{red}{How should I handle this further?}
-	\item for trial 3 there seems to be a slight offset between the orientation estimations.
+	\item for trial 3 there seems to be a slight offset between the orientation estimations, but the change in angle looks similar.
+	\item Further testing will be needed to determine if the effect of magnet disturbances has caused wrong yaw orientation estimation. Using a more accurate device, such as a xsens IMU could be a good comparison.
 \end{itemize}
 
 \begin{figure}[H]
@@ -50,12 +51,15 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 
 \begin{itemize}
 	\item Using door interactions that were manually indicated, 4 out of 6 trials were able to complete all iterations. They do have a difference in median RMSE value and the spread between iterations. The reasoning why this is occurring can be spotted in the trajectories that the particle filter calculates.  
-	\item The particle for trial 1 and 2 complete all iterations, it does not follow the complete trajectory. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the particle filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the particle filter seems to walk too far and is unable to make the correct turn.
-	\item trial 3 and 7 are able to follow the whole route. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
-	\item theory that step length estimation is overestimating distance traveled in some cases. This can be caused by turning not having the same displacement as a straight step.
+	\item The particle for trial 1 and 2 complete all iterations, however both do not follow the complete trajectory derived from video analysis. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the particle filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the particle filter seems to walk too far and is unable to make the correct turn.
+	\item Trial 3 and 7 are able to follow the whole route. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
+	\item I have a hypothesis that step length estimation is overestimating distance traveled in some cases. This can be caused by turning not having the same displacement as a straight step.
 	\item Show a table of the distance walked according to rough video estimate and what the shs estimated.
-	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization since more trials are able to survive the whole SHS trajectory when it is than when it is not. This is most apparent with trial 7, wherewith activity recognition it is able to complete the whole root, while without it only one iteration survives, which is also has a large error with the video estimate. The results also show that it is not a necessity in some cases to use this form of measurement update, with trial 1 and 2 completing all iterations with similar RMSE values as when AR is used.
-	\item When using the AR method outlined in \cref{chap:method}, trial 3 was unable to complete all iterations. The iterations that were completed had a large range of RMSE. This is likely caused by false positives. Plots still need to be made to show this.
+	
+	\item Trials 5 and 6 are unable to complete any iteration reliably even with "perfect" activity recognition. This seems to suggest that the output of the SHS is not good enough. This needs to be shown in figures.
+	
+	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization since more trials are able to survive the whole SHS trajectory when it is than when it is not. Furthermore, the trajectories have low RMSE values compared to the video analysis trajectory, suggesting correct estimation. This is most apparent with trial 7, wherewith activity recognition it is able to complete the whole route every time, while without it only one iteration survives with a large error with the video estimate. The results also show that it is not a necessity in some cases to use this form of measurement update, as trial 1 and 2 completing all iterations with similar RMSE values regardless of whether AR is used or not.
+	\item When using the AR method outlined in \cref{chap:method}, trial 3 was unable to complete all iterations. The iterations that were completed had a large range of RMSE. This is likely caused by false positives "pulling" the particles in the wrong direction. Plots still need to be made to show this.
 \end{itemize}
 
 
@@ -160,7 +164,15 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 		\caption{}
 		\label{fig:202011071142trialcomparison1}
 	\end{minipage}
+\begin{minipage}{.45\textwidth}
+	\centering
+	\includegraphics[width=\linewidth]{images/20201118_1730_trial_traj_comp_6}
+	\caption{}
+	\label{fig:202011071142trialcomparison7}
+\end{minipage}
 \end{figure}
+
+
 
 \section{Answering Research Questions}
 

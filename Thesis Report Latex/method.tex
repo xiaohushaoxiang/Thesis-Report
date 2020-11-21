@@ -452,96 +452,109 @@ Using steps outlined in \cite{Kok2017} and \cite{Linkoping2013}, the above outli
 \textcolor{red}{what other metrics are important to show to proof the performance of the EKF?}
 
 \newpage
-\section{Particle Filter}
+\section{Map based Particle Filter with Landmark Measurement Update}
+In \cref{sec:rw-drift_reduction}, the Particle Filter was introduced as a drift reduction method able to handle spatial context such as map information, landmarks and spatial models. In this section, the spatial information of the experimental setup is shown and the implementation of the particle filter with step and heading system input is presented.
 
-
-\textbf{Map creation}\\
-In order to use map information with the particle filter, different sources were combined to generate a map. Rudimentary paper blueprints of the building were available and could be photographed and traced in software to generate a picture of the indoor environment. This image has clear color distinction between the different structures within the building, including walls, doors and furniture. The positioning and size of furniture was estimated. The final image is seen in \cref{fig:indoor_blueprint}. This image is in pixel coordinates and needs to be transformed into meter coordinates. It then needs to represent a 2D probability density function so that it can be used in the particle filter measurement update. \\
-An occupancy grid is suitable for this, which is a grid in which each cell has a value representing the probability of being in that cell. By measuring a known structure in Google Maps using the measurement tool and comparing with its pixel length in the image, a meter to pixel ratio can be defined. The Google Maps measurement can be found in \cref{fig:house_google_maps}. This pixel to meter ratio combined with the image, is used to generate an occupancy grid as shown in \cref{fig:pf_map}. This same process can be used to get the meter position of all doors.
+\subsection*{Map Creation}
+In order to use spatial context with the particle filter, different sources were combined to generate a map of the experiment space. Rudimentary blueprints of the building were used generate a diagram of the indoor environment. The positioning and size of furniture was estimated. The resulting image has clear color distinction between the different structures within the building, including walls, doors and furniture, as seen in \cref{fig:indoor_blueprint}. Through a comparison between structures in the generated image and satellite images, shown in \cref{fig:house_google_maps}, the image was transformed from pixel to meter coordinates. This provides the basis for incorporating spatial context within a Particle Filter.
 
 \begin{figure}[H]
 	\centering
-	\begin{subfigure}[t]{.3\textwidth}
+	\begin{subfigure}[t]{.38\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{images/indoor_blueprint}
 		\caption[Image from building blueprints]{Image from building blueprints. Black, grey and red represent walls, furniture, and doors, respectively.}
 		\label{fig:indoor_blueprint}
 	\end{subfigure} \quad
-	\begin{subfigure}[t]{.3\textwidth}
+	\begin{subfigure}[t]{.4\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{images/house_google_maps}
 		\caption{Measurement from Google Maps}
 		\label{fig:house_google_maps}
 	\end{subfigure} \quad
-	\begin{subfigure}[t]{.3\textwidth}
-		\centering
-		\includegraphics[width=0.9\linewidth]{images/20201030_1157_pf_map_1}
-		\caption{Particle Filter map result}
-		\label{fig:pf_map}
-	\end{subfigure}
 	\label{fig:particle_map_construction}
 	\caption{Particle filter map creation}
 \end{figure}
 
-\textbf{Initialization}\\
-For indoor localization on one floor the state space is defined as $\mathbb{R}^{2}$, and in combination with map information is limited by the outer perimeter of the building the user is located in. The particle is defined by 
+\subsection*{Implementation}
+
+The implementation of the particle filter for indoor localization using SHS trajectory and activity recognition as input will be explained next.  \cref{algo:bootstrap_PF} summarizes the whole approach.
+
+\subsubsection*{Initialization}
+For indoor localization on one floor, particles are limited to $\mathbb{R}^{2}$ and by the outer perimeter of the building the user is located in. The particle is defined by 
 
 \begin{equation}
 x_k^i = \left(\begin{array}{l}
-x \; position \\
-y \; position\\
-heading
+p_{1,k}^i   \\
+p_{2,k}^i  \\
+\theta_k^i
 \end{array}\right), 
 \label{eq:pf_state}
 \end{equation}
-where $x^i_k$ is the state of particle $i$ at time $k$.\\
-The initialization of the particle cloud depends on information known beforehand. If there is a known initial position, all particles can be initialized around that point. Otherwise the particles can be initialized by spreading them evenly within the outer perimeter of the building. The initial weight of each particle is $1/N$, where $N$ is the total number of particles. Once initialized the following four steps are performed recursively \cite{Wu2019,Woodman2008}: 
+where $x^i_k$ is the state of particle $i$ at time $k$, $p_1 $ and $p_2$ are the particle x axis and y axis position respectively. The heading angle is  $\theta$.\\
+For initialization,  all particles are positioned around a known starting point. The initial weight of each particle $\omega^i$ is $1/N$, where $N$ is the total number of particles. Once initialized the following three steps are performed recursively \cite{Wu2019,Woodman2008}: 
 
 \begin{enumerate}
 	\item \textbf{Measurement update} \\
-   With a map, the position of physical structures can be compared with the trajectory of particles as a measurement update. For example, if these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses this structure is incorrect. Regions in which the user cannot be found have a likelihood of 0, while all indoor accessible regions have a likelihood of 1. This form of measurement turns wall information into a two dimensional probability density function, an example of which can be found in \cref{fig:pf_walls}.\par
-	A map can also be used to compare particle position with landmark position of detectable activities. For example, maps indicate where doors are located. If a door opening activity can be detected a conditional probability can be used to determine the weighting of each particle. This conditional probability can be a multivariate normal probability density function. This is defined by a mean in x and y position, which is the xy position of each particle, and a standard deviation along both axis, defined beforehand. This is shown visually by \cref{fig:pfdiagram}. Here there are three particles each with a multivariate normal probability density function represented by the different colored circle, with a gradient in opacity. The more opaque the higher the likelihood is. This represent that the closer a particle is to a detected landmark, in this case a door, the likelier the position estimate is around there as well. This is reflected in the weighting that the particle receives. If a door activity is detected the weighting of P1 and P3 will be higher than P2. This increases the likelihood of these two particles being resampled in the next step. 
+	There are two measurement updates possible within the particle filter, one that compares particle trajectories to map constraints and the other were door positions are compared with particle positions. \par 
+	
+   With a map, the position of physical structures can be compared with the trajectory of particles as a measurement update. If these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses such a structure is incorrect. This makes the likelihood of it being a position estimate 0, rendering its weight 0 as well. Particles that traverse accessible regions have a likelihood of 1, and therefore also a weight of 1. This form of measurement turns wall information into a two dimensional probability density function ($p_{\scaleto{map}{4pt}}$). A grid based spatial model was used in which each pixel that contained some form of obstruction was label as inaccessible for particles in the particle filter. The result is shown in \cref{fig:pf_map}, where black color regions are inaccessible and have a likelihood of 0.\\
+   Depending on this distribution, the individual particle weights are evaluated as 
+   
+   \begin{subequations}
+   	\begin{equation}
+   		\omega^i_{k|k} = \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(x^i_{k:k-1}),
+   		\label{eq:pf_map_weight}	
+   	\end{equation}
+   	\begin{equation}
+   		c_{k}=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( x^i_{k:k-1}\right).
+   		\label{eq:pf_map_normalization}
+   	\end{equation}
+   	\label{pf_map_update}
+   \end{subequations}
+   
+   Here $x^i_{k:k-1}$ represent the indivifual particle path between its current and previous particle positions. This measurement update occurs every timestep of the step and heading system.
+   
+   
+   
+   	\begin{figure}
+   	\centering
+   	\includegraphics[width=0.4\linewidth]{images/20201030_1157_pf_map_1}
+   	\caption{Particle Filter two dimensional probability function, where white and black has a probability of 1 and zero, respectively.}
+   	\label{fig:pf_map}
+   \end{figure}
+   
+	A map also indicates door locations, which are used as landmarks. If a door opening is detected through activity recognition, a conditional probability at each particle can be used to determine its weight, as 
+	\begin{subequations}
+		\begin{equation}
+			c^*_{k}=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(y_{k} | x_{k}^{i}\right)
+			\label{eq:pf_door_normalization}
+		\end{equation}
+		\begin{equation}
+			\omega^{i*}_{k|k} = \frac{1}{c^*_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(y_k|x^i_k),
+			\label{eq:pf_door_weight}	
+		\end{equation}
+	\end{subequations}
+
+ In the case of \cref{fig:pfdiagram}, if a door activity is detected the weight of particles P1 and P3 will be made higher than that of P2. This measurement update can only happen when a door interaction detection occurs, and happens after the map constraint measurement update.
 	
 	\begin{figure}[]
-		\centering
-		\begin{subfigure}[t]{.4\textwidth}
 			\centering
-			\includegraphics[width=0.7\linewidth]{images/20201030_1157_pf_map_1}
-			\caption{2D probability density function from map information. black is zero likelihood and white is a likelihood of one.}
-			\label{fig:pf_walls}
-		\end{subfigure} \quad
-		\begin{subfigure}[t]{0.4\textwidth}
-			\centering
-			\includegraphics[trim=240 0 220 0, clip, width=0.7\linewidth]{images/pf_diagram}
-			\caption{ Particles with a multivariate normal probability density function to determine weighting depending on position of a door}
+			\includegraphics[trim=240 0 220 0, clip, width=0.35\linewidth]{images/pf_diagram}
+			\caption{ Particles with a multivariate normal probability density function, represented by color gradient. At door interaction detection, particle weight is determined by probability at location of door in individual density functions.}
 			\label{fig:pfdiagram}
-		\end{subfigure}
-		\caption[Map information use in Particle Filter]{Map information for measurement updates in the particle filter}
-		\label{fig:pf_meas_update}
-	\end{figure}
-	
-	\item  \textbf{Estimation} \\
-	Within \cref{sec:method-pf} there are two approaches to determining the estimate. These are the maximum a posteriori (MAP) and the minimum mean square error (MMSE). While running the SHS particle filter method defined in this report, both forms of estimation proofed inadequate.
-	First, MMSE does not work well in situations in which there are multiple equal likely hypotheses. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{labellist}
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.4\linewidth]{images/20201108_1751_lopen1_1_MMSE_estimator}
-		\caption{}
-		\label{fig:lopen_11_mmse_estimator}
 	\end{figure}
 	
 	\item \textbf{Resampling}\\
-	There are multiple methods that can be used for resampling including multinomial, stratified resampling, systematic resampling, and	residual resampling \cite{hol2006resampling}. \citet{hol2006resampling} conclude that from this set systematic resampling is the best considering resampling quality and computational complexity. For systematic resampling
-	\begin{subequations}
-		\begin{equation}
-		x^{i*} = x(F^{-1}(u^i)),
-		\end{equation}
-		\begin{equation}
-		u^i = \frac{(i-1) + \tilde{u}}{N}, \tilde{u} \sim \mathcal{U}[0,1).
-		\end{equation}
-	\end{subequations}
+	Resampling is used to select a new group of particles based on the weights of the current particles. The higher the weight of a particle is, the more likely it will be resampled. A particle can even be resampled multiple times. \par 
+	There are multiple methods that can be used for resampling including multinomial, stratified, systematic, and	residual resampling \cite{hol2006resampling,gustafsson2010statistical}. \citet{hol2006resampling} conclude that  systematic resampling is the best considering resampling quality and computational complexity. Systematic resampling is defined as 
 	
-	Here $x^{i*}$ represents the newly sample particle with index $i$ and $F^{-1}$ represents the generalized inverse of the cumulative probability distribution of the normalized particle weights, $N$ is the total number of particles. \par
+	\begin{align}
+		x^{i*} &= x(F^{-1}(u^i)) \\
+		u^i &= \frac{(i-1) + \tilde{u}}{N}, \tilde{u} \sim \mathcal{U}[0,1).
+	\end{align}	
+	
+	 Here $x^{i*}$ represents the newly sample particle with index $i$, $F^{-1}$ represents the generalized inverse of the cumulative probability distribution of the normalized particle weights. Once the particles are resampled the particle weights are reset with $\omega^i_{k+1|k} = 1/N$ . \par
 	Resampling inevitably destroys information and therefore increases uncertainty by the random sampling \cite{gustafsson2010particle}. Resampling should therefore occur only when it is needed. \citet{gustafsson2010statistical} proposes the use of  \textit{effective number of samples} to trigger a  resampling. This can be calculated as 
 	\begin{subequations}
 		\begin{equation}
@@ -559,38 +572,130 @@ The initialization of the particle cloud depends on information known beforehand
 	
 	
 	\item \textbf{Time update} \\	
-	Each time step, every particle updates its own state with a dynamic model. For SHS, the dynamic model used is
+	After resampling, the new particles update their state with a dynamic model. For indoor localization using a step and heading trajectory as input, the dynamic model used is
 	
 	\begin{equation}
-	\label{eq:SHS_dynamic_model_with_noise}
-	x^i_{t + 1}
-	=
-	\left(\begin{array}{l}
-	x(0)_{t} + (l_{t} + e_l) * \cos (x(2)_{t}) \\
-	x(1)_{t} + (l_{t} + e_l) * \sin (x(2)_{t}) \\
-	x(2)_{t} + \Delta \theta_t + e_\theta 
-	\end{array}\right), \quad
-	e_{\theta} \sim \mathcal{N}\left(0, \sigma_{\theta}^{2}\right), \quad e_{l} \sim \mathcal{N}\left(0, \sigma_{l}^{2}\right).
+		\label{eq:SHS_dynamic_model_with_noise}
+		x^i_{k + 1}
+		=
+		\left(\begin{array}{l}
+			p_{1,k}^i + (l_{k} + e_l) * \cos (\theta_{k}^i) \\
+			p_{2,k}^i + (l_{t} + e_l) * \sin (\theta_{k}^i) \\
+			\theta_{k}^i + \Delta \phi + e_\theta 
+		\end{array}\right), \quad
+		e_{\theta} \sim \mathcal{N}\left(0, \sigma_{\theta}^{2}\right), \quad e_{l} \sim \mathcal{N}\left(0, \sigma_{l}^{2}\right).
 	\end{equation}
+
+The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous timestep of the step and heading trajectory, found through the orientation estimation. These variables have additive zero mean Gaussian noise realizations $e_{\theta}$ and $e_{l}$, representing the uncertainty in the values of these inputs.
 \end{enumerate}
+The resulting particle filter from the previous steps is summarized in \cref{algo:bootstrap_PF}.
 
-where $x(*)$ indicates the index of the state vector defined in \eqref{eq:pf_state}. The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous time step, found through the orientation estimation in \cref{sec:method-EKF}.
+\begin{algorithm}[H]
+	\small
+	\SetAlgoLined
+	\caption{Indoor Localization Particle Filter}
+	\label{algo:bootstrap_PF}
+	$i = 1,...,N$.   \\
+	% choose a proposal distribution $ q(x_{k+1}|x_{1:k},y_{k+1})$, resampling strategy and the number of particles N.\\
+	% \KwResult{Write here the result }
+	\underline{Initialization:}\\
+	choose the number of particles N.
+	Generate initial distribution with
+	\begin{subequations}
+		\begin{equation}
+			x^i_1 \sim p_{x_1},
+		\end{equation}
+		and let
+		\begin{equation}
+			\omega^i_{1|0} = 1/N.
+		\end{equation}
+	\end{subequations}
+	
+	\For{k = 1,2,...}{
+		\underline{Measurement update:}\\
+		\begin{subequations}
+			\begin{align}
+				\omega^i_{k|k} &= \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(x^i_{k:k-1}),
+				\label{eq:algo_pf_map_weight}\\	
+				c_{k} &=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( x^i_{k:k-1}\right)
+				\label{eq:algo_pf_map_normalization}
+			\end{align}
+			\label{pf_map_update}
+		\end{subequations}
+		
+		
+		\begin{subequations}
+			
+			\If{(door interaction detected)}{
+				\begin{align}
+					c_{k}&=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(y_{k} | x_{k}^{i}\right)
+					\label{eq:pf_door_normalization} \\			
+					\omega^i_{k|k} &= \frac{1}{c_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(y_k|x^i_k),
+					\label{eq:pf_door_weight}	
+				\end{align}
+			}
+			\label{eq:pf_door_update}			
+		\end{subequations}\smallskip
+		
+		
+		\underline{Resampling:}\\
+		\begin{subequations}
+			\begin{equation}
+				N_{\mathrm{eff}}=\frac{1}{\sum_{i=1}^{N}\left(w^{i}\right)^{2}},
+			\end{equation}
+			\If{	$N_{\mathrm{eff}} < 2N/3$}{
+				
+				\begin{align}
+					x^{i*} &= x(F^{-1}(u^i)) \\
+					u^i &= \frac{(i-1) + \tilde{u}}{N}, \tilde{u} \sim \mathcal{U}[0,1).\\
+					\omega^i_{k+1|k} &= 1/N
+				\end{align}
+				
+				\label{eq:pf_resampling}	
+		}	\end{subequations}\smallskip
+		\underline{Time update:}\\
+		\begin{equation}
+			\label{eq:algo_SHS_dynamic_model_with_noise}
+			x^i_{k + 1}
+			=
+			\left(\begin{array}{l}
+				p_{1,k}^i + (l_{k} + e_l) * \cos (\theta_{k}^i) \\
+				p_{2,k}^i + (l_{t} + e_l) * \sin (\theta_{k}^i) \\
+				\theta_{k}^i + \Delta \phi + e_\theta 
+			\end{array}\right), \quad
+			e_{\theta} \sim \mathcal{N}\left(0, \sigma_{\theta}^{2}\right), \quad e_{l} \sim \mathcal{N}\left(0, \sigma_{l}^{2}\right).
+		\end{equation}		
+	}
+\end{algorithm}
+\newpage
 
-\subsubsection{Determining the estimate}
+\textbf{State Estimation}\\
+The Particle Filter is able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypotheses for the system that it is modeling. In the case of localization, this translates to indicating that there are two position estimates that are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}.
 
+The posterior distribution is the primary output of a particle filter \cite{gustafsson2010particle}. For state inference purposes a single point estimate is more convenient \cite{Saha2009}. The weights and positions of the particle cloud can be used to generate a single point estimate \cite{gustafsson2010particle}. There are different ways of defining the eventual position estimate. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior distribution \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009}.\par 
 
+For the particle filter method outlined in this thesis, both forms have disadvantages.
+Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a particle filter after 10 time steps. There are clear groups visible, all moving in different directions. The position estimate is expected to be in either one of the particle clouds, however RMSE put it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
+Implementing MAP as the state estimate in the particle filter is actually similar to MMSE. The measurement update that occurs every timestep of the step and heading trajectory is the one that compares particle trajectories to map constraints, setting infeasible particles probability to zero and feasible particles to one. All feasible particles will then have the same weighting. Since all particles have the same weight, a MAP cannot be defined.
+\begin{figure}[]
+	\centering
+	\includegraphics[width=0.35\linewidth]{images/20201108_1751_lopen1_1_MMSE_estimator}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{Particle filter after 10 iterations, showing how MMSE does not provide a suitable single point estimate.}
+	\label{fig:lopen_11_mmse_estimator}
+\end{figure}
 
-Another approach was used in which the particles that survived the whole SHS trajectory made during the experiment were used. By recording the ancestors of these particles, the whole trajectory could be calculated by backtrack [\qn ?].
-
-\textcolor{cyan}{
-	\begin{itemize}
-		\item For this section I want to show MAP, RMSE and Ancestor Tracking (AT) on an example particle filter output to show why AT is better than th other two.
-\end{itemize}}
-
-\textcolor{red}{Do you think that I need a quantitative comparison between the different position estimate methods?}
+A different approach is to using the particles at the last timestep of the SHS trajectory and calculate all ancestors of these particles. A final particle with all its ancestors generate a feasible trajectory.  Averaging the trajectories of multiple final particles can give an estimate trajectory within the indoor environment.
 
 \section{Activity Recognition}
 \label{sec:method-AR}
+
+Activity recognition is large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks and its many variations \cite{Lima2019}. Even the subset of activity recognition that use IMU sensors does not decrease the amount of possibilities significantly.
+
+%TODO add drear as activity recognition
+
+The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. Considering the scope of this thesis, certain constraints can be applied, such as that the system should be able to function on a smartphone and must use comparable sensors to those found in such devices, thus MEMS IMUs. \citet{Shoaib2015} have performed an extensive survey that focuses on the online activity recognition solely using mobile phone sensors and onboard processing. Other metrics such as resource consumption were also presented. 30 papers were found to meet the requirements of the review. Within the review they indicate that most commonly used classification methods include Decision Tree, support vector machine (SVM), K-nearest neighbor (KNN) and Naive Bayes, in descending order. A third of the papers were found to use decision trees. All but 6 of the papers had the training process occurring offline. The classification process takes the method generated offline, and uses it online to classify new activities. The authors refrain from listing any performance measures, such as accuracy or precision, since no direct comparison between the different methods is made. \citet{Ahmad2020} specifically focuses on seeing whether smartphone activity recognition techniques are also applicable to smartwatches, and what parameters, including classifiers, work best. Activities to recognize included walking, up-stairs, down-stairs, running, and jogging. Their results indicated that  Decision Trees, SVM and KNN had around 90 percent accuracy a minor difference. \citet{Shoaib2016} show that combining information from both a smartwatch and smartphone, complex human activity recognition is improved compared to when only a smart watch is used. 
+
 
 \textcolor{purple}{ section overview:
 \begin{itemize}

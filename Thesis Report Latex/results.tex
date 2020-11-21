@@ -145,7 +145,7 @@ What is noticeable from the results is that there is an outlier. This is with th
  
 A small scale experiment was performed outdoors using the same process as in \cite{Vezocnik2019}, where a small distance was used for parameter estimation and a longer for performance measurement. Original data was collected from the same person and device used in the eventual indoor localization experiment. Three trials of 30 meters were walked at different qualitative walking speeds, slow, normal, and fast, while recording accelerometer data. Four longer trials of 300 meters were walked, to determine performance, also at different walking speeds. \par 
 During the smaller walking distances, the number of steps taken was recorded manually. For two trials the number of steps detected was exactly the number of steps taken. This was for slow and fast walking where 67 and 50 steps were counted respectively.  For the other trial, the detection was off 2 steps, with 57 steps being taken and 55 being recorded. \par 
-The different step length estimation methods were applied to the original data. The \citet{Tian2016} method used the same parameter determined for the online dataset. The \citet{Weinberg2002} parameter was based on the smaller distance data. The results are shown in \cref{fig:step_length_personal_testing}. The results seem to suggest that for slow to normal walking the \citet{Tian2016} method works best, with a chance of underestimating the distance traveled For normal to fast walking the \citet{Weinberg2002} method works better, with a chance of overestimating the distance traveled. Making the assumptions that walking indoor is generally more in the normal to slow speed, the choice was made to use the \citet{Tian2016} method for step length estimation in the overall system.
+The different step length estimation methods were applied to the original data. The \citet{Tian2016} method used the same parameter determined for the online dataset. The \citet{Weinberg2002} parameter was based on the smaller distance data. The results are shown in \cref{fig:step_length_personal_testing}. The results seem to suggest that for slow to normal walking the \citet{Tian2016} method works best, with a chance of underestimating the distance traveled. For normal to fast walking the \citet{Weinberg2002} method works better, with a chance of overestimating the distance traveled. Making the assumptions that walking indoor is generally more in the normal to slow speed, the choice was made to use the \citet{Tian2016} method for step length estimation in the overall system.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\textwidth]{images/20201113_1920_wienberg_vs_tian_og_data_1}
@@ -155,21 +155,21 @@ The different step length estimation methods were applied to the original data. 
 \newpage
 \section{Indoor Orientation Estimation}
 
-The step detection and step length estimation experiments were performed outdoors since the location has no effect on accelerometer readings and outdoor testing allows for long walking distances. Orientation estimation and the whole system performance naturally are location-dependent and will have to be tested indoors. \par
+The step detection and step length estimation experiments were performed outdoors. This was done since the location has no effect on accelerometer readings and outdoor testing allows for long straight walking distances. Orientation estimation and the whole system performance naturally are location-dependent and will have to be tested indoors. \par
 
-Indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand and recording the IMU signals in the phone through a dedicated android app. Using smartphone data, the SHS trajectory could be calculated. During the experiment, a total of 6 successful trials were walked by one test subject, each trying to generate a different trajectory than the previous trials. Trials 4 and 8 had video that did not record the trajectory correctly, and could therefore not be used for comparison. The test subject is the same person that generated the original data for the step detection and step length estimation experiments.\par 
+Indoor testing was located at the house of a family member. The test consisted of walking around indoors with a smartphone in hand and recording the IMU signals in the phone through a dedicated android app. Using smartphone data, the SHS trajectory could be calculated. During the experiment, a total of 6 successful trials were walked by one test subject, each trial trying to generate a different trajectory than the previous. Trials 4 and 8 had video that did not record the trajectory correctly, and could therefore not be used for comparison. The test subject is the same person that generated the original data for the step detection and step length estimation experiments.\par 
 
-Determining the performance of orientation estimation during the experiments is difficult since no ground truth was available for comparison. One sanity check that can be performed is comparing the orientation estimation of the EKF with the orientation estimation calculated by the android system. The results will not be able to give an indication of which performed best with respect to reality, but could potentially highlight any very diverging behavior. In order to represent this orientation difference, a difference quaternion ($	\Delta q_t$) can be used, defined as \cite{Kok2017}
+Determining the performance of orientation estimation during the experiments is difficult since no ground truth was available for comparison. A sanity check that can be performed is comparing the orientation estimation of the EKF with the orientation estimation calculated by the android system. The results will not be able to give an indication of which performed best with respect to reality, but could potentially highlight any very diverging behavior. In order to represent this orientation difference, a difference quaternion ($	\Delta q_t$) can be used, defined as \cite{Kok2017}
 
 \begin{equation}
-	\Delta q_t = \hat{q}_{ekf,t}^{nb} \odot \left( \hat{q}_{and,t}^{nb}  \right)^c
+	\Delta q_t = \hat{q}_{ekf,t}^{nb} \odot \left( \hat{q}_{and,t}^{nb}  \right)^c,
 \end{equation} 
 
-where $\hat{q}_{ekf,t}^{nb}$ is the quaternion estimate from navigation frame to body frame for the EKF at time $t$. $\hat{q}_{and,t}^{nb}$ is the same but for the orientation estimation performed by the android device. The difference quaternion can be converted into Euler angles. The yaw component for each trial is shown in  \cref{fig:yaw_difference_between_android_and_ekf_1}.
+where $\hat{q}_{ekf,t}^{nb}$ is the quaternion estimate from navigation frame to body frame for the EKF at time $t$. $\hat{q}_{and,t}^{nb}$ is the same but for the orientation estimation performed by the android device. The difference quaternion can be converted into Euler angles for more intuitive interpretation. The yaw component for each trial is shown in  \cref{fig:yaw_difference_between_android_and_ekf_1}. From the results, the difference between both orientation estimations seems larger for trial 3 and 6, requiring further investigation.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.65\linewidth]{images/20201118_1616_yaw_difference_between_android_and_EKF_1}
+	\includegraphics[width=0.7\linewidth]{images/20201118_1616_yaw_difference_between_android_and_EKF_1}
 	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Yaw difference between EKF and android orientation estimation.}
 	\label{fig:yaw_difference_between_android_and_ekf_1}
@@ -181,7 +181,7 @@ During the experiment, a smartwatch was worn around the wrist of the hand that w
 
 The smartwatch accelerometer data was synchronized with smartphone data. The activity recognition method in \cref{sec:method-AR} was used to try and detect door interaction. Combining the activity detection with the floor map generated in \cref{sec:method-pf}, the whole system could be tested. For initialization, a known starting location on the map was indicated, around which the particles were distributed with a Bayesian profile.  \par 
 
-In addition to recording IMU data from both smartphone and watch while the path was being walked, the trials were also being filmed from a breast pocket by another smartphone. The video recorded during the experiment was used to get a rough estimate of the path walked during the trial. This was done by replaying the video and pausing it at one second intervals. At the paused moments, the test subject position was manually indicating on the map The position and time elapsed since the start of the trial were recorded. The resulting trajectory can be used to give some performance indication of the devised method. A root mean square error can be calculated between an estimate and the rough trajectory as in
+In addition to recording IMU data from both smartphone and smartwatch while the path was being walked, the trials were also being filmed from a breast pocket by another device. The video recorded during the experiment was used to get a rough estimate of the path walked during the trial. This was done by replaying the video and pausing it at one second intervals. At the paused moments, the test subject position was manually indicating on the map. The position and time elapsed since the start of the trial were recorded. The resulting trajectory can be used to give a rough performance indication of the devised method. A root mean square error can be calculated between an estimate and the rough trajectory as in
 
 \begin{equation}
 	\displaystyle \operatorname {RMSE} ={\sqrt {\frac {\sum _{t=1}^{T}({\hat {y}}_{t}-y_{t})^{2}}{T}}},
@@ -189,8 +189,8 @@ In addition to recording IMU data from both smartphone and watch while the path 
 \end{equation}
 
 where $T$ is the total time, $\hat{y_t}$ the estimate at time $t$ and $y_t$ the rough trajectory at time $t$.
-\subsection{With "perfect" activity recognition}
-During the experiment, the possibility existed of recording a timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of representing perfect activity recognition. The recorded timestamps can be used as a particle filter measurement update. Using this method the potential effect of activity recognition for indoor localization can be evaluated, by comparing performance when this form of measurement is used and not used. \par 
+\subsection{With "ideal" activity recognition}
+During the experiment, the possibility existed of recording a timestamp to indicate the beginning of interaction with a door within the indoor environment. This could be used as a ground truth comparison for eventual activity recognition, but also as a way of representing ideal activity recognition. The recorded timestamps can be used as a particle filter measurement update. Using this method the potential effect of activity recognition for indoor localization can be evaluated, by comparing performance when this form of measurement is used and not used. \par 
 
 All trials were run through the complete system with the manually recorded door interactions, with 4000 particles. This was done for five iterations per trial, in order to show reproducibility. The results of which can be found in \cref{fig:pf_boxplot}.
 
@@ -205,7 +205,7 @@ The results show that for trials 1 to 3 and trial 7 that all five iterations wer
 \newpage
 \subsection{With activity recognition}
 
-Using the activity recognition method outline in Algorithm 3, the results in \cref{fig:rmse_per_trial_with_activity_recognition} were generated
+Applying the activity recognition method on the smartwatch data outline in Algorithm 3, door interactions could be detected. Using these detections instead of the manually indicated ones, the results in \cref{fig:rmse_per_trial_with_activity_recognition} were generated
 
 \begin{figure}[H]
 	\centering
@@ -214,7 +214,7 @@ Using the activity recognition method outline in Algorithm 3, the results in \cr
 	\label{fig:rmse_per_trial_with_activity_recognition}
 \end{figure}
 
-Trials 1,2 and 7 show similar results as when "perfect" activity recognition was used. Also the inability to complete all iterations for trials 5 and 7 is present. In contrast trial 3 is also unable to complete all iterations, with some completed results leading to much larger RMSE values. 
+Trials 1,2 and 7 show similar results as when "perfect" activity recognition was used. Also the inability to complete all iterations for trials 5 and 6 is still present. In contrast trial 3 is also unable to complete all iterations, with the completed iterations leading to much larger RMSE values than before. 
 
 \newpage
 \subsection{Without activity}
