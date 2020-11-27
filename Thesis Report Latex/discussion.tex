@@ -5,13 +5,9 @@ Within the discussion the results of the different \ac{SHS} components and the o
 
 \subsection*{Step Detection}
 For step detection, the implementation of \cref{algo:step_detect} was compared with that of \citet{Salvi2018}, who had continued the work of \cite{Harle2013}.  \par 
-Within the step counting results, there were two observations made. Firstly, the total number of steps counted by both implementations was similar in all carrying modes, many of which had 5\% or less in counting error. There was a large outlier for both cases with the step counting in the back pocket of "user1". Researchers attribute this to the pocket being loose and allowing the phone to rebound when a step was taken \cite{Salvi2018}. This would introduce nefarious components in the accelerometer signal, leading to false positives. \citet{Brajdic2013} encountered similar problems with this carrying position, hypothesizing that the relaxing of the gluteus maximus during locomotion could influence the acceleration trace.\\
-The similarity between the two approaches is further underlined by the results in which the time difference between a step detection and its closest ground truth point was calculated. Many detections were within 0.1 seconds from their closest ground truth point. Here the best performing option also changed per carrying mode and person.\par 
-Original data was also gathered for step counting and evaluated using the devised method. Here similar results were found to the opensource data. Bad performance in the back pocket was also found, with the best performance being when the smartphone is held in hand. The bad performance in the back pocket further underlines the reliability of step detection in this carrying mode. \par  
-The third metric for "unique" step detection was explained and applied, in an attempt to filter out detections detecting the same step. In contrast to the previous metric, this indicated that \cref{algo:step_detect} had more "unique" steps, which are steps closest to a ground truth point, without another detection at the same distance. This would suggest that the current implementation is better at determining the time at which a step occurs. \\
-This difference between the two implementations can potentially be explained by the goal and implementation of the \citet{Salvi2018} approach. This research was focused on only \textit{step counting} and did no measurements themselves to determine how close their detections were to the actual steps. Any eventual lag would not affect the step counting performance, as long as the steps are counted. Their android implementation, the output of which was indicated in the validation set, may have had some form of lag. The lag would shift all points, potentially putting them in between step occurrences. This could cause two of them to be in an interval around a ground truth point, which the metric then considers not "unique". \par 
 
-With step detection, the goal was to get similar or better performance than \cite{Salvi2018} . The same parameters found through a variable space search in \cite{Salvi2018}, were used in the step detection method, with the idea that the same performance would be reached. While the results seem to show similar results, it may be worthwhile to run the same variable to check that the parameters are indeed the best for step detection.
+
+turning smaller distance \cite{Sun2015}
 
 \subsection*{Step Length Estimation}
 The step length estimation results show that the general linear relationships outlined in \cite{Vezocnik2019} were found, however, the accuracy claimed was not, performing worse than expected. This is most likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly. A similar small scale experiment was performed. Results from this indicate that normal to slow walking worked best with the approach of \citet{Tian2016}, with a tendency to underestimate the distance traveled. \par 
@@ -28,7 +24,7 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 	\item trial 3 and trial 6 had the largest yaw difference of the trials. The yaw traces between the android system and EKF can be found in \cref{fig:202011181708yawdifferencebetweenmethods} and \cref{fig:202011181705yawdifferencebetweenmethods}
 	\item EKF for trial 6 has a weird jump and slowly gets back to the estimate of the android system. Not clear what is causing this. \textcolor{red}{How should I handle this further?}
 	\item for trial 3 there seems to be a slight offset between the orientation estimations, but the change in angle looks similar.
-	\item Further testing will be needed to determine if the effect of magnet disturbances has caused wrong yaw orientation estimation. Using a more accurate device, such as a xsens IMU could be a good comparison.
+	\item Further testing will be needed to determine if the effect of magnet disturbances has caused wrong yaw orientation estimation. Using a more accurate device, such as a xsens\ac{IMU}could be a good comparison.
 \end{itemize}
 
 \begin{figure}[H]
@@ -50,15 +46,15 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 \subsection*{Overall System Performance}
 
 \begin{itemize}
-	\item Using door interactions that were manually indicated, 4 out of 6 trials were able to complete all iterations. They do have a difference in median RMSE value and the spread between iterations. The reasoning why this is occurring can be spotted in the trajectories that the particle filter calculates.  
-	\item The particle for trial 1 and 2 complete all iterations, however both do not follow the complete trajectory derived from video analysis. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the particle filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the particle filter seems to walk too far and is unable to make the correct turn.
+	\item Using door interactions that were manually indicated, 4 out of 6 trials were able to complete all iterations. They do have a difference in median RMSE value and the spread between iterations. The reasoning why this is occurring can be spotted in the trajectories that the Particle Filter calculates.  
+	\item The particle for trial 1 and 2 complete all iterations, however both do not follow the complete trajectory derived from video analysis. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the Particle Filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the Particle Filter seems to walk too far and is unable to make the correct turn.
 	\item Trial 3 and 7 are able to follow the whole route. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
 	\item I have a hypothesis that step length estimation is overestimating distance traveled in some cases. This can be caused by turning not having the same displacement as a straight step.
-	\item Show a table of the distance walked according to rough video estimate and what the shs estimated.
+	\item Show a table of the distance walked according to rough video estimate and what the \ac{SHS}estimated.
 	
-	\item Trials 5 and 6 are unable to complete any iteration reliably even with "perfect" activity recognition. This seems to suggest that the output of the SHS is not good enough. This needs to be shown in figures.
+	\item Trials 5 and 6 are unable to complete any iteration reliably even with "perfect" activity recognition. This seems to suggest that the output of the \ac{SHS}is not good enough. This needs to be shown in figures.
 	
-	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization since more trials are able to survive the whole SHS trajectory when it is than when it is not. Furthermore, the trajectories have low RMSE values compared to the video analysis trajectory, suggesting correct estimation. This is most apparent with trial 7, wherewith activity recognition it is able to complete the whole route every time, while without it only one iteration survives with a large error with the video estimate. The results also show that it is not a necessity in some cases to use this form of measurement update, as trial 1 and 2 completing all iterations with similar RMSE values regardless of whether AR is used or not.
+	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization since more trials are able to survive the whole \ac{SHS}trajectory when it is than when it is not. Furthermore, the trajectories have low RMSE values compared to the video analysis trajectory, suggesting correct estimation. This is most apparent with trial 7, wherewith activity recognition it is able to complete the whole route every time, while without it only one iteration survives with a large error with the video estimate. The results also show that it is not a necessity in some cases to use this form of measurement update, as trial 1 and 2 completing all iterations with similar RMSE values regardless of whether AR is used or not.
 	\item When using the AR method outlined in \cref{chap:method}, trial 3 was unable to complete all iterations. The iterations that were completed had a large range of RMSE. This is likely caused by false positives "pulling" the particles in the wrong direction. Plots still need to be made to show this.
 \end{itemize}
 
@@ -220,7 +216,7 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 
 \textbf{Activity Recognition}
 \begin{itemize}
-	\item Detect more useful activities that can be used as additional particle filter measurement update. For example, climbing stairs for only smartphone sensors, or more intricate activities such as cooking
+	\item Detect more useful activities that can be used as additional Particle Filter measurement update. For example, climbing stairs for only smartphone sensors, or more intricate activities such as cooking
 \end{itemize}
 
 \textbf{Testing}

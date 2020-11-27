@@ -1,94 +1,148 @@
 \chapter{Method}
 \label{chap:method}
-In the previous chapter different indoor localization methods were introduced. From this information an initial system design was destilled. The details of the different components can be found in the following sections.
+\textit{Using the information from \cref{chap:related work}, a proof of concept was designed where a step and heading system was combined with spatial context and activity recognition from IMU data from a smartwatch. This chapter begins with a design overview, whereafter each subsystem of the proof of concept and their respective components will be treated.}
 
 \section{Proof of Concept System Overview}
-Summarizing the information and the decision made so far, the overall proof of concept can be found in \cref{fig:system_design}.
-\textcolor{cyan}{further explanation}
-
+The overall proof of concept, with all of its individual components, can be found in \cref{fig:system_design}. 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{images/system_design}
-	\caption{Overview of proof of concept SHS-PF with activity recognition from wearable device}
+	\includegraphics[trim=0 40 0 50, clip, width=1.1\linewidth]{images/system_design}
+	\setlength{\abovecaptionskip}{3pt}
+
+	\caption{Overview of Step and Heading System-Particle Filter (SHS-PF) proof of concept  with activity recognition from a smartwatch IMU.}
 	\label{fig:system_design}
 \end{figure}
+The inputs to the system are map information and data from smartphone and smartwatch IMUs. The smartphone data will be used in a \ac{SHS}, outputting a trajectory walked. This trajectory will be used as the input for Particle Filter. The Particle Filter will also use map information and door interaction detection for measurement updates as a drift reduction method. The door interaction detection is activity recognition that uses thresholds on smartwatch IMU acceleration combined with standstill detection from the step detection component of the \ac{SHS}. 
 
+\section{Smartphone based Step and Heading System}
 
-\section{Step Detection and Step Length Estimation}
+In the following section the different components of the \ac{SHS}, indicated by the blue box in \cref{fig:system_design}, will be presented. The only input to this subsystem is the data from the smartphone IMU. The output is a trajectory consisting of connected step vectors,each with a step length and direction. The section will start with step detection, followed by step length estimation, heading estimation and drift reduction through a particle filter with spatial context.
 
-\textcolor{cyan}{introductory text}
-
-\subsection*{Step Detection}
+\subsection{Step Detection}
 \label{sec:meth - step detection}
-The method used for step detection is similar to the one presented by \cite{Salvi2018}, introduced in \secref{sec:rw - step detection}. 
- An overview of the different components of this windowed peak detection method is shown in \cref{fig:step_detection} . To optimize the algorithm, different combinations of stage components were compared in \cite{Salvi2018}. A custom made, electronic ground truth device was worn by test subjects for easy comparison with the different parameter settings. A dataset of 36 recordings was made,  where three researchers walking for two to three minutes with the phone held in six different carrying modes. This includes in hand, in a front pocket, in a back pocket, in an armband, in a shoulder purse, and in a neck pouch on a string. Each set contains around 2.5 minutes of accelerometer and ground truth data.
-\begin{figure}
-	\centering
-	\includegraphics[trim=20 100 50 80, clip, width=0.7\linewidth]{images/step_detection}
-	\caption{Windowed peak detection components and parameters used by \cite{Salvi2018}}
-	\label{fig:step_detection}
-\end{figure}
 
- This thesis uses the method and parameters found by \citet{Salvi2018} as basis for step detection. The eventually implemented method differs slightly from the referenced paper in that the data is being handled offline, not having to wait for data buffers to fill. It also differs in that it adds the walk detection method from \cite{Brajdic2013}. The values used for the different parameters are based on those found by \cite{Salvi2018}. The implemented method consists of five steps:
-\begin{enumerate}
-	\item \textbf{Pre-processing} \\
-	The IMU used in most smartphones provide acceleration information over three orthogonal axes. For the step detection algorithm the magnitude of the combined signal from the three orthogonal axes is used.
+Steps are reflected in accelerometer magnitude measurements by peaks in the trace. This caused by the impact of the foot with the ground. An extract of accelerometer magnitude data can be seen in \cref{fig:accelerometer_in_different_carrying_modes}. This figure shows how the accelerometer data changes per carrying mode. Peak detection can be used to extract the peaks from the accelerometer data. In \cref{sec:rw - step detection}, it was indicated that \citet{Brajdic2013} determined that windowed peak detection was a good approach in detecting steps from accelerometer data. \citet{Salvi2018} used this approach to optimize parameters for high performance step detection.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\linewidth]{images/20201127_1110__frontpocket_}
+	\caption{Accelerometer magnitude in different smartphone carrying modes, showing difference in trace.}
+	\label{fig:accelerometer_in_different_carrying_modes}
+\end{figure}
+ 
+
+The windowed peak detection method used in this thesis for step detection uses the implementation of \citet{Salvi2018}. The method consists of three stages applied to all \ac{IMU} accelerometer data, one after the other. \par  
+The first stage of windowed peak detection consists of calculating the acceleration norm followed by the mean and standard deviation of the acceleration magnitude over a trailing moving window. All samples from this calculation with a standard deviation higher than a set threshold are considered walking and are used for further processing. The second technique is applying a Gaussina window function to the walk accelerometer magnitude data to smoothen it and amplifying peaks within the data using a score system. The third stage uses the output of the scoring technique to detect outliers, after which local maxima are flagged as steps.\par  
+
+The thesis method augments the step detection method of \cite{Salvi2018} by adding the walk detection method from \cite{Brajdic2013}, since no formal walk detection was implemented in the original algorithm. This is used in order to filter out activities that are not walking, in an attempt to decrease the chance of false positives.\par 
+
+The three stages in step detection will be handled in more detail next.
+
+\subsubsection{Pre-processing and Walk Detection}
+	 The \ac{IMU} used in smartphones provide acceleration information  $ y_a(k) \in \mathbb{R}^3 $ with a sampling frequency $ f $ and sample index $ k $, where $ k = 1,...,N $ where $ N $ is the total number of samples. For the first stage in step detection, the magnitude of acceleration from the three orthogonal axes is calculated 
+			\begin{equation}\label{key}
+		x(k) = ||y_a(k)||_2,
+	\end{equation} 
+	where $ x(k) $ now represents the accelerometer norm. \par 
+	Since a person is not walking continuously, the time interval in which it does occur need to be detected. \citet{Brajdic2013} determined that thresholding on the standard deviation of the acceleration magnitude over a moving window was sufficient, using 
 	
-	\item \textbf{Walk detection} \\
-	Since a person is not walking continuously, the regions in which it does occur need to be indicated. \cite{Brajdic2013} determined that thresholding on the standard deviation of the norm the accelerometer signal was sufficient. This is done using the parameters found by the paper, which is determining the standard deviation over a moving frame of 0.8 seconds, with all standard deviation magnitude levels above $0.6 m/s^2$ being considered walking.
+	\begin{subequations}	
+		\begin{align}\label{key}
+			x_{mean}(k) &= {\frac {1}{L_T f}}\left(\sum _{i=k-L_t f}^{k}{x(i)}\right)\\
+			x_{\sigma}(k) &= {\sqrt {{\frac {1}{L_T f - 1}}\sum _{i=k-L_T f}^{k}\left(x(i)-{x_{mean}(k)}\right)^{2}}},
+		\end{align}	
+		\begin{align}\label{key}
+			x_{walk}(k) &= 
+			\begin{cases}
+				x(k),& \text{if } x_\sigma(k)>A_{thres}\\
+				Nan,              & \text{otherwise}
+			\end{cases}
+		\end{align}
+	\end{subequations}
+	Where $ x_{mean}(k)$ and $ x_{\sigma}(k) $ are the mean and standard deviation over the moving time window, where $ k = 1,...,N $. The time interval of the moving window is $ L_T $ in seconds and $ A_{thres}$ is the threshold on the moving window standard deviation. The samples who's calculated moving window standard deviation is above the prescribed threshold are considered walking and are passed to $ x_{walk}(k)$. For sample indexes where the threshold is not met, the value is indicated as not a number ($ Nan $). We perform the last step since $ x_{walk} $ will be used in the next stage of step detection, and we want to exclude the data below the threshold, but want to preserve the sample index over the whole dataset. Time will be preserved then as well. \par 
 	
-	\item \textbf{Filtering} \\
-	A gaussian window is applied with a window size of 13 frames and a standard deviation of 0.35.
+\subsubsection{Gaussian Window}
+	In the second stage, a Gaussian window $ w(n) $ is applied to $ x_{walk} $ in order to smoothen the accelerometer magnitude \cite{Brajdic2013}, defined as
 	
-	\item \textbf{Scoring }\\
-	With the scoring stage the "peakiness" of a given sample is evaluated. The result
-	of this stage should increase the magnitude of any peaks. This makes it easier for the subsequent peak detection. The scoring used is that of mean difference 
+	\begin{subequations}
+		\begin{equation}\label{key}
+			w(n)=\exp \left(-{\frac {1}{2}}\left({\frac {n-{N_{filt}}-1/2}{\sigma_{gauss} {N_{filt}}-1/2}}\right)^{2}\right),
+		\end{equation}
+		where
+		\begin{equation}
+			n \in \mathbb{Z}, \quad 0\leq n\leq N_{filt}.
+		\end{equation}
+	
+	Here  the window size is $ N_{filt} $ representing the number of samples in the window and $ \sigma_{gauss} $ the set standard deviation. The Gaussian window is applied to all the accelerometer data $ x_{walk} $, where $ k = 1,...,N $, through
+	
+	\begin{equation}\label{key}
+		x_{gauss}(k) = \frac{\sum _{i=0}^{N_{filt}} x_{walk}(k-({N_{filt}}/2)+i)w(i)}{\sum _{i=0}^{N_{filt}} w(i)}.
+	\end{equation}
+	\end{subequations}
+	
+	
+
+\subsubsection{Scoring and Outlier Detection}
+	The result of the third stage uses a scoring calculation to increase the magnitude of peaks in the output of the Gaussian window stage, making it easier for the subsequent peak detection in the next stage.  The scoring used is that of mean difference, defined as 
 	\begin{equation}
-		p_{i}=\frac{\sum_{k=-N, k \neq i}^{N}\left(x_{i}-x_{i+k}\right)}{2 N}
+		x_{score}(k) = \frac{\sum^{N_{score}}_{i=-N_{score}, i \neq 0}\left(x_{gauss}(k)-x_{gauss}(k+i)\right)}{2 N_{score}}.
 		\label{eq:mean difference}
 	\end{equation}
-	where $p$ is the score given to the sample, $i$ is the index of the sample, $N$ is window size, and $x$ is the sample value.
-	
-	
-	\item \textbf{Step detection} \\
-	Here outliers are statistically detected. The algorithm processes the signal by calculating a running mean and standard deviation.
-	These two measures determine whether a sample is an outlier or not. If the difference between sample and mean is over 1.2 times the standard deviation, then it is marked as a potential step.
-	
-	
-	\item \textbf{Post-processing} \\
-	The final stage of step detection is determining local maxima of the outliers detected in the previous stage. Here local maxima are found that have a minimum separation duration of 0.2 seconds.
-	
-\end{enumerate}
+	Here $N_{score}$ is the score window size in number of samples and $ k = 1,...,N $.\par 
 
-\begin{algorithm}[]
-	\SetAlgoLined
-	\caption{Step Detection}
-	\label{algo:step_detect}
-	\underline{initialization:}\\
-	\For{k = 1,2,...}{
-		\underline{measurement update:}\\		
-	}
-\end{algorithm}
+	From this scoring output, outliers are statistically detected. The algorithm processes the signal by calculating a running mean and standard deviation as
+	
+		\begin{align}\label{key}
+		x_{score, mean}(k) &= \frac{1}{k}\sum^{k-1}_{i=0}x_{score}(k-i),\\			
+		x_{score,\sigma}(k) &= \sqrt{\frac{1}{k - 1}\sum _{i=1}^{k}\left(x_{score}(i)-x_{score, mean}(k)\right)^{2}}.
+	\end{align}
+	
+	Using these two measures, statistical outliers can be determined. If the difference between the sample and mean is over a set threshold on the score standard deviation, then the acceleration magnitude is flagged as a potential step.
+	
+	\begin{equation}\label{key}
+		x_{outlier}(k) = 
+		\begin{cases}
+			x(k),& \text{if } x_{score}(k)-x_{score, mean}(k)>B_{thres}x_{score, \sigma}(k)\\
+			Nan,              & \text{otherwise}
+		\end{cases}
+	\end{equation}
+	
+	
+\subsubsection{Step labeling}
+	The final stage of step detection is determining local acceleration magnitude maxima of the outliers detected in the previous stage. Here local maxima are found using
+	
+	\begin{align}\label{key}
+		i &= \in \mathbb{Z}, \\
+		x_{step}(k) &= 
+			\begin{cases}
+			x(k),& \text{if } (\forall i \in (k-D_{step}f, k+D_{step}f)) \quad x(k)>x(i) \\
+			Nan,              & \text{otherwise}
+		\end{cases}
+	\end{align}
 
-The parameters used for the process coincide with those found by the researchers, an overview of which can be found in \cref{tab:parameters_used}.
+	where maxima have a minimum separation duration between each other of $ D_{step} $ seconds.
 
-\begin{table}
+\subsubsection{Parameters}
+The parameters used from \citet{Salvi2018} are used. The researchers found these parameters through an exhaustive grid search across the parameter space. An overview of the values used can be found in \cref{tab:parameters_used}. 
+
+\begin{table}[H]
 	\centering
-	\footnotesize
-	\begin{tabular}{clc} 
+	\small
+	\renewcommand{\arraystretch}{1.5}
+	\begin{tabular}{llc} 
 		\hline
-		Stage & Parameters & Value \\
-		\hline & Window size & $\mathrm{M}=13$ \\
-		Filtering & Filter type & Gaussian \\
-		& Filter SD & 0.35 \\
-		\multirow{2}{*} { Scoring } & & \\
-		& Type & Mean Difference \\
-		& Window size & $N=35$ \\
-		Detection & Threshold & 1.2 \\
-		Post-Processing & $t_{\text {window}}$ & $200 \mathrm{ms}$ \\
+		\textbf{Stage} & \textbf{Parameters} & \textbf{Value} \\ \hline
+		\multirow{2}{*} {Threshold} & Acceleration standard deviation & $ A_{thres} = 0.6 m/s^2 $ \\
+		& Frame length& $ L_T = $ 0.8 seconds\\
+		\hline \multirow{2}{*}{Gaussian Window }& Window size & $\mathrm{N_{filt}}=13$ samples\\
+		& Filter standard deviation & $ \sigma_{gauss}=0.35 $ \\ \hline
+		\multirow{2}{25mm} {Scoring and Outlier Detection } 
+		& Window size & $N_{score}=35$ samples\\
+		 & Outlier threshold & $ B_{thres} = 1.1 x_{score,\sigma} $  \\ \hline 
+		Step Labeling & Minimum separation duration & $D_{step} = 200 \mathrm{ms}$ \\
 		\hline
 	\end{tabular}
-	\caption{Parameters used in \cref{algo:step_detect}}
+	\caption{\citet{Salvi2018} parameters used in thesis step detection stages.}
 	\label{tab:parameters_used}
 \end{table}
 
@@ -97,446 +151,212 @@ An example of this step detection method and its different stages can be found i
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/20200924_1204_All_stages_of_step_detection}
-	\caption[All stages of step detection ]{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the steps taken }
+	\caption[All stages of step detection ]{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the accelerometer points that are flagged as being steps. }
 	\label{fig:all_stages_of_step_detection}
 \end{figure}
-\subsection*{Step Length Estimation}
-For step length estimation the method outlined as working best by \cite{Vezocnik2019} will be used. This is \eqref{eq:Tian2016_sle} in \cref{sec:rw-SHS}. Within this method there is a tuneable parameter that needs to be estimate in order for the method to be applied. One way of doing this is by using the data that \cite{Vezocnik2019} have made available online. Running this data through the above outlined step detection, the result can be used for parameter estimation.
 
-\textcolor{red}{this section is pretty small at the moment, should it require a heading? What else to add?}
+\subsection{Step Length Estimation}
+For step length estimation the methods introduced in \cref{sec:step_length_estimation} using either global or personalized variables will be compared. These step length estimation methods require linear regression between their dependent variables and step length. All dependent variables can be distilled from accelerometer data and the output of the step detection component of the \ac{SHS}. \par 
 
-\section{Orientation Estimation}
-\textcolor{cyan}{introductory text}
-\subsection{Coordinate Frames}
-Within orientation estimation there are  different coordinate frames to be considered. There are two frames that are of importance for localization: the body frame and the navigation frame.\\
-The body frame ($b$) is the coordinate frame of the IMU, the origin of which is at the center of the triaxial accelerometers found in the device \cite{Kok2017}. The navigation frame ($n$) is the geographical frame in which the user is moving. It is also the frame in which we want to determine the pose, consisting of orientation and position, of the body frame. For a localization application it is considered stationary \cite{Kok2017}.
-A superscript on a vector is used to indicate in which coordinate frame it is expressed. For example,
-$x^n$ is the vector $x$ expressed in the navigation frame. A double superscript on any orientation mapping from one frame to another indicates from which frame to which frame the rotation is occurring. For example,
-$R^{nb}$ is a rotation matrix that maps from the body frame to the navigation frame.
+In order to determine the linear relationships for the different models, accelerometer data recorded during walking is required where the traveled distance is known. Luckily, \cite{Vezocnik2019} have made the IMU data they used for their research available online under an open license. Running this data through the thesis step detection component, the result can be used for parameter estimation. Once the relevant parameters have been estimated, the performance of the methods can determined. This can be done by recording accelerometer data when walking, estimating the distance traveled using the step length methods and comparing it to the distance actually traveled.
 
+\newpage
+\subsection{Indoor Heading Estimation during Locomotion}
 
-\subsection{Orientation Parametrization}
-While position is often represented by a point in a 3D orthogonal axis frame, orientation has different parametrizations, each able to map to one another. This chapter will introduce rotation matrices ($R$) and quaternions ($q$), which will be used in the following section to determine orientation from IMU sensor data.
+For heading estimation for the \ac{SHS}, the simplification was made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods would add a complicated component to overall system. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization.\par 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.4\linewidth]{images/IMG_4705}
+	\caption{Smartphone carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
+	\label{fig:experiment_carrying_position}
+\end{figure}
 
-\subsubsection{Rotation Matrix}
-Rotation matrices $R \in \mathbb{R}^{3 \times 3}$ have the following properties:
+Through this simplification, the yaw orientation (rotation around the z axis in \cref{fig:experiment_carrying_position}) of the sensor directly reflects the heading estimate of the pedestrian. The Extended Kalman Filter introduced in \cref{sec:rw-orientation_estimation} will be used to estimate the orientation in quaternions, which can then be mapped into euler angles, of which yaw is one. \par 
 
-\begin{equation}
-	\label{eq:rot_mat_properties}
-	R R^{\top}=R^{\top} R=I_{3}, \quad \text { det } R=1.
-\end{equation}
+Before orientation estimation occurs, the smartphone \ac{IMU} sensor will be calibrated using the method of \cref{sec:sensor_calibration}. This will need to be done in the indoor environment where the experiments will be performed, away from magnetic disturbances. The calibration will also need to be performed again if significant time has passed between calibration. If a difference of 30 minutes occurred, sensor calibration was performed.\par 
 
-These matrices can be used to express a vector $x$ in frame $v$ to frame $u$ as 
+In \cref{sec:motion_and_measurement_models}, the orientation model in the EKF is defined using certain assumptions. These will need to be accommodated by the heading estimation algorithm.
+The assumptions made by the orientation model  are that the gravity vector and a homogeneous magnetic field are dominant in the accelerometer and magnetometer readings, respectively. This is of importance with pedestrian dead reckoning, as a walking motion will induce additional external forces caused by feet striking on the floor, affecting the acceleration measured by the IMU. Additionally, when localizing indoors, ferromagnetic structures within the built environment will affect the magnetometer readings \cite{Michel2015a}.\par 
 
-\begin{equation}
-	\label{eq:rot_mat_rot_x}
-	x^{\mathfrak{u}}=R^{\mathfrak{u} \mathrm{v}} x^{\mathrm{v}}.
-\end{equation}
+In order to facilitate these assumptions, intervals will be applied to accelerometer and magnetometer readings. If the measurements fall within the interval only then will the appropriate measurement update occur. The use of these thresholds assumes that there will be periods during pedestrian locomotion in which the acceleration measured is that only of the gravity vector and magnetic field is only that of the homogeneous magnetic field within the indoor environment. \par 
 
-Transposing a rotation matrix represent a rotation back to it's original coordinate frame:
-\begin{subequations}
-	\begin{align}
-		\label{eq:rot_mat_trans}
-		x^{\mathrm{v}}&=\left(R^{\mathrm{uv}}\right)^{\top} x^{\mathrm{u}},\\
-		&=R^{\mathrm{vu}} x^{\mathrm{u}}.
-	\end{align}
-\end{subequations}
+The intervals for the accelerometer and magnetometer measurements were found empirically. For the accelerometer measurements a measurement update is performed if the accelerometer magnitude is between 10 and 9.6 $ m/s^2 $. For magnetometer measurements, the interval is set between 110\% and 90\% of the magnetic field strength found during sensor calibration in \cref{sec:sensor_calibration}. \par 
 
-\subsubsection{Quaternion}
-A quarternion is a common parametrization of orientation frequently used by attitude estimation algorithms. This is because it is free of non-singularity in attitude representation \cite{Hashim2019}, also known as wrapping. A unit quaternion can be described by
+A practical aspect to consider is that sensor data from all IMU sensors does not arrive at the same time when recording. A measurement update or time update will be calculated depending on the information that is received. \par 
 
-\begin{equation}
-	\label{eq:unit_quarternion}
-	q=\left(\begin{array}{llll}{q_{0}} & {q_{1}} & {q_{2}} & {q_{3}}\end{array}\right)^{\top}
-	=\left(\begin{array}{l}{q_{0}} \\ {q_{v}}\end{array}\right), 
-	\quad q \in \mathbb{R}^{4}, 
-	\quad\|q\|_{2}=1.
-\end{equation}
+The resulting algorithm combines the EKF from \cref{sec:rw-EKF} with the above methods in \cref{algo:indoor_EKF}.
 
-A rotation of vector $x$ using quaternions between two frames, from $v$ to $u$, is indicated as
-
-\begin{equation}
-	\label{eq:quat_rot}
-	\bar{x}^{\mathrm{u}}=q^{\mathrm{uv}} \odot \bar{x}^{\mathrm{v}} \odot q^{\mathrm{vu}},
-\end{equation}
-
-where $q^{\mathrm{vu}} = \left(q^{\mathrm{uv}}\right)^{\mathrm{c}}$, with the latter representing the quaternion conjugate, defined by 
-
-\begin{equation}
-	\label{eq:quat_conjugate}
-	q^{\mathrm{c}}=\left(\begin{array}{c}{q_{0}} \\ {-q_{v}}\end{array}\right).
-\end{equation}
-
-$\bar{x}^u$ represents the quaternion version of the vector $x^u \in \mathbb{R}^3$, as
-
-\begin{equation}
-	\label{eq:quat_vec_ref}
-	\bar{x}^u=\left(\begin{array}{l}{0} \\ {x^u}\end{array}\right).
-\end{equation}
-
-
-The $\odot$ operator describes quaternion multiplication, defined by:
-
-\begin{equation}
-	\label{eq:quat_multiplication}
-	p \odot q=\left(\begin{array}{c}{p_{0} q_{0}-p_{v} \cdot q_{v}} \\ {p_{0} q_{v}+q_{0} p_{v}+p_{v} \times q_{v}}\end{array}\right)
-\end{equation}
-
-\subsection{Motion and Measurement Models}
-\label{sec:motion_and_measurement_models}
-The signals generated by an IMU can be formatted in such a way that orientation can be deduced. For many sensor fusion algorithms this is generally done by defining a motion and measurement model, together forming a state space representation. This state space can be defined as \cite{Kok2017}
-
-\begin{subequations}
-	\begin{align}
-		\label{eq:orient_dynamics}
-		q_{t+1}^{\mathrm{nb}} &=q_{t}^{\mathrm{nb}} \odot \exp _{\mathrm{q}}\left(\frac{T}{2}\left(y_{\omega, t}+e_{\omega, t}\right)\right), 	\\ 
-		\label{eq:orient_acc_measure}
-		y_{\mathrm{a}, t} &=-R_{t}^{\mathrm{bn}} g^{\mathrm{n}}+e_{\mathrm{a}, t},\\ 
-		\label{eq:orient_mag_measure}
-		y_{\mathrm{m}, t} &=R_{t}^{\mathrm{bn}} m^{\mathrm{n}}+e_{\mathrm{m}, t}, 
-	\end{align}
-	\begin{equation}
-		\label{eq:orient_ss_noise}
-		e_{\omega, t} \sim \mathcal{N}\left(0, \sigma_{\mathrm{\omega}}^{2} \mathcal{I}_{3}\right), 
-		\quad 
-		e_{\mathrm{a}, t} \sim \mathcal{N}\left(0, \sigma_{\mathrm{a}}^{2} \mathcal{I}_{3}\right), 
-		\quad 
-		e_{\mathrm{m}, t} \sim \mathcal{N}\left(0, \sigma_{\mathrm{m}}^{2} \mathcal{I}_{3}\right).
-	\end{equation}
-	\label{eq:orient_state_space}
-\end{subequations}
-
-Here \eqref{eq:orient_dynamics} is the motion model and \eqref{eq:orient_acc_measure,eq:orient_mag_measure} are the measurement models. \\
-For the motion model, $q^{nb}$ represents unit quaternion from body $(b)$ to navigation frame $(n)$. $T$ is the time period between two samples. $y_{\omega, t}$ is the gyroscope measurement. The $\odot$ operator describes quaternion multiplication, as in \eqref{eq:quat_multiplication}. The $\text{exp}_\text{q}$ operator is defined as
-
-\begin{equation}
-	\exp_\mathrm{q} (\eta) = \left(\begin{array}{c}{\cos \|\eta\|_{2}} \\ {\frac{\eta}{\|\eta\|_{2}} \sin \|\eta\|_{2}}\end{array}\right) \label{eq:exp_q_in_text}.
-\end{equation}
-
-For the measurement model, $y_{\mathrm{a}, t}\in \mathbb{R}^3$ is the accelerometer measurement and $R^\mathrm{nb}_t$ is the rotation matrix mapped from the orientation quaternion generated in \eqref{eq:orient_dynamics}. $g^n \in \mathbb{R}^3$ is the gravity vector in the navigation frame. Similarly, $y_{\mathrm{m}, t}\in \mathbb{R}^3$ is the accelerometer measurement and $m^n$ is the magnetic field in the navigation frame. \\
-This state space model is simplified using certain assumptions.
-For both motion and measurement models, the noise terms  $(e)$ is assumed to be normally distributed, independent and have the same noise levels for the three sensor axis of all three sensors, as indicated in \eqref{eq:orient_ss_noise}. The zero mean in these noise definitions also indicate the assumption that the sensors have been calibrated properly and therefore do not contain any bias. \\
-Another assumption is that the sensor does not travel over significant distances in comparison to the size of the earth \cite{Kok2017}. Additionally the magnitude of the earth rotation and coriolis acceleration are discarded. Furthermore, it is assumed that the acceleration signal is dominated by the gravity vector, making external acceleration negligible. Additionally, the magnetic field is assumed to be constant. These different assumptions will be needed to taken into account when constructing orientation estimation while walking indoors.
-
-\subsection{Calibration}
-
-For proper orientation estimation, sensor calibration is required. \\
-\textcolor{cyan}{elaboration need to introduce the subject} 
-
-%\citet{Moder2017} indicates that it is  beneficial for PDR systems to have the gyroscope and magnetometer bias  calibrated, while the accelerometer bias and scale factor is optional. In addition it is advised to estimate the gyroscope bias frequently before testing.
-
-\subsubsection{Gyroscope Calibration}
-Gyroscope measurements from MEMS IMUs are generally offset by a bias ($o_\omega$) and influenced by noise ($e_{\omega, t}$)  resulting in
-
-\begin{equation}
-	y_{\omega, t}=\omega_{t}+o_{\omega}+e_{\omega, t},
-\end{equation}
-
-where $e_{\omega, t}$ is assumed to have the same noise properties as in \eqref{eq:orient_ss_noise}. The gyroscope bias is slowly time varying but for relatively short experiments can be assumed to be constant \cite{Kok2016}. It can be measured by placing the gyroscope on a flat surface for some time and recording data from the sensor. Since the sensor is not moving, the biases are the means of the data over the three axis and the covariance is the square of the standard deviation of the data to the previously mentioned means.
-
-\subsubsection{Accelerometer and Magnetometer Calibration}
-% In outdoor environments, mn is equal to the local earth magnetic field and is accurately
-%known from geophysical studies, see e.g. [29]. In indoor environments, however, the local magnetic
-%field can differ quite significantly from the local earth magnetic field. Because of that, we treat mn as
-%an unknown constant. 
-
-For magnetometer and accelerometer calibration the method outlined by \citet{Kok2016} can be used. This method indicates that for a perfect calibration a magnetometer measures the local magnetic field, no matter the orientation. Any measurement will then lie on a sphere with a radius  equal to the local magnetic field. The same applies for a perfect calibration with an accelerometer, replacing the local magnetic field with the gravity vector. Any sensor calibration should strive to achieve this sphere as best as possible.\\
-MEMS sensor are imperfect sensors, with sensor specific errors that can differ per sensor. These errors, including non orthogonality of sensor axis, the presence of zero bias, and difference in sensitivity on different axis \cite{Kok2016} can be combined into a distortion matrix $D$ and offset vector $o$.
-This results in the following uncalibrated measurement model,
-\begin{equation}
-	y_{\mu, t}=D_\mu R_{t}^{\mathrm{bn}} \mu^{\mathrm{n}}+o_\mu +e_{\mu, t},
-\end{equation}
-
-where $\mu$ is a placeholder for either the acceleration vector or local magnetic field vector with the superscript indicating in what coordinate frame it is expressed. Each have their own respective distortion matrix and offset vector. $y_{\mu, t}$ represents the measurement associated with either gyroscope or magnetometer.
-Due to the distortion matrix and offset vector, the measurements lie on a translate ellipsoid instead of on a sphere as previously stated. Determining these parameters, the sensor errors can be compensated through
-
-\begin{equation}
-	y_{\mu, t}^{cal}=D_\mu^{-1}\left(y_{\mu, t}-o_{\mu}\right)
-\end{equation}
-
-Without loss of generality the desired sphere radius can be normalized and written as followed to expressed the sphere characteristic
-\begin{equation}
-	\begin{aligned}
-		\left\|\mu^{\mathrm{b}}\right\|_{2}^{2}-1 &=\left\|R_{t}^{\mathrm{bn}} \mu^{\mathrm{n}}\right\|_{2}^{2}-1 \\
-		&=\left\|D^{-1}\left(y_{\mu, t}-o-e_{\mu, t}\right)\right\|_{2}^{2}-1=0.
-	\end{aligned}
-\end{equation}
-
-Since real calibration measurements are still corrupted by noise, the above equality does not hold exactly. The ellipsoid fitting problem can be rewritten as
-
-\begin{equation}
-	\label{eq:calib_elipsoid}
-	y_{\mu, t}^{\top} A y_{\mu, t}+b^{\top} y_{\mu, t}+c \approx 0,
-\end{equation}
-where
-\begin{subequations}
-	\label{eq:calib_elipsoid_components}
-	\begin{align}
-		A \triangleq D_\mu^{-\top} D_\mu^{-1}, \\
-		b \triangleq-2 o_\mu^{\top} D_\mu^{-\top} D_\mu^{-1}, \\
-		c \triangleq o_\mu^{\top} D_\mu^{-\top} D_\mu^{-1} o_\mu.
-	\end{align}
-\end{subequations}
-
-Assuming that $A$ is positive definite, this defines an ellipsoid with parameters $A, b$ and $c$. This can be rewritten as a linear relation as
-
-\begin{equation}
-	M \xi \approx 0
-\end{equation}
-with
-\begin{equation}
-	M=\left(\begin{array}{ccc}
-		y_{\mu, 1} \otimes y_{\mu, 1} & y_{\mu, 1} & 1 \\
-		y_{\mu, 2} \otimes y_{\mu, 2} & y_{\mu, 2} & 1 \\
-		\vdots & \vdots & \vdots \\
-		y_{\mu, N} \otimes y_{\mu, N} & y_{\mu, N} & 1
-	\end{array}\right), \quad \xi=\left(\begin{array}{c}
-		\mathrm{vec} A \\
-		b \\
-		c
-	\end{array}\right),
-\end{equation}
-
-where $\otimes$ is the kronecker product and vec the vectorization operator.
-The ellipsoid fitting problem can be written as the following semidefinite program \cite{Kok2016} 
-\begin{equation}
-	\begin{array}{ll}
-		\min _{A, b, c} & \frac{1}{2}\|M\left(\begin{array}{c}
-			\operatorname{vec} A \\
-			b \\
-			c
-		\end{array}\right)\|_{2}^{2} \\
-		\text { s.t. } & \operatorname{Tr} A=1, \quad A \in S_{++}^{3 \times 3}
-	\end{array},
-\end{equation}
-
-where $S_{++}^{3 \times 3}$ is the set of $3 \times 3$ positive definite symmetric matrices. This is a convex optimization problem with a globally optimal solution that can be solved using software packages such as CVX \cite{cvx} and YALMIP \cite{Lofberg2004}. Initial estimates of the calibration matrix $D_\mu$ and offset vector $o_\mu$ can be obtained from the estimated $\widehat{A}, \widehat{b}, \widehat{c}$ defined as
-
-\begin{subequations}
-	\begin{align}
-		\beta &=\left(\frac{1}{4} \hat{b}^{\top} \widehat{A}^{-1} \widehat{b}-\widehat{c}\right)^{-1} \\
-		\widetilde{D}_{\mu 0}^{\top} \widetilde{D}_{0} &=\beta \widehat{A}^{-1} \\
-		\widehat{o}_{\mu 0} &=\frac{1}{2} \widehat{A}^{-1} \widehat{b}
-	\end{align}
-\end{subequations}
-
-An example of this calibration can be found in \cref{fig:calibration_magnetometer} where data was recorded by recording a smartphone in as many orientations as possible, in a stationary setting. It clearly shows how the uncalibrated data is mapped to a unit sphere. The distortion matrix and offset vector for this calibration are 
-
-\begin{subequations}
-	\begin{align}
-	\widehat{D}_{m0} &= \left(\begin{array}{rrr}
-		0.0203 & -0.0001 & -0.0009 \\
-		0 & 0.0191 & 0.0000 \\
-		0 & 0 & 0.0199
-	\end{array}\right), \\
-	\widehat{o}_{m0} &= \left(\begin{array}{r}
-		-13.3918 \\
-		81.0407 \\
-		20.9336
-	\end{array}\right).
-	\end{align}
+\newpage
+\newgeometry{left=3cm,bottom=0.1cm}
+\begin{algorithm}[H]
+	\caption{Extended Kalman Filter for indoor orientation estimation}
+	\label{algo:indoor_EKF}
+	\SetAlgoLined
+	\DontPrintSemicolon
 	
-\end{subequations}
-
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[t]{.4\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{images/20201020_1125_Uncalibrated_Magnetometer_Data}
-		\caption{Uncalibrated magnetometer data}
-		\label{fig:uncalibrated_magnetometer_data}
-	\end{subfigure}
-	\begin{subfigure}[t]{0.4\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{images/20201020_1125_Calibrated_Magnetometer_Data}
-		\caption{ Calibrated magnetometer data}
-		\label{fig:calibrated_magnetometer_data}
-	\end{subfigure}
-	\caption{Magnetometer calibration for smart MEMS IMU in one location}
-	\label{fig:calibration_magnetometer}
-\end{figure}
-
-\newpage
-\subsection{Extended Kalman Filter}
-\label{sec:method-EKF}
-The Kalman Filter (KF) uses a linear state space model in combination with measurements and its characteristics to make an unbiased minimum-variance estimator \cite{verhaegen2007filtering}. The KF assumes that the noise affecting the state space model is additive and that both process and measurement noise are Gaussian and zero mean.
-The Kalman Filter consists of three steps, with the last two steps performed recursively. The first is stating an initial estimate and the variance of the process and measurement noise.  The second is the time update in which the state is propagated through a motion model, which may or may not have an external input, resulting in a one step ahead estimate. The third step is the measurement update in which the estimate generated by the time update is compared with actual measurements related to the state being estimated. Discrepancies between the two will lead to an error measurement. This error can then be used to correct the estimate.
-The Extended Kalman Filter (EKF) is an adaptation of the Kalman Filter that estimates for non linear models. 
-
-For orientation estimation the motion and measurement model presented in \eqref{eq:orient_state_space} can be used. As stated in \cref{sec:motion_and_measurement_models}, this model has assumptions that need to be accommodated. This will have to be incorporated in the EKF. Additionally sensor data does not all arrive at the same time. This means that the measurement update will potentially need to only update with either magnetometer or accelerometer data.  
-
-\subsubsection{Time Update}
-
-A time update occurs every time a gyroscope measurement ($y_\omega$) is received. It calculates a one step ahead estimate of the state vector and its covariance matrix. The calculations are as followed: 
-
-\begin{subequations}
-\begin{align}
-\hat{q}_{t | t-1}^{\mathrm{nb}}=\hat{q}_{t-1 | t-1}^{\mathrm{nb}} \odot \exp _{\mathrm{q}}\left(\frac{T}{2} y_{\omega, t-1}\right) \\
-P_{t | t-1}=F_{t-1} P_{t-1 | t-1} F_{t-1}^{\top}+G_{t-1} Q G_{t-1}^{\top}
-\end{align}
-with $Q = \Sigma_\omega$ and $P$ the state covariance. Here
-\begin{align}
-F_{t-1}&=\left(\exp _{q}\left(\frac{T}{2} y_{\omega, t-1}\right)\right)^{R},\\
-G_{t-1}&=-\frac{T}{2}\left(\hat{q}_{t-1 | t-1}^{\mathrm{nb}}\right)^{L} \frac{\partial \exp _{q}\left(e_{\omega, t-1}\right)}{\partial e_{\omega, t-1}},
-\end{align}
-\end{subequations}
-where $q^L$ and $q^R$ are defined as 
-\begin{subequations}
-\begin{equation}
-q^L = \left(\begin{array}{cc}{q_{0}} & {-q_{v}^{\top}} \\ {q_{v}} & {q_{0} \mathcal{I}_{3}+\left[q_{v} \times\right]}\end{array}\right),
-\end{equation}	
-\begin{equation}
-q^R = \left(\begin{array}{cc}{q_{0}} & {q_{v}^{\top}} \\ {-q_{v}} & {q_{0} \mathcal{I}_{3}+\left[q_{v} \times\right]}\end{array}\right).
-\end{equation}
-\end{subequations}
-
-\subsubsection{Measurement Update}
-
-A measurement update occurs every time either an accelerometer or magnetometer reading is received. \\
-To ensure that the assumptions of the gravity vector being dominant in the accelerometer and the homogeneous magnetic field being dominant in the magnetometer, thresholds can be used. This is of importance with pedestrian dead reckoning, as a walking motion will induce additional external forces, affecting the acceleration measured by the IMU. Additionally, when localizing indoors, magnetic disturbance within the built environment will affect the magnetometer readings.\\
-The measurement update for the EKF with quaternions as states is as followed:
-
-\begin{subequations}
-	\begin{align}
-	\tilde{q}_{t | t}^{\mathrm{nb}} &=\hat{q}_{t | t-1}^{\mathrm{nb}}+K_{t} \varepsilon_{t}, \\
-	\tilde{P}_{t | t} &=P_{t | t-1}-K_{t} S_{t} K_{t}^{\top}
-	\end{align},
-	with	
-	\begin{align}
-	\varepsilon_{t} &= y_{t}-\hat{y}_{t | t-1},\\
-	\quad S_{t} &= H_{t} P_{t | t-1} H_{t}^{\top}+R, \\
-	\quad K_{t} &= P_{t | t-1} H_{t}^{\top} S_{t}^{-1}.
-	\end{align}
-\label{eq:quat_meas_update}	
-\end{subequations}
-
-
-If an accelerometer measurement is received and whos magnitude falls in an interval around the magnitude , the variables to use in \eqref{eq:quat_meas_update} are
-
-\begin{subequations}
-	\begin{align}
-	y_{t}&=
-	y_{\mathrm{a}, t}, \\
-	\hat{y}_{t | t-1}&=
-	-\hat{R}_{t | t-1}^{\mathrm{bn}} g^{\mathrm{n}},\\
-	H_{t}&=	-\left.\frac{\partial R_{t | t-1}^{\mathrm{bn}}}{\partial q_{t | t-1}^{\mathrm{nb}}}\right|_{{q_{t | t-1}^{\mathrm{nb}}}=\hat{q}_{t | t-1}^{\mathrm{nb}}} \quad g^{\mathrm{n}}.
-	\end{align}
-\end{subequations}
-
-Likewise if a magnetometer measurement arrives and meets the threshold requirement, the variables are defined as
-
-\begin{subequations}
-	\begin{align}
-	y_{t}&=	y_{\mathrm{m}, t},\\
-	\hat{y}_{t | t-1}&=	\hat{R}_{t | t-1}^{\mathrm{bn}} m^{\mathrm{n}},\\
-	H_{t}&=	\left.\frac{\partial R_{t | t-1}^{\mathrm{bn}}}{\partial q_{t | t-1}^{\mathrm{nb}}}\right|_{{q_{t | t-1}^{\mathrm{nb}}}=\hat{q}_{t | t-1}^{\mathrm{nb}}} \quad m^{\mathrm{n}}.
-	\end{align}
-\end{subequations}
-
-\subsubsection{Renormalization}
-Once a measurement update occurs the resulting quaternion is not necessarily a unit quaternion, which is a requirement for orientation parametrization. To facilitate this a renormalize the quaternion is required, using
-
-	\begin{equation}
-	\hat{q}_{t | t}^{\mathrm{nb}}=\frac{\tilde{q}_{t-1}^{\mathrm{nb}}}{\left\|\tilde{q}_{t | t}^{\mathrm{nb}}\right\|_{2}}.
-	\end{equation}
-
-Using steps outlined in \cite{Kok2017} and \cite{Linkoping2013}, the above outlined EKF was implemented in MATLAB. It was preliminarily  tested in a limited case with actual smartphone sensors. Calibration and testing occurred in the same room, where the phone was continuously randomly orientated while recording sensor data. This data was afterwards exported and entered into the EKF. The results can be seen in \cref{fig:simple_stationary_ekf}, where it is compared with the orientation estimation calculated by the android system. It is clear that the orientation estimation is almost identical to the system derived orientation.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201025_2015_simple_stationary_ekf}
-	\caption[Simple orientation estimation comparison]{ Simple orientation estimation comparison between own EKF and android orientation estimation}
-	\label{fig:simple_stationary_ekf}
-\end{figure}
-
-\textcolor{red}{what other metrics are important to show to proof the performance of the EKF?}
-
-\newpage
+	\KwIn{ \ac{IMU} data $y_{*,k}$ where * is either $ a, \omega \text{ or } m $ for either an accelerometer , gyroscope or magnetometer measurement. $ {k=1,..N}$  where $N$ is the total number of samples. Covariance matrices $\Sigma_{\omega}, \Sigma_{\mathrm{a}} $ and $\Sigma_{\mathrm{m}}$. }
+	\KwOut{An estimate of the orientation $\hat{q}_{\text {k|k }}^{\text {nb}}$ and its covariance $P_{k | k}$ for $k=1, \ldots N$}
+	
+	
+	\For{k = 1,...,N}{
+		\If{$ y_{*,k}  $== $ y_{\omega,k} $}{
+		\underline{Time update:}
+		\begin{align}
+			\hat{q}_{k | k-1}^{\mathrm{nb}}=\hat{q}_{k-1 | k-1}^{\mathrm{nb}} \odot \exp _{\mathrm{q}}\left(\frac{T}{2} y_{\omega, k-1}\right) \\
+			P_{k | k-1}=F_{k-1} P_{k-1 | k-1} F_{k-1}^{\top}+G_{k-1} Q G_{k-1}^{\top}
+		\end{align}
+		with $Q = \Sigma_\omega$
+	}
+		
+		\underline{measurement update:}\\
+		\If{$ y_{*,k}  $== $ y_{a,k}$ and $ 9.6 m/s^2 <\norm{y_{a,k}} < 10 m/s^2 $ }{
+		\begin{subequations}
+			\begin{align}
+				y_{k}&=
+				y_{\mathrm{a}, k}, \\
+				\hat{y}_{k | k-1}&=
+				-\hat{R}_{k | k-1}^{\mathrm{bn}} g^{\mathrm{n}},\\
+				H_{k}&=	-\left.\frac{\partial R_{k | k-1}^{\mathrm{bn}}}{\partial q_{k | k-1}^{\mathrm{nb}}}\right|_{{q_{k | k-1}^{\mathrm{nb}}}=\hat{q}_{k | k-1}^{\mathrm{nb}}} \quad g^{\mathrm{n}}.
+			\end{align}
+		\end{subequations}
+	}
+		\If{$ y_{*,k}  $== $ y_{m,k}$ and $ 0.9 \norm{y_{m,cal}} <\norm{y_{a,m}} < 1.1  \norm{y_{m,cal}} $}{
+		\begin{subequations}
+			\begin{align}
+				y_{k}&=	y_{\mathrm{m}, k},\\
+				\hat{y}_{k | k-1}&=	\hat{R}_{k | k-1}^{\mathrm{bn}} m^{\mathrm{n}},\\
+				H_{k}&=	\left.\frac{\partial R_{k | k-1}^{\mathrm{bn}}}{\partial q_{k | k-1}^{\mathrm{nb}}}\right|_{{q_{k | k-1}^{\mathrm{nb}}}=\hat{q}_{k | k-1}^{\mathrm{nb}}} \quad m^{\mathrm{n}}.
+			\end{align}
+		\end{subequations}
+	}
+		\begin{subequations}
+			\begin{align}
+				\varepsilon_{k} &= y_{k}-\hat{y}_{k | k-1}\\
+				\quad S_{k} &= H_{k} P_{k | k-1} H_{k}^{\top}+R \\
+				\quad K_{k} &= P_{k | k-1} H_{k}^{\top} S_{k}^{-1}
+			\end{align}
+			
+			
+			\begin{align}
+				\tilde{q}_{k | k}^{\mathrm{nb}} &=\hat{q}_{k | k-1}^{\mathrm{nb}}+K_{k} \varepsilon_{k} \\
+				\tilde{P}_{k | k} &=P_{k | k-1}-K_{k} S_{k} K_{k}^{\top}
+			\end{align}
+			
+		\end{subequations}		
+		
+		\underline{Renormalize the quaternion:}
+		\begin{equation}
+			\hat{q}_{k | k}^{\mathrm{nb}}=\frac{\tilde{q}_{k-1}^{\mathrm{nb}}}{\left\|\tilde{q}_{k | k}^{\mathrm{nb}}\right\|_{2}}
+		\end{equation}		
+	}	
+\end{algorithm}
+\restoregeometry
 \section{Map based Particle Filter with Landmark Measurement Update}
-In \cref{sec:rw-drift_reduction}, the Particle Filter was introduced as a drift reduction method able to handle spatial context such as map information, landmarks and spatial models. In this section, the spatial information of the experimental setup is shown and the implementation of the particle filter with step and heading system input is presented.
+In \cref{sec:rw-drift_reduction}, the Particle Filter was introduced as a drift reduction method able to handle spatial context such as map information, landmarks and spatial models. In this section, the spatial information of the experimental setup is shown and the implementation of the specific Particle Filter components with \ac{SHS} input is presented. This implementation, together with the generic components outline in \cref{sec:rw-drift_reduction}, generates 
+\cref{algo:bootstrap_PF}, summarizing the indoor localization Particle Filter approach.
 
-\subsection*{Map Creation}
-In order to use spatial context with the particle filter, different sources were combined to generate a map of the experiment space. Rudimentary blueprints of the building were used generate a diagram of the indoor environment. The positioning and size of furniture was estimated. The resulting image has clear color distinction between the different structures within the building, including walls, doors and furniture, as seen in \cref{fig:indoor_blueprint}. Through a comparison between structures in the generated image and satellite images, shown in \cref{fig:house_google_maps}, the image was transformed from pixel to meter coordinates. This provides the basis for incorporating spatial context within a Particle Filter.
+\subsection{Map Creation}
+In order to use spatial context with the Particle Filter, different sources were combined to generate a map of the experiment space. Rudimentary blueprints of the building were used to generate a diagram of the indoor environment, preserving the structure ratios. The positioning and size of furniture was estimated. The resulting image has clear color distinction between the different structures within the building, including walls, doors and furniture, as seen in \cref{fig:indoor_blueprint}. Through a comparison between structures in the generated image and satellite images, shown in \cref{fig:house_google_maps}, the image was transformed from pixel to meter coordinates. This provides the basis for incorporating spatial context within a Particle Filter.
 
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.38\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{images/indoor_blueprint}
+		\setlength{\belowcaptionskip}{-5pt}
 		\caption[Image from building blueprints]{Image from building blueprints. Black, grey and red represent walls, furniture, and doors, respectively.}
 		\label{fig:indoor_blueprint}
 	\end{subfigure} \quad
 	\begin{subfigure}[t]{.4\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{images/house_google_maps}
-		\caption{Measurement from Google Maps}
+		\caption{ Measurement from sattelite images. The red line indicates the measurement of 14.03 meters.}
 		\label{fig:house_google_maps}
 	\end{subfigure} \quad
 	\label{fig:particle_map_construction}
-	\caption{Particle filter map creation}
+		\setlength{\belowcaptionskip}{-20pt}
+	\caption{Particle filter map creation from indoor blueprint and satellite image distance measurement}
 \end{figure}
 
-\subsection*{Implementation}
-
-The implementation of the particle filter for indoor localization using SHS trajectory and activity recognition as input will be explained next.  \cref{algo:bootstrap_PF} summarizes the whole approach.
-
-\subsubsection*{Initialization}
+\subsection{State Representation and Initialization}
 For indoor localization on one floor, particles are limited to $\mathbb{R}^{2}$ and by the outer perimeter of the building the user is located in. The particle is defined by 
 
 \begin{equation}
-x_k^i = \left(\begin{array}{l}
+\mathbf{x}_k^i = \left(\begin{array}{l}
+	\mathbf{p}_{k}^i   \\
+	\theta_k^i
+\end{array}\right) = \left(\begin{array}{l}
 p_{1,k}^i   \\
 p_{2,k}^i  \\
 \theta_k^i
 \end{array}\right), 
 \label{eq:pf_state}
 \end{equation}
-where $x^i_k$ is the state of particle $i$ at time $k$, $p_1 $ and $p_2$ are the particle x axis and y axis position respectively. The heading angle is  $\theta$.\\
-For initialization,  all particles are positioned around a known starting point. The initial weight of each particle $\omega^i$ is $1/N$, where $N$ is the total number of particles. Once initialized the following three steps are performed recursively \cite{Wu2019,Woodman2008}: 
+where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ is the position vector of the particle, where $p_1,k $ and $p_2,k$ are the particle x-axis and y-axis positions, respectively. The heading angle is  $\theta$. For initialization,  all particles are positioned around a known starting point. \par 
 
-\begin{enumerate}
-	\item \textbf{Measurement update} \\
-	There are two measurement updates possible within the particle filter, one that compares particle trajectories to map constraints and the other were door positions are compared with particle positions. \par 
+\subsection{Spatial Context Measurement Updates}
+	There are two measurement updates used within the indoor localization Particle Filter, one that compares particle trajectories to map constraints and the other where door positions are compared with particle positions. \par 
 	
-   With a map, the position of physical structures can be compared with the trajectory of particles as a measurement update. If these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses such a structure is incorrect. This makes the likelihood of it being a position estimate 0, rendering its weight 0 as well. Particles that traverse accessible regions have a likelihood of 1, and therefore also a weight of 1. This form of measurement turns wall information into a two dimensional probability density function ($p_{\scaleto{map}{4pt}}$). A grid based spatial model was used in which each pixel that contained some form of obstruction was label as inaccessible for particles in the particle filter. The result is shown in \cref{fig:pf_map}, where black color regions are inaccessible and have a likelihood of 0.\\
+	\underline{Spatial Constraints}\\
+   With a map, the position of physical structures can be compared with the trajectory of particles as a measurement update. If these structures cannot be traversed, as is the case with walls, the trajectory of a particle that crosses such a structure is incorrect. This makes the likelihood of it being a position estimate 0, rendering its weight 0 as well. Particles that traverse accessible regions have a likelihood of 1, with all such particle receiving the same weight. This form of measurement turns wall information into a two dimensional probability density function ($p_{\scaleto{map}{4pt}}$). A grid based spatial model was used in which each pixel of \cref{fig:pf_map} that contained some form of obstruction was labeled as inaccessible for particles in the Particle Filter. The result is shown in \cref{fig:pf_map}, where black color regions are inaccessible and therefore have a likelihood of 0.\\
    Depending on this distribution, the individual particle weights are evaluated as 
    
    \begin{subequations}
    	\begin{equation}
-   		\omega^i_{k|k} = \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(x^i_{k:k-1}),
+   		\omega^i_{k|k} = \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(\mathbf{x}^i_{k:k-1}),
    		\label{eq:pf_map_weight}	
    	\end{equation}
    	\begin{equation}
-   		c_{k}=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( x^i_{k:k-1}\right).
+   		c_{k}=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( \mathbf{x}^i_{k:k-1}\right).
    		\label{eq:pf_map_normalization}
    	\end{equation}
    	\label{pf_map_update}
    \end{subequations}
    
-   Here $x^i_{k:k-1}$ represent the indivifual particle path between its current and previous particle positions. This measurement update occurs every timestep of the step and heading system.
-   
-   
+   Here $x^i_{k:k-1}$ represent the individual particle path between its current and previous particle positions. This measurement update occurs every time step of the \ac{SHS}.   
    
    	\begin{figure}
    	\centering
    	\includegraphics[width=0.4\linewidth]{images/20201030_1157_pf_map_1}
-   	\caption{Particle Filter two dimensional probability function, where white and black has a probability of 1 and zero, respectively.}
+   	\caption{Particle Filter two-dimensional probability function, where white and black has a probability of 1 and 0, respectively.}
    	\label{fig:pf_map}
    \end{figure}
-   
-	A map also indicates door locations, which are used as landmarks. If a door opening is detected through activity recognition, a conditional probability at each particle can be used to determine its weight, as 
+ 
+ 		\underline{Door location}\\
+	A map also indicates door locations, which are used as landmarks in the Particle Filter. If a door opening is detected through activity recognition, a conditional probability at each particle can be used to determine its weight, as 
 	\begin{subequations}
 		\begin{equation}
-			c^*_{k}=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(y_{k} | x_{k}^{i}\right)
+			c^*_{k}=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(\mathbf{y}_{k} | \mathbf{x}_{k}^{i}\right)
 			\label{eq:pf_door_normalization}
 		\end{equation}
 		\begin{equation}
-			\omega^{i*}_{k|k} = \frac{1}{c^*_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(y_k|x^i_k),
+			\omega^{i*}_{k|k} = \frac{1}{c^*_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(\mathbf{y}_k|\mathbf{x}^i_k),
 			\label{eq:pf_door_weight}	
 		\end{equation}
 	\end{subequations}
 
- In the case of \cref{fig:pfdiagram}, if a door activity is detected the weight of particles P1 and P3 will be made higher than that of P2. This measurement update can only happen when a door interaction detection occurs, and happens after the map constraint measurement update.
+ where $\mathbf{y}_k$ is the position vector of the closest door to each particle, $w^i_{k|k}$ is the weight generated by the map constraint measurement update, and $w^{i*}_{k|k}$ is the new weight of particle $i$. The conditional probability function per particles is a bivariate normal distribution, shown in \cref{fig:pfdiagram}, and defined as 
+ 
+ \begin{subequations}
+ \begin{equation}
+ p_{\scaleto{door}{4pt}}(\mathbf{y}_k|\mathbf{x}^i_k)={\frac {\exp \left(-{\frac {1}{2}}({ \mathbf{y}_k }-{\mathbf{p}^i_{k}})^{\mathrm {T} }{\boldsymbol {\Sigma }}^{-1}({ \mathbf{y}_k }-{\mathbf{p}^i_{k}}))\right)}{\sqrt {(2\pi )^{2}\mid {\boldsymbol {\Sigma }}|}}}
+ \end{equation}
+ 
+ where $ \mathbf{y}_k $ is the position vector of the closest door, and $ \mathbf{p}^i_{k} $ is the position vector of the particle $ i $. The covariance matrix $ \Sigma $ is defined as 
+ 
+ \begin{equation}
+ 	\mathbf{\Sigma} =\left[ \begin{array}{ll}
+ 		\sigma_{\scaleto{door}{4pt}} & 0 \\
+ 		0 & \sigma_{\scaleto{door}{4pt}}
+ 	\end{array}\right]
+ \end{equation}
+\label{eq:pf_door_meas_update}
+  \end{subequations}
+
+ Where $ \sigma_{\scaleto{door}{4pt}} $ is the covariance along both axis of the bivariate distribution. This covariance is currently set at 0.1 meters, a value found empirically when testing the indoor localization particle filter.\par 
+ 
+ The closest door to a particle is determined by the door location within the particle's conditional probability with the highest likelihood. This is directly correlated to the smallest distance between particle and door, as indicated by \eqref{eq:pf_door_meas_update}. In the case of \cref{fig:pfdiagram}, if a door activity is detected, the weight of particles P1 and P3 will be made higher than that of P2. \\
+ This measurement update can only happen when a door interaction detection occurs, and always happens after the map constraint measurement update.
 	
 	\begin{figure}[]
 			\centering
@@ -545,65 +365,39 @@ For initialization,  all particles are positioned around a known starting point.
 			\label{fig:pfdiagram}
 	\end{figure}
 	
-	\item \textbf{Resampling}\\
-	Resampling is used to select a new group of particles based on the weights of the current particles. The higher the weight of a particle is, the more likely it will be resampled. A particle can even be resampled multiple times. \par 
-	There are multiple methods that can be used for resampling including multinomial, stratified, systematic, and	residual resampling \cite{hol2006resampling,gustafsson2010statistical}. \citet{hol2006resampling} conclude that  systematic resampling is the best considering resampling quality and computational complexity. Systematic resampling is defined as 
 	
-	\begin{align}
-		x^{i*} &= x(F^{-1}(u^i)) \\
-		u^i &= \frac{(i-1) + \tilde{u}}{N}, \tilde{u} \sim \mathcal{U}[0,1).
-	\end{align}	
-	
-	 Here $x^{i*}$ represents the newly sample particle with index $i$, $F^{-1}$ represents the generalized inverse of the cumulative probability distribution of the normalized particle weights. Once the particles are resampled the particle weights are reset with $\omega^i_{k+1|k} = 1/N$ . \par
-	Resampling inevitably destroys information and therefore increases uncertainty by the random sampling \cite{gustafsson2010particle}. Resampling should therefore occur only when it is needed. \citet{gustafsson2010statistical} proposes the use of  \textit{effective number of samples} to trigger a  resampling. This can be calculated as 
-	\begin{subequations}
-		\begin{equation}
-		N_{\mathrm{eff}}=\frac{1}{\sum_{i=1}^{N}\left(w^{i}\right)^{2}},
-		\end{equation}
-		
-		where
-		
-		\begin{equation}
-		1 \leq N_{\mathrm{cff}} \leq N.
-		\end{equation}
-	\end{subequations}
-	
-	The resampling condition can then be defined as $N_{eff} < N_{th}$ \cite{gustafsson2010statistical}, where the threshold can be placed at $N_{th} = 2N/3$, with $N$ being the total number of particles.
-	
-	
-	\item \textbf{Time update} \\	
+\subsection{Step and Heading Time Update}
 	After resampling, the new particles update their state with a dynamic model. For indoor localization using a step and heading trajectory as input, the dynamic model used is
 	
 	\begin{equation}
 		\label{eq:SHS_dynamic_model_with_noise}
-		x^i_{k + 1}
+		\mathbf{x}^i_{k + 1}
 		=
 		\left(\begin{array}{l}
 			p_{1,k}^i + (l_{k} + e_l) * \cos (\theta_{k}^i) \\
 			p_{2,k}^i + (l_{t} + e_l) * \sin (\theta_{k}^i) \\
-			\theta_{k}^i + \Delta \phi + e_\theta 
+			\theta_{k}^i + \Delta \phi_k + e_\theta 
 		\end{array}\right), \quad
 		e_{\theta} \sim \mathcal{N}\left(0, \sigma_{\theta}^{2}\right), \quad e_{l} \sim \mathcal{N}\left(0, \sigma_{l}^{2}\right).
 	\end{equation}
 
-The inputs to this dynamic model are $l_{t}$, which is the step length found by step detection and step length estimation, and $\Delta \theta_t$, which is the change in heading between the current and previous timestep of the step and heading trajectory, found through the orientation estimation. These variables have additive zero mean Gaussian noise realizations $e_{\theta}$ and $e_{l}$, representing the uncertainty in the values of these inputs.
-\end{enumerate}
-The resulting particle filter from the previous steps is summarized in \cref{algo:bootstrap_PF}.
+The inputs to this dynamic model are $l_{t}$ and $\Delta \phi_k$. The former is the step length found by step detection and step length estimation. The latter is the change in heading between the current and previous time step of the step and heading trajectory, found through the orientation estimation. These variables have additive zero mean Gaussian noise realizations $e_{\theta}$ and $e_{l}$, representing the uncertainty in the values of these inputs.\par 
 
-\begin{algorithm}[H]
-	\small
+The resulting Particle Filter from the previous steps is summarized in \cref{algo:bootstrap_PF}.
+\newpage
+\newgeometry{left=3cm,bottom=0.1cm}
+\begin{algorithm}[]
 	\SetAlgoLined
-	\caption{Indoor Localization Particle Filter}
+	\caption{Indoor Localization Particle Filter with Activity Recognition}
 	\label{algo:bootstrap_PF}
-	$i = 1,...,N$.   \\
-	% choose a proposal distribution $ q(x_{k+1}|x_{1:k},y_{k+1})$, resampling strategy and the number of particles N.\\
-	% \KwResult{Write here the result }
+	\KwIn{}
+	\KwOut{}
 	\underline{Initialization:}\\
-	choose the number of particles N.
+	Choose the number of particles N.
 	Generate initial distribution with
 	\begin{subequations}
 		\begin{equation}
-			x^i_1 \sim p_{x_1},
+		\mathbf{x}^i_1 \sim p_{x_1}, i = 1,...,N,
 		\end{equation}
 		and let
 		\begin{equation}
@@ -615,9 +409,9 @@ The resulting particle filter from the previous steps is summarized in \cref{alg
 		\underline{Measurement update:}\\
 		\begin{subequations}
 			\begin{align}
-				\omega^i_{k|k} &= \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(x^i_{k:k-1}),
+				\omega^i_{k|k} &= \frac{1}{c_k} \omega^i_{k|k-1} p_{\scaleto{map}{4pt}}(\mathbf{x}^i_{k:k-1}),
 				\label{eq:algo_pf_map_weight}\\	
-				c_{k} &=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( x^i_{k:k-1}\right)
+				c_{k} &=\sum_{i=1}^{N} w_{k | k-1}^{i} p_{\scaleto{map}{4pt}}\left( \mathbf{x}^i_{k:k-1}\right)
 				\label{eq:algo_pf_map_normalization}
 			\end{align}
 			\label{pf_map_update}
@@ -628,9 +422,9 @@ The resulting particle filter from the previous steps is summarized in \cref{alg
 			
 			\If{(door interaction detected)}{
 				\begin{align}
-					c_{k}&=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(y_{k} | x_{k}^{i}\right)
+					c^*_{k}&=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(\mathbf{y}_{k} | \mathbf{x}_{k}^{i}\right)
 					\label{eq:pf_door_normalization} \\			
-					\omega^i_{k|k} &= \frac{1}{c_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(y_k|x^i_k),
+					\omega^{i*}_{k|k} &= \frac{1}{c_k} \omega^i_{k|k} p_{\scaleto{door}{4pt}}(\mathbf{y}_k|\mathbf{x}^i_k),
 					\label{eq:pf_door_weight}	
 				\end{align}
 			}
@@ -656,7 +450,7 @@ The resulting particle filter from the previous steps is summarized in \cref{alg
 		\underline{Time update:}\\
 		\begin{equation}
 			\label{eq:algo_SHS_dynamic_model_with_noise}
-			x^i_{k + 1}
+			\mathbf{x}^i_{k + 1}
 			=
 			\left(\begin{array}{l}
 				p_{1,k}^i + (l_{k} + e_l) * \cos (\theta_{k}^i) \\
@@ -667,71 +461,66 @@ The resulting particle filter from the previous steps is summarized in \cref{alg
 		\end{equation}		
 	}
 \end{algorithm}
+\restoregeometry
 \newpage
+\subsubsection{Indoor Location Estimation}
+For the Particle Filter method outlined in this thesis, both minimum mean square error (MMSE) and maximum a posteriori (MAP) outline in \cref{sec:rw-pf} have disadvantages.
+Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a Particle Filter after 10 time steps. There are clear particle groups visible, all moving in different directions. The position estimate is expected to be in one of the particle clouds, however RMSE put it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
+Implementing MAP as the state estimate in the Particle Filter is actually similar to MMSE. The measurement update that occurs every time step of the step and heading trajectory is the one that compares particle trajectories to map constraints. After this update all feasible particles will have the same weight. Since all particles have the same weight, a MAP cannot be defined. A MAP can only be defined sporadically when a door interaction measurement update occurs. 
 
-\textbf{State Estimation}\\
-The Particle Filter is able to estimate non linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the particle filter to have multiple hypotheses for the system that it is modeling. In the case of localization, this translates to indicating that there are two position estimates that are equally as likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment \cite{Woodman2008}.
-
-The posterior distribution is the primary output of a particle filter \cite{gustafsson2010particle}. For state inference purposes a single point estimate is more convenient \cite{Saha2009}. The weights and positions of the particle cloud can be used to generate a single point estimate \cite{gustafsson2010particle}. There are different ways of defining the eventual position estimate. The maximum a posteriori (MAP) estimate picks the particle with the highest weight from the posterior distribution \cite{Saha2009}, while the  minimum mean square error (MMSE) estimate calculates a weighted mean \cite{gustafsson2010particle,Saha2009}.\par 
-
-For the particle filter method outlined in this thesis, both forms have disadvantages.
-Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a particle filter after 10 time steps. There are clear groups visible, all moving in different directions. The position estimate is expected to be in either one of the particle clouds, however RMSE put it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
-Implementing MAP as the state estimate in the particle filter is actually similar to MMSE. The measurement update that occurs every timestep of the step and heading trajectory is the one that compares particle trajectories to map constraints, setting infeasible particles probability to zero and feasible particles to one. All feasible particles will then have the same weighting. Since all particles have the same weight, a MAP cannot be defined.
-\begin{figure}[]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.35\linewidth]{images/20201108_1751_lopen1_1_MMSE_estimator}
-	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Particle filter after 10 iterations, showing how MMSE does not provide a suitable single point estimate.}
 	\label{fig:lopen_11_mmse_estimator}
 \end{figure}
 
-A different approach is to using the particles at the last timestep of the SHS trajectory and calculate all ancestors of these particles. A final particle with all its ancestors generate a feasible trajectory.  Averaging the trajectories of multiple final particles can give an estimate trajectory within the indoor environment.
-
-\section{Activity Recognition}
+The approach used for the indoor localization Particle Filter is to record the genealogy of particles, caused by resampling. Once the \ac{SHS} trajectory has been completed, the lineage of particles at the last time step are used to generate viable trajectories. Averaging the trajectories of multiple final particles is assumed to give an estimate trajectory within the indoor environment.
+\newpage
+\section{Door Interaction Activity Recognition}
 \label{sec:method-AR}
 
-Activity recognition is large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks and its many variations \cite{Lima2019}. Even the subset of activity recognition that use IMU sensors does not decrease the amount of possibilities significantly.
+Activity recognition is a large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks  \cite{Lima2019}. Even the subset of activity recognition that use \ac{IMU} sensors does not decrease the amount of possibilities significantly. The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. \par 
 
-%TODO add drear as activity recognition
-
-The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. Considering the scope of this thesis, certain constraints can be applied, such as that the system should be able to function on a smartphone and must use comparable sensors to those found in such devices, thus MEMS IMUs. \citet{Shoaib2015} have performed an extensive survey that focuses on the online activity recognition solely using mobile phone sensors and onboard processing. Other metrics such as resource consumption were also presented. 30 papers were found to meet the requirements of the review. Within the review they indicate that most commonly used classification methods include Decision Tree, support vector machine (SVM), K-nearest neighbor (KNN) and Naive Bayes, in descending order. A third of the papers were found to use decision trees. All but 6 of the papers had the training process occurring offline. The classification process takes the method generated offline, and uses it online to classify new activities. The authors refrain from listing any performance measures, such as accuracy or precision, since no direct comparison between the different methods is made. \citet{Ahmad2020} specifically focuses on seeing whether smartphone activity recognition techniques are also applicable to smartwatches, and what parameters, including classifiers, work best. Activities to recognize included walking, up-stairs, down-stairs, running, and jogging. Their results indicated that  Decision Trees, SVM and KNN had around 90 percent accuracy a minor difference. \citet{Shoaib2016} show that combining information from both a smartwatch and smartphone, complex human activity recognition is improved compared to when only a smart watch is used. 
-
-
-\textcolor{purple}{ section overview:
-\begin{itemize}
-	\item Many different type of activity recognition methods, from simple to complex. 
-	\item Depends on what needs to be detected. For activities with a clear time based foot print, simple method can be good enough. It is possible to construct own decision tree.
-	\item \cref{fig:stand_still_detection_from_shs} shows ground truth first door interaction and the accelerometer traces from a smartwatch and a standstill detection from SHS.
-	\item standstill detection from SHS is made by determining when the period buildup between steps exceeds over 3 seconds.
-	\item A simple manually constructed decision tree can be used to indicate door interaction. Using both smartwatch data and shs standstill detection the system can distinguish between standing still and interaction with a door.  
-\end{itemize}}
+The indoor localization Particle Filter requires detecting interactions with a door, in order to perform the relevant measurement update. A smartwatch \ac{IMU} dataset was recorded in which interaction with door handle was indicated manually.
+\cref{fig:smartwatch_acc_with_gt_door_and_door_detect} shows the smartphone accelerometer data for the three orthogonal axis. The vertical green and red lines indicating the start and end of the manually indicated interaction with a door handle, respectively. From this figure there seems to be defining time domain characteristics in the \ac{IMU} data when a door handle is being used.  Considering the scope of this thesis, where the goal is not focused on activity recognition, putting thresholds that encapsulate these characteristics could be enough to detect door interaction relatively reliably.\par
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201103_1325_Standstill_detection_from_SHS}
-	\caption{Smartwatch accelerometer data and SHS stand still detection}
-	\label{fig:stand_still_detection_from_shs}
+	\includegraphics[width=0.8\linewidth]{images/20201123_1010_Acceleration_Z_axis}
+	\caption{Smartwatch accelerometer data with vertical green and red lines indicating start and end of manually indicated door handle interaction.}
+	\label{fig:smartwatch_acc_with_gt_door_and_door_detect}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201114_1858_Axis_acceleration_per_activity_segment}
+		\setlength{\belowcaptionskip}{-10pt}
+	\caption{ Average accelerometer signal per axis of activity segments in \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}, used to define thresholds for door interaction detection. }
+	\label{fig:axis_acceleration_per_activity_segment}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201114_1820_smartwatch_acc_with_gt_door_and_door_detect_1}
-	\caption{}
-	\label{fig:202011141820smartwatchaccwithgtdooranddoordetect1}
+	\includegraphics[width=0.8\linewidth]{images/20201123_1013_Acceleration_Z_axis}
+	\caption{Smartwatch \ac{IMU} data with manually indicated door interactions and door interaction detections found through threshold defined in \cref{fig:axis_acceleration_per_activity_segment}}
+	\label{fig:smart_watch_acc_with_gt_door_and_door_detect_2}
 \end{figure}
+
+\cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis and maximum of the y and z-axis, thresholds are defined.
+
+In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the original data, presenting the performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure, it shows that all activity segments have detection points, as expected. Unfortunately there are also detections not in activity segments such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter. \par 
+
+In an attempt to curb false positives, detections can be grouped in activity segments. Activity segments can be defined by groups of detections that are below a set distance from their neighbouring detections. This set distance is currently at 1 second. Segments that have less than 3 detections are disregarded. The start of a segment will be used for the door interaction measurement update in the indoor localization particle filter.\par
+
+Another source of information that can help with the detection of door interaction originates from the \ac{SHS}. While interacting with a door, a pedestrian is often not taking any steps, something directly visible in the step detection component. An example of this can be found in \cref{fig:step_period_from_step_detection_while_walking_indoors}. Here the step period for a \ac{SHS} sample is shown with the green lines indicate the start of a door interaction. These interactions, just as with all other green lines shown before, were indicated manually. The plot shows that when interacting with a door, the period between steps increases each time. Placing a threshold where step periods above 1.5 seconds are considered standing still. This additional threshold can potentially help improve mitigating false positives, and will therefore also be used with the activity recognition scheme.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201114_1858_Axis_acceleration_per_activity_segment}
-	\caption{}
-	\label{fig:202011141858axisaccelerationperactivitysegment}
+	\includegraphics[width=0.7\linewidth]{images/20201122_1605_Step_period_from_step_detection_while_walking_indoors}
+		\setlength{\belowcaptionskip}{-10pt}
+	\caption{Step period while walking indoors with manually indicated start of door interactions. Data suggests that door interactions are often linked with temporary increases in step period.}
+	\label{fig:step_period_from_step_detection_while_walking_indoors}
 \end{figure}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201114_1820_smartwatch_acc_with_gt_door_and_door_detect_2}
-	\caption{}
-	\label{fig:202011141820smartwatchaccwithgtdooranddoordetect2}
-\end{figure}
-
-\textcolor{red}{I have more data on smartwatch accelerometer also from different people. I can use that data to determine the threshold on accelerometer data that would work on different people. Do you think that this is a good idea?}
