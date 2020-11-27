@@ -48,9 +48,7 @@ Using the \citet{Salvi2018} data, the time difference between a step detection a
 
 The results show that most detections are within 0.1 seconds from the closest ground truth point. The best performing algorithm switches per carrying mode. The \citet{Salvi2018} algorithm detects the step before it has been taken. The large standard deviations for "user2 armband" seems to be caused by the step detection methods having already counted multiple steps before the ground truth device has registered any.
 
-One problem with this metric is that two subsequent detections may have the same ground truth point as the nearest point, indicating that there is no unique detection of the step occurring. An approach to "unique" step detection was fashioned. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both an actual step occurs and is detected within the interval, the detection counts as a unique step. An illustrative representation of this can be found in \cref{fig:202011121558_true_positive_example_1}. Here an interval, represented by the green region in the graph is made around one of the ground truth points, visible in the middle of the region and circled in red. If in this interval two steps are detected, no unique step is indicated. In the example of  \cref{fig:202011121558_true_positive_example_1},  \cref{algo:step_detect} would be considered a unique step, while the \citet{Salvi2018} algorithm would not, since there are two detection within the interval.
-
-The time interval is increased iteratively in an attempt to find the highest unique step counts for both algorithms. The results for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. The results show that while the total number of steps detected are similar between the two approaches, Algorithm \ref{algo:step_detect} has a higher "unique" step detection. This discrepancy between approaches can potentially be explained by the android implementation of the researchers. 
+One problem with this metric is that two subsequent detections may have the same ground truth point as the nearest point, indicating that there is no unique detection of the step occurring. An approach to "unique" step detection was fashioned. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined where if both an actual step occurs and is detected within the interval, the detection counts as a unique step. If in this interval two steps are detected, no unique step is indicated. The time interval is increased itteratively in an attempt to find the highest unique step counts. The results for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
 
 \begin{figure}[H]
 	\centering
@@ -67,18 +65,20 @@ The best performing algorithm for global parameters is reiterated for convenienc
 
 \begin{equation}
 	\label{eq:Tian2016_sle2}
-	\text{step size} = K \cdot h \cdot, \sqrt{F}.
+	\text{step size} = K_1 h \sqrt{F}.
 \end{equation}
 
 
- where $h$ is the user's height and $F$ is the step frequency. It will be referred to as the \citet{Tian2016} approach. The best algorithm for individual parameters is 
+ where $h$ is the user's height and $F$ is the step frequency. The linear relationship between step length and the dependent variables are defined by $ K_1 $, a tunable parameter. \par 
+ 
+ The best algorithm for individual parameters is 
  
  \begin{equation}
- 	\text{step size} =K \sqrt[4]{A_{\max }-A_{\min }},
+ 	\text{step size} =K_2 \sqrt[4]{A_{\max }-A_{\min }},
  	\label{eq:weinberg_stepsize2}
  \end{equation}
  
- where $A_{max}$ and $A_{min}$ are the maximum and minimum acceleration within a step interval. This will be referred to as the \citet{Weinberg2002} approach. The two approaches will be used and compared to see if similar results are achieved as within \cite{Vezocnik2019}.
+ where $A_{\max}$ and $A_{\min}$ are the maximum and minimum acceleration within a step interval. The two approaches will be used and compared to see if similar results are achieved as within \cite{Vezocnik2019}.
 
 In order to determine the tunable parameter $K$ correctly for both approaches, it needs to be used with the output of the step detection algorithm. The step detection algorithm cannot guarantee that all steps are counted, potentially affecting the tunable parameter for both methods. 
 The smartphone with the carrying mode in hand from the online data \cite{Vezocnik2019} will be used for further analysis since step detection indicate it as a carrying mode with low step detection errors. \par
