@@ -46,8 +46,9 @@ A \acf{SHS}, as shown in \cref{fig:shs_diagram}, is a form of pedestrian dead re
 	\end{array}\right),
 \end{equation}
 
-where $p_{1,k}$  and  $p_{2,k}$ represent the position in the $x$-axis and $y$-axis at time step  $k$, respectively.v Furthermore $l_{k}$ stands for the step length, while $\phi_{k}$ is the step heading of the pedestrian at time step $k$.
-Similarly to INS with ZUPT measurement updates, \ac{SHS} position error is proportional to the number of steps taken. The largest difference is that this error growth does not have a preference of using foot-based sensors, allowing for other sensor placements \cite{Diez2018b}. However, other of sources of error can be introduced due to errors in the detection of steps and their length estimation.  Since other sensor placements are possible, \ac{SHS} is the PDR technique often used with smartphones as the base for sensing \cite{Kang2015}. This therefore seems to be the more appropriate method to implement, and will be the \ac{PDR} method that will be focused on in the rest of this thesis. The components of \ac{SHS} will be treated in further detail in \cref{sec:shs_components}.
+where $p_{1,k}$  and  $p_{2,k}$ represent the position in the $x$-axis and $y$-axis at time step  $k$, respectively. Furthermore $l_{k}$ stands for the step length, while $\phi_{k}$ is the step heading of the pedestrian at time step $k$.
+Similarly to INS with ZUPT measurement updates, \ac{SHS} position error is proportional to the number of steps taken. The largest difference is that this error growth does not require detecting stationary moments and therefore does not have a preference for using foot-based sensors, as is the case with INS and ZUPT. This allows for other sensor placements \cite{Diez2018b}. However, other of sources of error can be introduced due to errors in the detection of steps and their length estimation. \par 
+Since other sensor placements are possible, \ac{SHS} is the PDR technique often used with smartphones as the base for sensing \cite{Kang2015}. This therefore seems to be the more appropriate method to implement, and will be the \ac{PDR} method that will be focused on in the rest of this thesis. The components of \ac{SHS} will be treated in further detail in \cref{sec:shs_components}.
 
 \label{sec:rw-SHS}
 \begin{figure}[H]
@@ -62,11 +63,11 @@ Similarly to INS with ZUPT measurement updates, \ac{SHS} position error is propo
 %This method can be combined with a Particle Filter \cite{Koivisto2016, Jackermeier2018}. This allows for more constraints, consequently requiring less particles for localization.
 \section{Drift Reduction through Spatial Context}
 \label{sec:rw-drift_reduction}
-PDR methods alone accumulate error with time and are therefore not ideal for long-term pedestrian tracking \cite{Hardegger2012}. Drift reduction methods can be used to try and compensate for this error \cite{MunozDiaz2019a}.  These methods use additional information to improve the estimate. One approach is by complementing the \ac{PDR} solution with infrastructure dependent techniques that use external signal generation to acquire additional position information \cite{Qian2015}. An infrastructure independent source of information is spatial context, where the geometric and topological characteristics of the indoor environment are exploited \cite{Gu2019}. Spatial context can be used to restrict the position estimate, through assumptions or simplifications. Spatial context methods often use spatial models, maps, and landmarks.\par
+PDR methods alone accumulate error with time and are therefore not ideal for long-term pedestrian tracking \cite{Hardegger2012}. Drift reduction methods can be used to try and compensate for this error \cite{MunozDiaz2019a}.  These methods use additional information to improve the estimate. One approach is by complementing the \ac{PDR} solution with infrastructure dependent techniques that use external signal generation to acquire additional position information \cite{Qian2015}. An infrastructure independent source of information is spatial context, where the geometric and topological characteristics of the indoor environment are exploited \cite{Gu2019}. Spatial context can be used to restrict the position estimate, through assumptions or simplifications. Spatial context methods often use spatial models, maps, and landmarks, which will be handled individually next, followed by the Particle Filter, a technique able of combining all three forms spatial context. \par
 
 \subsection{Spatial Models}
 
-Spatial models simplify the indoor environment through graph or grid models. For graph models the indoor environment is represented by a set of links and nodes, along which the position estimate can move \cite{Davidson2017,Jackermeier2018}. Grid models split the whole map into a grid where each cell represents the probability of a tracked target being within it \cite{Gu2019} and where the estimate can move between cells.\par 
+Spatial models simplify the indoor environment through graph or grid models. For graph models the indoor environment is represented by a set of links and nodes, along which the position estimate is restricted \cite{Davidson2017,Jackermeier2018}. Grid models split the whole map into a grid where each cell represents the probability of a tracked target being within it \cite{Gu2019} and where the estimate can move between cells.\par 
 
 \subsection{Maps}
 
@@ -81,7 +82,7 @@ Landmarks are specific locations with a unique footprint detectable in sensor da
 
 The Particle Filter is a sensor fusion method able of encapsulating all the above spatial drift reduction methods. Sensor fusion entails using multiple sources of information to determine state estimates of modeled systems. The general filter approach will be explained and its relevance to indoor localization through spatial context will follow.\par
 An overview of the generic Particle Filter can be found in \cref{algo:rw-bootstrap_PF}.  The filter uses a finite amount of particles $N$, representing state realizations $x^i$ where $i = 1,...,N$. These particles have an associated weight $\omega^i$ and, combined with their states, generate a posterior probability distribution. \par 
-Three recursive steps are completed within the filter, including measurement update, resampling, and time update \cite{Wu2019,Woodman2008}.
+Three recursive steps are completed within the filter, including measurement update, resampling, and time update \cite{Wu2019,Woodman2008}, which will be treated next.
 
 \subsubsection{Measurement Update}
 During this update, each particle's weight is changed according to how its state evaluates against constraints or system evaluation functions. The likelier the particle is within the system constraints, the higher the particle's weight become. This is represented by
@@ -120,10 +121,10 @@ Resampling inevitably destroys information and therefore increases uncertainty b
 	\end{equation}
 \end{subequations}
 
-The resampling condition can then be defined as $N_{eff} < N_{th}$, where the threshold can be placed at $N_{th} = 2N/3$ \cite{gustafsson2010statistical}, with $N$ being the total number of particles. \par 
+The resampling condition can then be defined as $N_{\mathrm{eff}} < N_{th}$, where the threshold $ N_{th} $ can be placed at $2N/3$ \cite{gustafsson2010statistical}, with $N$ being the total number of particles. \par 
 
 \subsubsection{Time Update}
-Every time step within the Particle Filter, all particles are propagated according to a proposal distribution \cite{gustafsson2010particle}. Within the standard version of the filter the conditional prior of the state vector is used. 
+Every time step within the Particle Filter, all particles are propagated according to a proposal distribution \cite{gustafsson2010particle}. Within the standard version of the filter, the conditional prior of the state vector is used. 
 
 \begin{equation}
 	x_{k+1}^{i} \sim p(x_k+1|x^i_{k}).
@@ -178,14 +179,14 @@ For indoor localization, the particle filter can use spatial context as either a
 
 With spatial context, a measurement update for indoor localization can take different forms \cite{Gu2019}. With map information, the measurements updates can evaluate the position of each particle with the indoor constraints \cite{Qian2015}. Particles that violate these constraints will be disregarded, limiting state estimation to within the defined constraints. Detecting landmarks allows for their positions to be compared with particle positions, with closer particles receiving higher weights \cite{Shang2015}.  \par 
 
-The Particle Filter is able to estimate non-linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the Particle Filter to have multiple hypotheses for the system that it is modeling In the case of indoor localization, this translates to indicating that there are two position estimates that are equally likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment  \cite{Woodman2008}, where structures are the same in different regions of the building.
+The Particle Filter is able to estimate non-linear posterior densities, allowing for multimodal distributions \cite{gustafsson2010particle,kihlberg2012map}. Multimodal distribution refers to distributions with multiple maxima in the probability density function. This allows the Particle Filter to have multiple hypotheses for the system that it is modeling. In the case of indoor localization, this translates to indicating that there are two position estimates that are equally likely based on the information that the filter has received so far. This can occur due to symmetry in the indoor environment  \cite{Woodman2008}, where structures are the same in different regions of the building.
 
 
 \newpage
 \section{Step and Heading System Components}
 \label{sec:shs_components}
 
-\cref{sec:rw-SHS} concluded that the \ac{SHS} approach to be the \ac{PDR} method to focus on further. Within the \ac{SHS} method there are three components to consider: step detection, step length estimation and step heading estimation. The following section will treat each component of this system individually, outlining the different possibility for it to fulfill its role. \par 
+\cref{sec:rw-SHS} concluded that the \acl{SHS} approach was to be the \ac{PDR} method to focus on further for a smartphone based system. Within the \ac{SHS} method there are three components to consider: step detection, step length estimation and step heading estimation. The following section will treat each component of this system individually, outlining the different possibilities for it to fulfill its role. \par 
 
 \subsection{Walk and Step Detection}
 \label{sec:rw - step detection}
@@ -201,7 +202,7 @@ Frequency domain analysis is often  also invariant to sensor placement \cite{Bra
 For both frequency and time domain-based analysis, it is possible that certain motions, aside from the desired motion, can cross the threshold and generate false positives. In addition, frequency analysis and template matching, a more advanced time based method, will have a certain computational overhead to consider \cite{Davidson2017, Harle2013}. 
 
 \subsubsection{Feature classification methods} 
-Feature classification methods use characteristics in accelerometer traces to classify steps, using forms of machine learning \cite{Brajdic2013}. These methods have the advantage that they can determine relations from labeled data automatically, removing a need for humans to define them. This is also a disadvantage as it requires labeled data, the gathering of which can be a labor-intensive process \cite{Bulling2014}. Furthermore, the relationships they determine will depend on the data gathered. This may lead to over-fitting \cite{Bulling2014}. In addition, certain classification methods may require significant processing power, limiting the platforms on which it can perform \cite{Yang2014}.
+Feature classification methods use characteristics in accelerometer traces to classify steps, using forms of machine learning \cite{Brajdic2013}. These methods have the advantage that they can determine relations from labeled data automatically, removing a need for humans to define them. This is also a disadvantage as it requires labeled data, the gathering of which can be a labor-intensive process \cite{Bulling2014}. Furthermore, the models they determine will depend on the data gathered. This may lead to over-fitting \cite{Bulling2014}. In addition, certain classification methods may require significant processing power, limiting the platforms on which it can perform \cite{Yang2014}.
 
 	\begin{table}[]
 	\centering
@@ -225,19 +226,19 @@ Feature classification methods use characteristics in accelerometer traces to cl
 	\label{tab:step_detection_comparison}
 \end{table}
 
-\citet{Brajdic2013} tested and compared a variety of algorithms for both walk detection and step detection on unconstrained smartphones. The article reviews techniques with different levels of complexity from a variety of different papers. In order to compare the different techniques, \cite{Brajdic2013} collected a large dataset from 27 test subjects. Each subject held the smartphone in six different carrying modes: in hand in front of user (idle and with device interaction), in a front pocket, in a back pocket and in a handbag or backpack. A ground truth was generated by video recording each session and manually counting the amount of steps taken. Using this dataset a comparison is made between the nine algorithms in \cref{tab:step_detection_comparison}.\par 
-The paper concludes that for the generated dataset, the best step counting results were obtained using the Windowed Peak Detection, hidden Markov model, and Wavelet Decomposition. Each had a median error of about 1.3\%.\par 
-Considering the relative simplicity of the technique, the authors recommended windowed peak detection as the most efficient algorithm for step detection. The best walk detection algorithms were short-term Fourier transform, and normalized autocorrelation, and thresholds on either standard deviation or signal energy.\par
-\citet{Salvi2018} build upon the conclusions and recommendations of \citet{Brajdic2013}, with the aim of further optimizing the windowed peak detection algorithm and its parameters. The algorithm is based on the approach of \citet{Palshikar2009} and consists of 5 stages run in series. These are pre-processing, filtering, scoring, detection and post processing. An exhaustive grid search across the parameter space was performed to find the optimal set for step detection. Using these parameters, an average accuracy of $95\% \pm 4.5\%$ in counting the correct number of steps taken was reached, considering all the carrying modes. 
+\citet{Brajdic2013} tested and compared a variety of algorithms for both walk detection and step detection on unconstrained smartphones. The article reviews techniques with different levels of complexity from a variety of different papers. In order to compare the different techniques, \cite{Brajdic2013} collected a large dataset from 27 test subjects. Each subject held the smartphone in six different carrying modes: in hand in front of user (idle and with device interaction), in a front pocket, in a back pocket and in a handbag or backpack. A ground truth was generated by video recording each session and manually counting the amount of steps taken. Using this dataset a comparison is made between the nine techniques in \cref{tab:step_detection_comparison}.\par 
+The paper concludes that for the generated dataset, the best step counting results were obtained using the Windowed Peak Detection, Hidden Markov Model, and Wavelet Decomposition. Each had a median error of about 1.3\%.\par 
+Considering the relative simplicity of the technique, the authors recommended Windowed Peak Detection as the most efficient algorithm for step detection. The best walk detection algorithms were short-term Fourier transform, and normalized autocorrelation, and thresholds on either standard deviation or signal energy.\par
+\citet{Salvi2018} build upon the conclusions and recommendations of \citet{Brajdic2013}, with the aim of further optimizing the Windowed Peak Detection algorithm and its parameters. The algorithm is based on the approach of \citet{Palshikar2009} and consists of 5 stages run in series. These are pre-processing, filtering, scoring, detection and post processing. An exhaustive grid search across the parameter space was performed to find the optimal set for step detection. Using these parameters, an average accuracy of $95\% \pm 4.5\%$ in counting the correct number of steps taken was reached, considering all the carrying modes. This implementation is an interesting starting point for step detection in any \ac{SHS}. 
 
 %These results make this approach 
 
 
 \subsection{Step Length Estimation}
 \label{sec:step_length_estimation}
-In order to generate a displacement vector from step detection, the step length must be estimated. \citet{Collins2013a} found that increasing step speed leads to larger step lengths, while step speed can have slow and spontaneous fluctuations depending on the motion mode. In addition, step size depends on the physical characteristics of the user and on their walk strategy, which can be different per individual \cite{Diez2018}. These discrepancies indicate that using a simple average step length for every pedestrian could result in quick accumulation of error. \citet{Diez2018} categorizes step length estimation methods into integration based and model-based methods. \par
+From subsequent step detections, step length can be estimated, generating a displacement vector. \citet{Collins2013a} found that increasing step speed leads to larger step lengths, while step speed can have slow and spontaneous fluctuations depending on the motion mode. In addition, step size depends on the physical characteristics of the user and on their walk strategy, which can be different per individual \cite{Diez2018}. These discrepancies indicate that using a simple average step length for every pedestrian could result in quick accumulation of error. \citet{Diez2018} categorizes step length estimation methods into integration based and model-based methods. \par
 
-Theoretically, the double integration of the \ac{IMU} acceleration signal is the best approach to step size estimation, using the INS approaches outlined in chapter \secref{sec:INS}. This would give a direct measurement of displacement. It does not require any modeling, assumptions, or person-specific calibration \cite{Diez2018}. However, since it would be an INS approach, it suffers from the same drift problems and would require the same solutions. Therefore this approach benefits from having the sensor to be located on the foot. \par 
+Theoretically, the double integration of the \ac{IMU} acceleration signal is the best approach to step size estimation, using the INS approaches outlined in chapter \secref{sec:INS}. This would give a direct measurement of displacement. It does not require any modeling, assumptions, or person-specific calibration \cite{Diez2018}. However, since it would be an INS approach, it suffers from the same drift problems, as expressed in \cref{sec:INS}, and would require the same solutions. Therefore this approach benefits from having the sensor located on the foot. \par 
 
 Analytical models can be made of human mobility based on geometrical relationships of body composition, angles, and displacement of body parts. Such methods use regression to determine relationships to step length.  One of the largest disadvantages of a model-based approach is that human proportions are not uniform, requiring approximations and/or some form of calibration for the model to be accurate. Model based approaches are often either frequency, acceleration or angle based, sometimes even a combination of multiple approaches \cite{Vezocnik2019}. Often there are tunable parameters within the different models that need to be calibrated.
 
@@ -299,7 +300,7 @@ and $ \mathbf{a}^\mathrm{n}_\mathrm{hor} $ is matrix containing $ N $ accelerati
 \label{sec:rw-orientation_estimation}
 Heading estimation within a \acl{SHS} requires knowing the orientation of the \ac{IMU} sensor with respect to the navigation frame. Orientation estimation through \ac{IMU} sensor has been available for some time, being originally invented for stabilization and navigation of aircraft and missiles \cite{titterton2004strapdown}. In these high performance settings, sensor fusion techniques are applied to take any eventual sensor noise from the instrumentation into account to produce accurate estimates. This has allowed for inertial-based tracking over long periods of time \cite{Harle2013}. Regrettably, the sensor constructions for these settings are too large and costly for widespread use.\par  
 It is the introduction of \ac{MEMS} \ac{IMU} sensors, measuring the same phenomenon but with a small form factor and cheap cost, that has made the same orientation sensor fusion techniques applicable to new situations, such as indoor localization. \par 
-The following section will explain the Extended Kalman Filter approach, a sensor fusion technique often used with PDR \cite{Michel2015a,Michel2018, Diaz2014}. It will first treat relevant orientation parametrizations and motion models needed for in the filter. This is followed by sensor calibration. At the end of the section, the EKF process is then outlined within the orientation estimation framework.
+The following section will explain the Extended Kalman Filter approach, a sensor fusion technique often used with PDR \cite{Michel2015a,Michel2018, Diaz2014}. It will first treat relevant orientation parametrizations and motion models needed for in the filter. This is followed by sensor calibration. At the end of the section, the EKF process is outlined within the orientation estimation framework.
 
 
 \subsection{Orientation Parametrization}
@@ -394,7 +395,7 @@ The signals generated by an \ac{IMU} can be combined in such a way that orientat
 	\label{eq:orient_state_space}
 \end{subequations}
 
-Here \eqref{eq:orient_dynamics} is the motion model and \eqref{eq:orient_acc_measure} and \eqref{eq:orient_mag_measure} are the measurement models. \\
+Here \eqref{eq:orient_dynamics} is the motion model and \eqref{eq:orient_acc_measure} and \eqref{eq:orient_mag_measure} are the measurement models. The superscripts represent the coordinate frame as expressed in \cref{sec:rw-step_heading_estimation}.
 For the motion model, $q^{\mathrm{nb}}_k$ represents the unit quaternion orientation representation from body $(b)$ to navigation frame $(n)$, at time step $ k $.  The gyroscope measurement is $y_{\omega, k}$ and $T$ is the time period between two gyroscope samples. The $\odot$ operator describes quaternion multiplication, as in \eqref{eq:quat_multiplication}. The $\text{exp}_\text{q}$ operator is defined as
 
 \begin{equation}
@@ -436,7 +437,7 @@ This results in the following uncalibrated measurement model,
 	y_{\mu, t}=D_\mu R_{t}^{\mathrm{bn}} \mu^{\mathrm{n}}+o_\mu +e_{\mu, t},
 \end{equation}
 
-where $\mu$ is a placeholder for either the acceleration vector or local magnetic field vector with the superscript indicating in what coordinate frame it is expressed. Each have their own respective distortion matrix and offset vector. $y_{\mu, t}$ represents the measurement associated with either gyroscope or magnetometer.
+where $\mu$ is a placeholder for either the acceleration vector or local magnetic field vector with the superscript indicating in what coordinate frame it is expressed. Each uncalibrated measurement model has their own respective distortion matrix and offset vector. $y_{\mu, t}$ represents the measurement associated with either gyroscope or magnetometer.
 Due to the distortion matrix and offset vector, the measurements lie on a translate ellipsoid instead of on a sphere as previously stated. Determining these parameters, the sensor errors can be compensated through
 
 \begin{equation}
@@ -480,13 +481,13 @@ with
 		\vdots & \vdots & \vdots \\
 		y_{\mu, N} \otimes y_{\mu, N} & y_{\mu, N} & 1
 	\end{array}\right), \quad \xi=\left(\begin{array}{c}
-		\mathrm{vec} A \\
+		\mathrm{vec} (A) \\
 		b \\
 		c
 	\end{array}\right),
 \end{equation}
 
-where $\otimes$ is the kronecker product and vec the vectorization operator.
+where $\otimes$ is the Kronecker product and vec the vectorization operator.
 The ellipsoid fitting problem can be written as the following semidefinite program \cite{Kok2016} 
 \begin{equation}
 	\begin{array}{ll}
@@ -504,8 +505,8 @@ where $S_{++}^{3 \times 3}$ is the set of $3 \times 3$ positive definite symmetr
 \begin{subequations}
 	\begin{align}
 		\beta &=\left(\frac{1}{4} \hat{b}^{\top} \widehat{A}^{-1} \widehat{b}-\widehat{c}\right)^{-1} \\
-		\widetilde{D}_{\mu 0}^{\top} \widetilde{D}_{0} &=\beta \widehat{A}^{-1} \\
-		\widehat{o}_{\mu 0} &=\frac{1}{2} \widehat{A}^{-1} \widehat{b}
+		\widetilde{D}_{\mu}^{\top} \widetilde{D}_{0} &=\beta \widehat{A}^{-1} \\
+		\widehat{o}_{\mu} &=\frac{1}{2} \widehat{A}^{-1} \widehat{b}
 	\end{align}
 \end{subequations}
 
@@ -541,7 +542,7 @@ An example of this calibration can be found in \cref{fig:calibration_magnetomete
 		\caption{ Calibrated magnetometer data}
 		\label{fig:calibrated_magnetometer_data}
 	\end{subfigure}
-	\caption{Magnetometer calibration for smart MEMS \ac{IMU} in one location}
+	\caption{Magnetometer calibration for smart MEMS \ac{IMU} in one location. Note how the uncalibrated magnetometer data is mapped to a unit sphere with the calibrated magnetometer data.}
 	\label{fig:calibration_magnetometer}
 \end{figure}
 
@@ -551,7 +552,7 @@ An example of this calibration can be found in \cref{fig:calibration_magnetomete
 \label{sec:rw-EKF}
 
 The Extended Kalman Filter (EKF) is a sensor fusion approach that estimates the states of non-linear models, making it appropriate for the inertial based orientation model outlined in \eqref{eq:orient_state_space}. The EKF uses the motion model to predict the orientation, while using the measurement models to calibrate it once a relevant measurement is received \cite{Kok2017}. \par 
-The EKF consists of three steps, with the last two steps performed recursively.  These include similar steps as with the previously presented Particle Filter, also a sensor fusion method. The steps include initialization, time update and measurement update. \par 
+The EKF consists of three steps, with the last two steps performed recursively.  These include similar steps as with the previously presented Particle Filter, also a sensor fusion method. The steps include initialization, time update and measurement update, explained next, with formulas originating from \cite{Kok2017}. \par 
 
 \subsubsection{Initialization}
  Initialization requires defining an initial unit quaternion state, the variance of the process and measurement noise, and an initial state covariance representing the accuracy of the initial state. The EKF assumes that the noise affecting the state space model is additive and that both process and measurement noise are Gaussian and zero mean \cite{Kok2017}.
@@ -565,13 +566,13 @@ A time update occurs every time a gyroscope measurement $y_\omega$ is received. 
 		\hat{q}_{k | k-1}^{\mathrm{nb}}=\hat{q}_{k-1 | k-1}^{\mathrm{nb}} \odot \exp _{\mathrm{q}}\left(\frac{k}{2} y_{\omega, k-1}\right) \\
 		P_{k | k-1}=F_{k-1} P_{k-1 | k-1} F_{k-1}^{\top}+G_{k-1} \Sigma_\omega G_{k-1}^{\top}
 	\end{align}
-	with $ \Sigma_\omega $ outlined in \eqref{eq:orient_ss_noise}  as the noise covariance matrix of the gyroscope measurements. Here
+	with $ \Sigma_\omega = e_{\omega}$ as the noise covariance matrix of the gyroscope measurements, which is defined in \eqref{eq:orient_ss_noise}. Here
 	\begin{align}
 		F_{k-1}&=\left(\exp _{q}\left(\frac{k}{2} y_{\omega, k-1}\right)\right)^{R},\\
 		G_{k-1}&=-\frac{k}{2}\left(\hat{q}_{k-1 | k-1}^{\mathrm{nb}}\right)^{L} \frac{\partial \exp _{q}\left(e_{\omega, k-1}\right)}{\partial e_{\omega, k-1}},
 	\end{align}
 \end{subequations}
-where $q^L$ and $q^R$ are defined as 
+where $*^L$ and $*^R$ operators are defined as 
 \begin{subequations}
 	\begin{equation}
 		q^L = \left(\begin{array}{cc}{q_{0}} & {-q_{v}^{\top}} \\ {q_{v}} & {q_{0} \mathcal{I}_{3}+\left[q_{v} \times\right]}\end{array}\right),
@@ -582,8 +583,8 @@ where $q^L$ and $q^R$ are defined as
 \end{subequations}
 
 \subsubsection{Measurement Update}
-The third step of the EKF is the measurement update, in which the estimate generated by the time update is compared with actual measurements related to the state being estimated. Discrepancies between the two will lead to an error measurement. This error can then be used to correct the estimate. \par 
-For orientation estimation using an EKF, a measurement update occurs every time an accelerometer or magnetometer reading is received. These measurements are compared to what the model predicts these measurements to be, using
+The third step of the EKF is the measurement update, in which the estimate generated by the time update is compared with actual measurements related to the state being estimated. Discrepancies between the two will lead to an error measurement. This error can then be used to mitigate drift in the estimate. \par 
+For orientation estimation using an EKF, a measurement update occurs every time an accelerometer or magnetometer reading is received. These measurements $ y_k $ are compared to what the model predicts these measurements to be $ \hat{y}_{k | k-1}  $, using
 \begin{subequations}
 	\begin{equation}
 		\varepsilon_{k} = y_{k}-\hat{y}_{k | k-1},
@@ -603,6 +604,8 @@ For orientation estimation using an EKF, a measurement update occurs every time 
 		\label{eq:EKF_meas_update}
 	\end{align}
 \end{subequations}
+
+Where the calculations in \eqref{eq:EKF_meas_update} come from the measurement models in \cref{sec:motion_and_measurement_models}.\par 
 
 The state correction from the resulting error is as followed:
 

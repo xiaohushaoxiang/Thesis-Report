@@ -26,7 +26,7 @@ Steps are reflected in accelerometer magnitude measurements by peaks in the trac
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201127_1110__frontpocket_}
-	\caption{Accelerometer magnitude in different smartphone carrying modes, showing difference in trace.}
+	\caption{Accelerometer magnitude in different smartphone carrying modes, showing difference in trace per carrying mode.}
 	\label{fig:accelerometer_in_different_carrying_modes}
 \end{figure}
  
@@ -36,7 +36,7 @@ The first stage of windowed peak detection consists of calculating the accelerat
 
 The thesis method augments the step detection method of \cite{Salvi2018} by adding the walk detection method from \cite{Brajdic2013}, since no formal walk detection was implemented in the original algorithm. This is used in order to filter out activities that are not walking, in an attempt to decrease the chance of false positives.\par 
 
-The three stages in step detection will be handled in more detail next.
+The three stages used in step detection for this thesis will be handled in more detail next.
 
 \subsubsection{Pre-processing and Walk Detection}
 	 The \ac{IMU} used in smartphones provide acceleration information  $ y_a(k) \in \mathbb{R}^3 $ with a sampling frequency $ f $ and sample index $ k $, where $ k = 1,...,N $ where $ N $ is the total number of samples. For the first stage in step detection, the magnitude of acceleration from the three orthogonal axes is calculated 
@@ -146,7 +146,7 @@ The parameters used from \citet{Salvi2018} are used. The researchers found these
 	\label{tab:parameters_used}
 \end{table}
 
-An example of this step detection method and its different stages can be found in \cref{fig:all_stages_of_step_detection}.
+An example of the step detection method and its different stages can be found in \cref{fig:all_stages_of_step_detection}, where it has been applied to accelerometer data recorded during walking. The figure shows the working of each stage and how the peaks in the accelerometer data are determined.
 
 \begin{figure}[H]
 	\centering
@@ -170,13 +170,13 @@ For heading estimation for the \ac{SHS}, the simplification was made to constrai
 	\caption{Smartphone carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
 	\label{fig:experiment_carrying_position}
 \end{figure}
-
-Through this simplification, the yaw orientation (rotation around the z axis in \cref{fig:experiment_carrying_position}) of the sensor directly reflects the heading estimate of the pedestrian. The Extended Kalman Filter introduced in \cref{sec:rw-orientation_estimation} will be used to estimate the orientation in quaternions, which can then be mapped into euler angles, of which yaw is one. \par 
+%TODO write about euler angles
+Through this simplification, the yaw orientation (euler angle rotation around the z axis in \cref{fig:experiment_carrying_position}) of the sensor directly reflects the heading estimate of the pedestrian. The Extended Kalman Filter introduced in \cref{sec:rw-orientation_estimation} will be used to estimate the orientation in quaternions, which can then be mapped into euler angles, of which yaw is one. \par 
 
 Before orientation estimation occurs, the smartphone \ac{IMU} sensor will be calibrated using the method of \cref{sec:sensor_calibration}. This will need to be done in the indoor environment where the experiments will be performed, away from magnetic disturbances. The calibration will also need to be performed again if significant time has passed between calibration. If a difference of 30 minutes occurred, sensor calibration was performed.\par 
 
 In \cref{sec:motion_and_measurement_models}, the orientation model in the EKF is defined using certain assumptions. These will need to be accommodated by the heading estimation algorithm.
-The assumptions made by the orientation model  are that the gravity vector and a homogeneous magnetic field are dominant in the accelerometer and magnetometer readings, respectively. This is of importance with pedestrian dead reckoning, as a walking motion will induce additional external forces caused by feet striking on the floor, affecting the acceleration measured by the IMU. Additionally, when localizing indoors, ferromagnetic structures within the built environment will affect the magnetometer readings \cite{Michel2015a}.\par 
+The assumptions made by the orientation model  are that the gravity vector and a homogeneous magnetic field are dominant in the accelerometer and magnetometer readings, respectively. This is of importance with Pedestrian Dead Reckoning, as a walking motion will induce additional external forces caused by feet striking on the floor, affecting the acceleration measured by the IMU. Additionally, when localizing indoors, ferromagnetic structures within the built environment will affect the magnetometer readings \cite{Michel2015a}.\par 
 
 In order to facilitate these assumptions, intervals will be applied to accelerometer and magnetometer readings. If the measurements fall within the interval only then will the appropriate measurement update occur. The use of these thresholds assumes that there will be periods during pedestrian locomotion in which the acceleration measured is that only of the gravity vector and magnetic field is only that of the homogeneous magnetic field within the indoor environment. \par 
 
@@ -252,6 +252,7 @@ The resulting algorithm combines the EKF from \cref{sec:rw-EKF} with the above m
 \end{algorithm}
 \restoregeometry
 \section{Map based Particle Filter with Landmark Measurement Update}
+\label{sec:method-particle_filter}
 In \cref{sec:rw-drift_reduction}, the Particle Filter was introduced as a drift reduction method able to handle spatial context such as map information, landmarks and spatial models. In this section, the spatial information of the experimental setup is shown and the implementation of the specific Particle Filter components with \ac{SHS} input is presented. This implementation, together with the generic components outline in \cref{sec:rw-drift_reduction}, generates 
 \cref{algo:bootstrap_PF}, summarizing the indoor localization Particle Filter approach.
 
@@ -323,7 +324,7 @@ where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ 
    \end{figure}
  
  		\underline{Door location}\\
-	A map also indicates door locations, which are used as landmarks in the Particle Filter. If a door opening is detected through activity recognition, a conditional probability at each particle can be used to determine its weight, as 
+	A map also indicates door locations, which are used as landmarks in the Particle Filter. Doors are used for landmark detection, since they are not easily detected from smartphones alone \cite{zhao2015lmdd}, but can potentially can be detect through a combination of smartphone and smartwatch. If a door opening is detected through activity recognition, a conditional probability at each particle can be used to determine its weight, as 
 	\begin{subequations}
 		\begin{equation}
 			c^*_{k}=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(\mathbf{y}_{k} | \mathbf{x}_{k}^{i}\right)
@@ -361,7 +362,7 @@ where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ 
 	\begin{figure}[]
 			\centering
 			\includegraphics[trim=240 0 220 0, clip, width=0.35\linewidth]{images/pf_diagram}
-			\caption{ Particles with a multivariate normal probability density function, represented by color gradient. At door interaction detection, particle weight is determined by probability at location of door in individual density functions.}
+			\caption{ Particles with a bivariate normal probability density function, represented by color gradient. At door interaction detection, particle weight is determined by probability at location of door in individual density functions.}
 			\label{fig:pfdiagram}
 	\end{figure}
 	
@@ -465,7 +466,7 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 \newpage
 \subsubsection{Indoor Location Estimation}
 For the Particle Filter method outlined in this thesis, both minimum mean square error (MMSE) and maximum a posteriori (MAP) outline in \cref{sec:rw-pf} have disadvantages.
-Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a Particle Filter after 10 time steps. There are clear particle groups visible, all moving in different directions. The position estimate is expected to be in one of the particle clouds, however RMSE put it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
+Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a Particle Filter after 10 time steps. There are clear particle groups visible, all moving in different directions. The position estimate is expected to be in one of the particle clouds, however RMSE puts it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
 Implementing MAP as the state estimate in the Particle Filter is actually similar to MMSE. The measurement update that occurs every time step of the step and heading trajectory is the one that compares particle trajectories to map constraints. After this update all feasible particles will have the same weight. Since all particles have the same weight, a MAP cannot be defined. A MAP can only be defined sporadically when a door interaction measurement update occurs. 
 
 \begin{figure}[H]
@@ -480,14 +481,17 @@ The approach used for the indoor localization Particle Filter is to record the g
 \section{Door Interaction Activity Recognition}
 \label{sec:method-AR}
 
-Activity recognition is a large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks  \cite{Lima2019}. Even the subset of activity recognition that use \ac{IMU} sensors does not decrease the amount of possibilities significantly. The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. \par 
+In \cref{sec:method-particle_filter}, the Particle Filter is fashioned to use door interactions to perform a measurement update using spatial context. The door interaction is an activity that can be detected from smartwatch IMU data through activity recognition. \par 
 
-The indoor localization Particle Filter requires detecting interactions with a door, in order to perform the relevant measurement update. A smartwatch \ac{IMU} dataset was recorded in which interaction with door handle was indicated manually.
-\cref{fig:smartwatch_acc_with_gt_door_and_door_detect} shows the smartphone accelerometer data for the three orthogonal axis. The vertical green and red lines indicating the start and end of the manually indicated interaction with a door handle, respectively. From this figure there seems to be defining time domain characteristics in the \ac{IMU} data when a door handle is being used.  Considering the scope of this thesis, where the goal is not focused on activity recognition, putting thresholds that encapsulate these characteristics could be enough to detect door interaction relatively reliably.\par
+Activity recognition is a large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks  \cite{Lima2019}. Even the subset of activity recognition that use \ac{IMU} sensors does not decrease the amount of possibilities significantly \cite{cornacchia2016survey}. The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. \par 
+
+A smartwatch \ac{IMU} dataset was recorded in which interaction with door handle was indicated manually.
+\cref{fig:smartwatch_acc_with_gt_door_and_door_detect} shows the smartphone accelerometer data for the three orthogonal axis. The vertical green and red lines indicating the start and end of the manually indicated interaction with a door handle, respectively. From this figure defining time domain characteristics can be spotted in the \ac{IMU} data when a door handle is being used. Within the door interaction intervals, the accelerometer signal clearly rises in the x-axis, with similar characteristics in the other axis.  Considering the scope of this thesis, where the goal is not focused on activity recognition, putting thresholds that encapsulate these characteristics is simple to implement and potentially sufficient in detect door interaction reliably.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201123_1010_Acceleration_Z_axis}
+	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Smartwatch accelerometer data with vertical green and red lines indicating start and end of manually indicated door handle interaction.}
 	\label{fig:smartwatch_acc_with_gt_door_and_door_detect}
 \end{figure}
@@ -508,18 +512,18 @@ The indoor localization Particle Filter requires detecting interactions with a d
 	\label{fig:smart_watch_acc_with_gt_door_and_door_detect_2}
 \end{figure}
 
-\cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis and maximum of the y and z-axis, thresholds are defined.
+\cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis mean and maximum of the y and z-axis mean from \cref{fig:axis_acceleration_per_activity_segment}, thresholds are defined.
 
-In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the original data, presenting the performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure, it shows that all activity segments have detection points, as expected. Unfortunately there are also detections not in activity segments such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter. \par 
+In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the original data, presenting the performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure it shows that all activity segments have detection points, hence that threshold method is working. Unfortunately there are also detections not in activity segments, such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter, since it will trigger a landmark measurement update. This will unjustifiably increase the weight of particles close to doors, increasing the chance of them being resampling and potentially skewing the indoor localization estimate.  \par 
 
-In an attempt to curb false positives, detections can be grouped in activity segments. Activity segments can be defined by groups of detections that are below a set distance from their neighbouring detections. This set distance is currently at 1 second. Segments that have less than 3 detections are disregarded. The start of a segment will be used for the door interaction measurement update in the indoor localization particle filter.\par
+In an attempt to curb false positives, detections can be grouped in activity segments. Activity segments are defined by groups of detections that are below a set distance from their neighboring detections. This set distance is currently at 1 second. Segments that have less than 3 detections are disregarded. The start of a segment will be used for the door interaction measurement update in the indoor localization particle filter.\par
 
-Another source of information that can help with the detection of door interaction originates from the \ac{SHS}. While interacting with a door, a pedestrian is often not taking any steps, something directly visible in the step detection component. An example of this can be found in \cref{fig:step_period_from_step_detection_while_walking_indoors}. Here the step period for a \ac{SHS} sample is shown with the green lines indicate the start of a door interaction. These interactions, just as with all other green lines shown before, were indicated manually. The plot shows that when interacting with a door, the period between steps increases each time. Placing a threshold where step periods above 1.5 seconds are considered standing still. This additional threshold can potentially help improve mitigating false positives, and will therefore also be used with the activity recognition scheme.
+Another source of information that can help with the detection of door interaction originates from the \ac{SHS}. While interacting with a door, a pedestrian is often not taking any steps, something directly visible in the step detection component. An example of this can be found in \cref{fig:step_period_from_step_detection_while_walking_indoors}. Here the step period, which is the time between two detected steps, for a \ac{SHS} sample is shown. The green lines indicating the start of a door interaction, which were indicated manually. The plot shows that when interacting with a door, the step period increases for a short interval, since the pedestrian is standing still. Stationary intervals are detected by placing a threshold when step periods are above 1.5 seconds. This additional threshold can potentially help improve mitigating false positives, and will therefore also be used with the activity recognition scheme.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201122_1605_Step_period_from_step_detection_while_walking_indoors}
-		\setlength{\belowcaptionskip}{-10pt}
+	\includegraphics[width=0.55\linewidth]{images/20201122_1605_Step_period_from_step_detection_while_walking_indoors}
+		\setlength{\belowcaptionskip}{-30pt}
 	\caption{Step period while walking indoors with manually indicated start of door interactions. Data suggests that door interactions are often linked with temporary increases in step period.}
 	\label{fig:step_period_from_step_detection_while_walking_indoors}
 \end{figure}
