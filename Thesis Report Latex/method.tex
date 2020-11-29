@@ -15,7 +15,7 @@ The overall proof of concept, with all of its individual components, can be foun
 The inputs to the system are map information and data from smartphone and smartwatch IMUs. The smartphone data will be used in a \ac{SHS}, outputting a trajectory walked. This trajectory will be used as the input for Particle Filter. The Particle Filter will also use map information and door interaction detection for measurement updates as a drift reduction method. The door interaction detection is activity recognition that uses thresholds on smartwatch IMU acceleration combined with standstill detection from the step detection component of the \ac{SHS}. 
 
 \section{Smartphone based Step and Heading System}
-
+\label{sec:method-SHS}
 In the following section the different components of the \ac{SHS}, indicated by the blue box in \cref{fig:system_design}, will be presented. The only input to this subsystem is the data from the smartphone IMU. The output is a trajectory consisting of connected step vectors,each with a step length and direction. The section will start with step detection, followed by step length estimation, heading estimation and drift reduction through a particle filter with spatial context.
 
 \subsection{Step Detection}
@@ -156,18 +156,18 @@ An example of the step detection method and its different stages can be found in
 \end{figure}
 
 \subsection{Step Length Estimation}
-For step length estimation the methods introduced in \cref{sec:step_length_estimation} using either global or personalized variables will be compared. These step length estimation methods require linear regression between their dependent variables and step length. All dependent variables can be distilled from accelerometer data and the output of the step detection component of the \ac{SHS}. \par 
+For step length estimation the methods introduced in \cref{sec:step_length_estimation} using either global or personalized variables will be compared. These step length estimation methods use linear regression between their dependent variables and step length. All dependent variables can be distilled from accelerometer data and the output of the step detection component of the \ac{SHS}. \par 
 
 In order to determine the linear relationships for the different models, accelerometer data recorded during walking is required where the traveled distance is known. Luckily, \cite{Vezocnik2019} have made the IMU data they used for their research available online under an open license. Running this data through the thesis step detection component, the result can be used for parameter estimation. Once the relevant parameters have been estimated, the performance of the methods can determined. This can be done by recording accelerometer data when walking, estimating the distance traveled using the step length methods and comparing it to the distance actually traveled.
 
 \newpage
 \subsection{Indoor Heading Estimation during Locomotion}
-
+\label{sec:meth-indoor_heading_estimation}
 For heading estimation for the \ac{SHS}, the simplification was made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods is outside the scope of this research. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization.\par 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.4\linewidth]{images/IMG_4705}
-	\caption{Smartphone carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
+	\caption{Smartphone "in front, in hand" carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
 	\label{fig:experiment_carrying_position}
 \end{figure}
 %TODO write about euler angles
@@ -194,7 +194,7 @@ The resulting algorithm combines the EKF from \cref{sec:rw-EKF} with the above m
 	\SetAlgoLined
 	\DontPrintSemicolon
 	
-	\KwIn{ \ac{IMU} data $y_{*,k}$ where * is either $ a, \omega \text{ or } m $ for either an accelerometer , gyroscope or magnetometer measurement. $ {k=1,..N}$  where $N$ is the total number of samples. Covariance matrices $\Sigma_{\omega}, \Sigma_{\mathrm{a}} $ and $\Sigma_{\mathrm{m}}$. }
+	\KwIn{ \ac{IMU} data $y_{*,k}$ where * is either $ a, \omega \text{ or } m $ for either an accelerometer , gyroscope or magnetometer measurement, respectively. $ {k=1,..N}$  where $N$ is the total number of samples. Covariance matrices $\Sigma_{\omega}, \Sigma_{\mathrm{a}} $ and $\Sigma_{\mathrm{m}}$. }
 	\KwOut{An estimate of the orientation $\hat{q}_{\text {k|k }}^{\text {nb}}$ and its covariance $P_{k | k}$ for $k=1, \ldots N$}
 	
 	
@@ -293,7 +293,7 @@ p_{2,k}^i  \\
 \end{array}\right), 
 \label{eq:pf_state}
 \end{equation}
-where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ is the position vector of the particle, where $p_1,k $ and $p_2,k$ are the particle x-axis and y-axis positions, respectively. The heading angle is  $\theta$. For initialization,  all particles are positioned around a known starting point. \par 
+where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ is the position vector of the particle, where $p_1,k $ and $p_2,k$ are the particle x-axis and y-axis positions, respectively. The heading angle is  $\theta$. For initialization,  all particles are positioned around a known starting point with a bivariate normal  distribution with equal variance along both axes, with a standard deviation of $ 0.3 m $. The heading angle of each particle is initialized according to a uniform distribution between 0 and $ 2\pi $. \par 
 
 \subsection{Spatial Context Measurement Updates}
 	There are two measurement updates used within the indoor localization Particle Filter, one that compares particle trajectories to map constraints and the other where door positions are compared with particle positions. \par 
@@ -368,6 +368,7 @@ where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ 
 	
 	
 \subsection{Step and Heading Time Update}
+\label{sec:meth-pf-SHS_time_update}
 	After resampling, the new particles update their state with a dynamic model. For indoor localization using a step and heading trajectory as input, the dynamic model used is
 	
 	\begin{equation}
@@ -382,7 +383,7 @@ where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ 
 		e_{\theta} \sim \mathcal{N}\left(0, \sigma_{\theta}^{2}\right), \quad e_{l} \sim \mathcal{N}\left(0, \sigma_{l}^{2}\right).
 	\end{equation}
 
-The inputs to this dynamic model are $l_{t}$ and $\Delta \phi_k$. The former is the step length found by step detection and step length estimation. The latter is the change in heading between the current and previous time step of the step and heading trajectory, found through the orientation estimation. These variables have additive zero mean Gaussian noise realizations $e_{\theta}$ and $e_{l}$, representing the uncertainty in the values of these inputs.\par 
+The inputs to this dynamic model are $l_{t}$ and $\Delta \phi_k$. The former is the step length found by step detection and step length estimation. The latter is the change in heading between the current and previous time step of the step and heading trajectory, found through the orientation estimation. These variables have additive zero mean Gaussian noise realizations $e_{\theta}$ and $e_{l}$, representing the uncertainty in the values of these inputs. The covariance for the noise realizations on step length and step heading were determined empirically during experimentation, and will be handled in \cref{sec:results-SHS_PF_manually indicated}.\par 
 
 The resulting Particle Filter from the previous steps is summarized in \cref{algo:bootstrap_PF}.
 \newpage
@@ -464,7 +465,8 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 \end{algorithm}
 \restoregeometry
 \newpage
-\subsubsection{Indoor Location Estimation}
+\subsection{Indoor Location Estimation}
+\label{sec:method-pf_location_estimate}
 For the Particle Filter method outlined in this thesis, both minimum mean square error (MMSE) and maximum a posteriori (MAP) outline in \cref{sec:rw-pf} have disadvantages.
 Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a Particle Filter after 10 time steps. There are clear particle groups visible, all moving in different directions. The position estimate is expected to be in one of the particle clouds, however RMSE puts it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
 Implementing MAP as the state estimate in the Particle Filter is actually similar to MMSE. The measurement update that occurs every time step of the step and heading trajectory is the one that compares particle trajectories to map constraints. After this update all feasible particles will have the same weight. Since all particles have the same weight, a MAP cannot be defined. A MAP can only be defined sporadically when a door interaction measurement update occurs. 
@@ -518,7 +520,7 @@ In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are 
 
 In an attempt to curb false positives, detections can be grouped in activity segments. Activity segments are defined by groups of detections that are below a set distance from their neighboring detections. This set distance is currently at 1 second. Segments that have less than 3 detections are disregarded. The start of a segment will be used for the door interaction measurement update in the indoor localization particle filter.\par
 
-Another source of information that can help with the detection of door interaction originates from the \ac{SHS}. While interacting with a door, a pedestrian is often not taking any steps, something directly visible in the step detection component. An example of this can be found in \cref{fig:step_period_from_step_detection_while_walking_indoors}. Here the step period, which is the time between two detected steps, for a \ac{SHS} sample is shown. The green lines indicating the start of a door interaction, which were indicated manually. The plot shows that when interacting with a door, the step period increases for a short interval, since the pedestrian is standing still. Stationary intervals are detected by placing a threshold when step periods are above 1.5 seconds. This additional threshold can potentially help improve mitigating false positives, and will therefore also be used with the activity recognition scheme.
+Another source of information that can help with the detection of door interaction originates from the \ac{SHS}. While interacting with a door, a pedestrian is often not taking any steps, something directly visible in the step detection component. An example of this can be found in \cref{fig:step_period_from_step_detection_while_walking_indoors}. Here the step period, which is the time between two detected steps, for a \ac{SHS} sample is shown. The green lines indicating the start of a door interaction, which were indicated manually. The plot shows that when interacting with a door, the step period increases for a short interval, since the pedestrian is standing still. Stationary intervals are detected by placing a threshold when step periods are rising above 1.5 seconds. This additional threshold can potentially help improve mitigating false positives, and will therefore also be used with the activity recognition scheme.
 
 \begin{figure}[H]
 	\centering

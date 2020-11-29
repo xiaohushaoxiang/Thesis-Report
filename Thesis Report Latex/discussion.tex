@@ -10,12 +10,9 @@ For step detection, the implementation of \cref{algo:step_detect} was compared w
 turning smaller distance \cite{Sun2015}
 
 \subsection*{Step Length Estimation}
-The step length estimation results show that the general linear relationships outlined in \cite{Vezocnik2019} were found, however, the accuracy claimed was not, performing worse than expected. This is most likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly. A similar small scale experiment was performed. Results from this indicate that normal to slow walking worked best with the approach of \citet{Tian2016}, with a tendency to underestimate the distance traveled. \par 
 
-In contrast to the open-source data, the exact number of steps taken for the tunable parameter dataset was known. The number of steps detect was either exactly the same or two steps off. This suggests that the step detection is working correctly and that the methods may be lacking. It may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there are any other differences between the outcomes. 
 
 \newpage
-
 
 \subsection*{Orientation Estimation}
 
@@ -47,58 +44,14 @@ In contrast to the open-source data, the exact number of steps taken for the tun
 
 \begin{itemize}
 	\item Using door interactions that were manually indicated, 4 out of 6 trials were able to complete all iterations. They do have a difference in median RMSE value and the spread between iterations. The reasoning why this is occurring can be spotted in the trajectories that the Particle Filter calculates.  
-	\item The particle for trial 1 and 2 complete all iterations, however both do not follow the complete trajectory derived from video analysis. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the Particle Filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the Particle Filter seems to walk too far and is unable to make the correct turn.
-	\item Trial 3 and 7 are able to follow the whole route. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
-	\item I have a hypothesis that step length estimation is overestimating distance traveled in some cases. This can be caused by turning not having the same displacement as a straight step.
-	\item Show a table of the distance walked according to rough video estimate and what the \ac{SHS}estimated.
-	
-	\item Trials 5 and 6 are unable to complete any iteration reliably even with "perfect" activity recognition. This seems to suggest that the output of the \ac{SHS}is not good enough. This needs to be shown in figures.
+	\item 
 	
 	\item Comparing the results when activity recognition is not used, the use of activity recognition can potentially improve localization since more trials are able to survive the whole \ac{SHS}trajectory when it is than when it is not. Furthermore, the trajectories have low RMSE values compared to the video analysis trajectory, suggesting correct estimation. This is most apparent with trial 7, wherewith activity recognition it is able to complete the whole route every time, while without it only one iteration survives with a large error with the video estimate. The results also show that it is not a necessity in some cases to use this form of measurement update, as trial 1 and 2 completing all iterations with similar RMSE values regardless of whether AR is used or not.
 	\item When using the AR method outlined in \cref{chap:method}, trial 3 was unable to complete all iterations. The iterations that were completed had a large range of RMSE. This is likely caused by false positives "pulling" the particles in the wrong direction. Plots still need to be made to show this.
 \end{itemize}
 
 
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[t]{.45\textwidth}
-		\centering
-		\begin{tikzpicture}
-			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201118_1900_trial1_output_2}};
-			\begin{scope}[x={(image.south east)},y={(image.north west)}]
-				\draw[green,ultra thick,rounded corners] (0.6,0.625) rectangle (0.73,0.66);
-			\end{scope}
-		\end{tikzpicture}		
-		\caption{trajectory comparison}
-		\label{fig:shspf_trial1_on_map}
-	\end{subfigure}
-	\begin{subfigure}[t]{.45\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{images/20201118_1900_trial1_output_1}
-		\caption{axis comparison}
-		\label{fig:shspf_trial1_comparison}
-	\end{subfigure}
-	\setlength{\belowcaptionskip}{-20pt}
-	\caption{SHS-PF comparison of trial 1 with ground truth}
-	\label{fig:shspf_trial1_shs_gt_comparison}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[t]{.45\textwidth}
-		\centering
-		\includegraphics[width=0.9\linewidth]{images/20201118_1902_trial2_output_2}
-		\caption{trajectory comparison}
-		\label{fig:shspf_trial2_on_map}
-	\end{subfigure}
-	\begin{subfigure}[t]{.45\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{images/20201118_1902_trial2_output_1}
-		\caption{axis comparison}
-		\label{fig:shspf_trial2_comparison}
-	\end{subfigure}
-	\caption{SHS-PF comparison of trial 2 with ground truth}
-	\label{fig:shspf_trial2_shs_gt_comparison}
-\end{figure}
+
 
 \begin{figure}[H]
 	\centering
