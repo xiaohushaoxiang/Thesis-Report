@@ -4,47 +4,47 @@
 
 \section{Conclusion}
 \label{sec:conclusion-conclusion}
-Within this thesis, a pedestrian focused indoor localization method is designed in an attempt to answer the research question \\
+Within this thesis, a pedestrian-focused indoor localization method is designed in an attempt to answer the research question \\
 
-\textbf{Can smartwatch based activity recognition improve a smartphone based \ac{PDR} system with indoor localization?} \\
+\textbf{Can smartwatch based activity recognition improve a smartphone-based \ac{PDR} system with indoor localization?} \\
 
 The developed proof of concept consists of a Step and Heading System combined with a Particle Filter with spatial context. Particle Filter measurements updates apply spatial constraints and determine distance difference between particle locations and door locations when a door interaction is detected. Smartwatch accelerometer data is used by a thresholding method to detect door interactions. \par
 
-Results from indoor experiments indicate that smartwatch based activity recognition can improve a smartphone based \ac{PDR} system, however it is not a requirement and does not always lead to better results. \par 
+Results from indoor experiments indicate that smartwatch based activity recognition can improve a smartphone-based \ac{PDR} system, however, it is not a requirement and does not always lead to better results. \par 
 
-The results have also shown that in the presence of false positives an activity recognition measurement update can be counter productive, in that it can "pull" estimates to the landmarks that the false positives represent, which is not where the pedestrian is. This highlights the importance of good activity recognition with the current implemented localization scheme.
+The results have also shown that in the presence of false positives an activity recognition measurement update can be counterproductive, in that it can "pull" estimates to the landmarks that the false positives represent, which is not where the pedestrian is. This highlights the importance of good activity recognition with the currently implemented localization scheme.
 
 \section{Limitations}
 \label{sec:conclusion-limitations}
-In this thesis there are limitations in both the system implementation and  experimentation. These will be addressed in the following section. Future work will be suggested in the following section to improve upon this limitations.
+In this thesis, there are limitations in both system implementation and experimentation. These will be addressed in the following section. Future work will be suggested in the following section to improve upon these limitations.
 
 \subsubsection{Video Position Estimate}
 The experimental setup for indoor testing used video recorded from a breast pocket to get a rough estimate of how the test subject moved within the indoor environment, as explained in \cref{sec:results-experi_setup-indoor_experi}. \par 
 
-This was a manual process in which the position estimate of the user was based on what was visible in the frame when the video was paused and knowledge of the indoor environment. The position at the times between two manually indicated points is calculated through interpolation. The accuracy of this estimate varies over each trial. Visually estimating the position of the test subject at a door or moving close to a recognizable object is easier than when moving in a more open space. This method generates a rudimentary position estimate, with a high certainty that the general trend reflects what happened in reality.  \par 
+This was a manual process in which the position estimate of the user was based on what was visible in the frame when the video was paused and knowledge of the indoor environment. The position at the times between two manually indicated points is calculated through interpolation. The accuracy of this estimate varies over each trial. Visually estimating the position of the test subject at a door or moving close to a recognizable object is easier than when moving in a more open space. This method generates a rudimentary position estimate, with high certainty that the general trend reflects what happened in reality.  \par 
 
 This video position estimate is currently the only measurement available with which the position estimate of the SHS-PF can be compared with. It is therefore used for system performance measure, albeit a crude one. Devising an approach to measure indoor movement better would be able to give a more consistent position estimate to use for performance measurement. \par 
 
 
 
 \subsubsection{Furniture Estimation}
-The map used by the Particle Filter subsystem is based of construction maps of the experimental environment. The size and placement of furniture in the Particle Filter map was estimated based on knowledge of the indoor environment. The placement of furniture has an effect on the position estimates that the Particle Filter produces, since they are considered a spatial constraint, and can therefore not be crossed. Wrongfully placed furniture will eliminate particles that may be representing the position correctly . To a certain extent wrongfully placed furniture within the map can be overcome by the particle filter using noise realizations on step length and step heading. \par 
+The map used by the Particle Filter subsystem is based on construction maps of the experimental environment. The size and placement of the furniture in the Particle Filter map were estimated based on knowledge of the indoor environment. The placement of furniture affects the position estimates that the Particle Filter produces, since they are considered a spatial constraint, and can therefore not be crossed. Wrongfully placed furniture will eliminate particles that may be representing the position correctly. To a certain extent wrongfully placed furniture within the map can be overcome by the particle filter using noise realizations on step length and step heading. \par 
 
-This can be overcome by more precise measurement of the furniture dimensions, a manually intensive task. Another approach is to not consider furniture as a spatial constraint with a probability of zero, but one with a higher probability. This will not remove position estimates if they cross furniture, but will decrease the likelihood of resampling compared to particles that are not crossing furniture. By giving the particles a chance at being resampled, this limitation could be compensated.
+This can be overcome by more precise measurement of the furniture dimensions, a manually intensive task. Another approach is to not consider furniture as a spatial constraint with a probability of zero, but one with a higher probability. This will not remove position estimates if they cross furniture but will decrease the likelihood of resampling compared to particles that are not crossing furniture. By giving the particles a chance at being resampled, this limitation could be compensated.
 
 \subsubsection{ Orientation Estimation Quantitative Performance Measure}
 
-As indicated in \cref{sec-results-Indoor orientation_estimation} there was no possibility within the indoor experiment to compare the orientation estimation calculate by the implementation in \cref{sec:meth-indoor_heading_estimation} with a more accurate estimate. The limitation is that it is much more difficult to determine what is causing a wrongful orientation estimate, if any is occurring. 
-Within the indoor environment magnetic disturbances are likely the culprit of wrong estimates. While the orientation estimation implementation uses thresholds to filter out the disturbances, its effectiveness is yet to be determined. Further experimentation would be required with either new experimental data or opensource data.
+As indicated in \cref{sec-results-Indoor orientation_estimation} there was no possibility within the indoor experiment to compare the orientation estimation calculate by the implementation in \cref{sec:meth-indoor_heading_estimation} with a more accurate estimate. The limitation is that it is much more difficult to determine what is causing a wrongful orientation estimate if any is occurring. 
+Within the indoor environment, magnetic disturbances are likely the culprit of wrong estimates. While the orientation estimation implementation uses thresholds to filter out the disturbances, its effectiveness is yet to be determined. Further experimentation would be required with either new experimental data or opensource data.
 
-Unknown performance in orientation estimation has direct consequence in determining the performance of the overall Step and Heading System. 
+Unknown performance in orientation estimation has a direct consequence in determining the performance of the overall Step and Heading System. 
 
 \subsubsection{Ancestor Trajectory Generation}
-The Particle Filter position trajectory determined  only by a particle's ancestors suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. From the start of estimation until this common ancestor, the trajectory no longer represent the posterior distribution correctly. While it is a form of indicating performance, further work should you attempt to overcome the path degeneracy problem.
+The Particle Filter position trajectory determined only by a particle's ancestors suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. From the start of estimation until this common ancestor, the trajectory no longer represents the posterior distribution correctly. While it is a form of indicating performance, further work should you attempt to overcome the path degeneracy problem.
 
 \section{Future Work}
 \label{sec:conclusion-future_work}
-The smartphone based indoor localization method constructed in this thesis provides a good basis on which to build on further. There are subsystem components that can be improved further and additional research directions to investigate. The following section will give an overview of a few key research directions worth considering per subsystem and with the limitations discussed in the previous section. A more exhaustive list of future work can be found in \cref{chap:app-extended_future_work}. 
+The smartphone-based indoor localization method constructed in this thesis provides a good basis on which to build further. There are subsystem components that can be improved further and additional research directions to investigate. The following section will give an overview of a few key research directions worth considering per subsystem and with the limitations discussed in the previous section. A more exhaustive list of future work can be found in \cref{chap:app-extended_future_work}. 
 
 \subsection{Step and Heading System }
 
@@ -52,10 +52,10 @@ The Step and Heading System generates an initial trajectory walked based on IMU 
 
 \begin{itemize}
 	\item \textbf{Step detection robustness against complex movement.} \\
-	The step detection method outlined in \cref{sec:meth - step detection} has proven to work well for different carrying modes, with many carrying modes having a detection error around 5\% or less. Testing how well it works with more complex movement will give more insight into the robustness of the approach. For realistic application, movements typical of being performed in a residential setting could be considered.
+	The step detection method outlined in \cref{sec:meth - step detection} has proven to work well for different carrying modes, with many carrying modes having a detection error of around 5\% or less. Testing how well it works with more complex movement will give more insight into the robustness of the approach. For realistic application, movements typical of being performed in a residential setting could be considered.
 	
 	\item \textbf{Performance comparison of more step length estimation models with thesis step detection method.} \\
-	Step length estimation using the step detection method outlined in the thesis has shown different results than what was found in literature. The results from experimental data has shown the walking speed can have a large effect on the step length estimation performance. It is worth considering comparing different models using the combination of model and the step detection implementation of \cref{sec:meth - step detection}. 
+	Step length estimation using the step detection method outlined in the thesis has shown different results than what was found in the literature. The results from experimental data have shown the walking speed can have a large effect on the step length estimation performance. It is worth considering comparing different models using the combination of model and the step detection implementation of \cref{sec:meth - step detection}. 
 	
 	\item \textbf{Quantitative performance measure of EKF during indoor localization.}\\
 	More experimentation is required to determine the performance of the heading estimation implementation used in this thesis. This could be done by performing the indoor experiments in combination with a higher quality \ac{IMU}, such as those produced by Xsens. A comparison can then be made between the orientation estimate of the Xsens device and the EKF implementation of \cref{sec:meth-indoor_heading_estimation}. Further enhancement can be considered for more advanced magnetic disturbance rejection.
@@ -68,15 +68,15 @@ The Step and Heading System generates an initial trajectory walked based on IMU 
 \subsection{Particle Filter}
 
 \begin{itemize}
-	\item \textbf{Particle filter position estimate using back tracking.} \\
-	Using the tradition position estimate techniques such as RMSE or MAP, a back tracking particle filter is worth considering. The Back Tracking Particle Filter takes particles that are not valid at some time step $ k $ and calculates the particle trajectories that lead to those particles up to some point $ k - n $, where n is set beforehand \cite{Widyawan2008}. The state estimate at time $ k-n $ are then recalculate without the removed particles. Each particle has to remember its state history or trajectory up to $ k-n $ to facilitate backtracking.
+	\item \textbf{Particle filter position estimate using backtracking.} \\
+	Using the traditional position estimate techniques such as RMSE or MAP, a backtracking particle filter is worth considering. The Back Tracking Particle Filter takes particles that are not valid at some time step $ k $ and calculates the particle trajectories that lead to those particles up to some point $ k - n $, where n is set beforehand \cite{Widyawan2008}. The state estimate at time $ k-n $ is then recalculated without the removed particles. Each particle has to remember its state history or trajectory up to $ k-n $ to facilitate backtracking.
 	
 	\item \textbf{Particle filter position estimate using backward smoothing.}\\
-	In order to determine the whole trajectory without path degeneracy a method such as Forward Filter - Backward Smoothing (FFBS) is worth considering \cite{Lindsten2013, Nurminen2013}.. This consists of first running the particle filter completely and then recalculating weights in the past using the FFBS formulation, redefining the posterior distribution.
+	In order to determine the whole trajectory without path degeneracy a method such as Forward Filter - Backward Smoothing (FFBS) is worth considering \cite{Lindsten2013, Nurminen2013}. This consists of first running the particle filter completely and then recalculating weights in the past using the FFBS formulation, redefining the posterior distribution.
 	
-	\item \textbf{More position dependent landmarks.}\\
-	More position dependent landmarks can, when detected, trigger more measurement updates, which can be beneficial for position estimation. More activity dependent landmarks will require more advanced activity recognition. Landmarks that are not activity recognition based, are worth considering, such as magnetic landmarks.
+	\item \textbf{More position-dependent landmarks.}\\
+	More position-dependent landmarks can, when detected, trigger more measurement updates, which can be beneficial for position estimation. More activity-dependent landmarks will require more advanced activity recognition. Landmarks that are not activity recognition based, are worth considering, such as magnetic landmarks.
 	
 	\item \textbf{Different spatial mode}\\
-	The current allows particles to move in all accessible regions in the indoor environment. Constricting particle movement along a node link system, may improve position estimation further.
+	The current allows particles to move in all accessible regions in the indoor environment. Constricting particle movement along a node-link system may improve position estimation further.
 \end{itemize}
