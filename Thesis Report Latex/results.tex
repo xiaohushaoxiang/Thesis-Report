@@ -92,7 +92,7 @@ An approach to determining unique step detection performance was fashioned. Sinc
 	\centering
 	\includegraphics[width=0.7\linewidth]{images/20201127_1626_Unique_step_detection_steps}
 	\setlength{\belowcaptionskip}{-10pt}
-\caption[False positives and true positives step detection comparison]{Highest unique steps detected using interval method vs total number of steps taken using the method in \cref{sec:meth - step detection}. \citet{Brajdic2013} dataset is used. }
+\caption[False positives and true positives step detection comparison]{Highest unique steps detected using interval method vs total number of steps taken using the step detection method in \cref{sec:meth - step detection}. \citet{Brajdic2013} dataset is used. }
 \label{fig:sd_tp_fp_comparison}
 \end{figure}
 
@@ -343,7 +343,7 @@ The parameter sweep of trial 3 can be found in \cref{fig:rmsebetweenvideotraject
 
 For each trial the combination of standard deviations was taken where all runs were completed with the lowest RMSE, the result of which can be found in \cref{fig:placeholder}
 
-The results in \cref{fig:placeholder} show that when door interactions are not used trials 3 and 6 have large RMSE values in addition to a wide range. These high values and wide spread indicates that the position estimate are different each run and do not coincide with the video position estimate. Trials 1 and 2 have lower RMSE values and the spread is much smaller, with the latter indicating similar estimates between runs, and the former indicating varying degrees of similarity with the video position estimate.\par 
+The results in \cref{fig:placeholder} show that when door interactions are not used trials 3 to 6 have large RMSE values in addition to a wide range. These high values and wide spread indicates that the position estimate are different each run and do not coincide with the video position estimate. Trials 1 and 2 have lower RMSE values and the spread is much smaller, with the latter indicating similar estimates between runs, and the former indicating varying degrees of similarity with the video position estimate.\par 
 
 The RMSE value between trials 1 and 2 can be explained by looking at the trajectory that the system generates. The particles for trial 1 and 2 both diverge from the trajectory derived from video analysis at some point. This can be seen for trial 1 in  \cref{fig:shspf_trial1_shs_gt_comparison}, where the particle filter position estimate does not go around the structure circled in green, while the video trajectory does. \cref{fig:shspf_trial2_shs_gt_comparison} shows the position estimate of Trial 2, where the Particle Filter seems to walk too far, through the opening indicated by the green circle,  and is unable to make the correct turn. \par 
 
@@ -353,8 +353,8 @@ One hypothesis why one SHS trajectory is better than the other relates back to \
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/placeholder}
-	\caption{}
+	\includegraphics[width=0.7\linewidth]{images/20201202_2216_last_image_for_thesis_1}
+	\caption{Root-mean-square error between Particle Filter position estimate and video position estimate.No door interactions were used for Particle Filter measurement updates.}
 	\label{fig:placeholder}
 \end{figure}
 
@@ -598,7 +598,7 @@ The false positive door interaction detection in trial 3 highlights some of the 
 	\centering
 	\includegraphics[width=0.7\linewidth]{images/20201129_2330_video_traj_Trial_3_door_detect_vs_manual_1}
 	\setlength{\belowcaptionskip}{-10pt}
-	\caption{}
+	\caption{position estimate from video estimate with markers on the path indicating the position at the time point in the video trajectory when door interactions are detected and indicated manually.}
 	\label{fig:video_traj_trial3_door_detect_vs_manual_1}
 \end{figure}
  

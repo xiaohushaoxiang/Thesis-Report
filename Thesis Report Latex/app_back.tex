@@ -437,6 +437,7 @@ For \emph{each test run} perform the following steps:
 
 \section{SHS-PF noise realization parameter search \textbf{without} door interactions}
 \label{sec:app-shs_pf_noise_realization_no_detection}
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\linewidth]{"../../../Code and Datasets/SHS Code/pictures/20201202_1257_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_NO_DETECTIONS1_1"}
@@ -701,7 +702,7 @@ For \emph{each test run} perform the following steps:
 \label{chap:app-extended_future_work}
 The following appendix chapter elaborates on the future research directions given within the thesis. For completeness the points in the thesis are listed as well. Within this chapter the different subsystem and their components will be treated through this perspective.
 
-\subsection{Step and Heading System }
+\subsection*{Step and Heading System }
 
 The different components of the step and heading system subsystem have generated results with varying success. First the components are discussed, whereafter a closer look is taken of the whole subsystem.
 
@@ -734,14 +735,14 @@ The current heading estimation implementation can be enhanced to use different c
 
 In \cref{sec:results-SHS_trajectories} a qualitative approach is used to give an indication of SHS performance with respect to the video position estimate. Further investigating this and generating a qualitative measure to compare performance could give more insight in to the criteria that an SHS trajectory must meet in order to lead to successful SHS-PF runs.
 
-\subsection{Particle Filter}
+\subsection*{Particle Filter}
 The particle filter uses spatial context to propagate position estimates. It does this by taking spatial constraints into account while estimating positions and performing a measurement update if a door interaction is detected or indicated manually. The movement of the estimates, called particles, is defined by a motion model based on the output of the SHS subsystem. The eventual position estimate of the particle filter is by calculating the trajectory of the particles at the last time step of the SHS, by determining the ancestor particles. These trajectories are averaged.
 
 One aspect that was not for seen was that the method with which the position trajectory is determined within the Particle Filter is that it suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. A method such as Forward Filter - Backward Smoothing is worth considering \cite{Lindsten2013}.
 
 Another approach is to use a Back Tracking Particle Filter (BTFP) . The BTPF takes particles that are not valid at some time step $ k $ and calculates the particle trajectories that lead to those particles up to some point $ k - n $, where n is set beforehand. The state estimates at time k-n are then recalculated without the removed particles using for example RMSE or MAP. Each particle has to remember its state history or trajectory to facilitate backtracking. 
 
-More research in the effect of different particle numbers is also a direction worthe considering.
+More research in the effect of different particle numbers is also a direction worth considering.
 
 \subsection{Door Interaction Activity Recognition}
 
