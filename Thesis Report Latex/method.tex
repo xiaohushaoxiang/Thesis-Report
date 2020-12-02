@@ -3,12 +3,12 @@
 \textit{Using the information from \cref{chap:related work}, a proof of concept was designed where a step and heading system was combined with spatial context and activity recognition from IMU data from a smartwatch. This chapter begins with a design overview, whereafter each subsystem of the proof of concept and their respective components will be treated.}
 
 \section{Proof of Concept System Overview}
-The overall proof of concept, with all of its individual components, can be found in \cref{fig:system_design}. 
+The overall proof of concept, with all of its individual components, can be found in \cref{fig:system_design}. This system will be referred to as the Step and Heading System-Particle Filter (SHS-PF) in the rest of this thesis.
 \begin{figure}[H]
 	\centering
-	\includegraphics[trim=0 40 0 50, clip, width=1.1\linewidth]{images/system_design}
+	\includegraphics[trim=0 40 0 70, clip, width=1.1\linewidth]{images/system_design}
 	\setlength{\abovecaptionskip}{3pt}
-
+	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Overview of Step and Heading System-Particle Filter (SHS-PF) proof of concept  with activity recognition from a smartwatch IMU.}
 	\label{fig:system_design}
 \end{figure}
@@ -163,7 +163,7 @@ In order to determine the linear relationships for the different models, acceler
 \newpage
 \subsection{Indoor Heading Estimation during Locomotion}
 \label{sec:meth-indoor_heading_estimation}
-For heading estimation for the \ac{SHS}, the simplification was made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods is outside the scope of this research. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization.\par 
+For heading estimation for the \ac{SHS}, the simplification was made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods is outside the scope of this research. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization. \par 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.4\linewidth]{images/IMG_4705}
@@ -171,7 +171,7 @@ For heading estimation for the \ac{SHS}, the simplification was made to constrai
 	\label{fig:experiment_carrying_position}
 \end{figure}
 %TODO write about euler angles
-Through this simplification, the yaw orientation (euler angle rotation around the z axis in \cref{fig:experiment_carrying_position}) of the sensor directly reflects the heading estimate of the pedestrian. The Extended Kalman Filter introduced in \cref{sec:rw-orientation_estimation} will be used to estimate the orientation in quaternions, which can then be mapped into Euler angles, of which yaw is one. \par 
+Through this simplification, euler angle parametrization of the orientation estimate can be used to determine the step heading. More information on euler angles can be found in \cref{chap:appen-orientparam}. The yaw orientation (the rotation around the z axis in \cref{fig:experiment_carrying_position}) of the sensor directly reflects the heading estimate of the pedestrian. The Extended Kalman Filter introduced in \cref{sec:rw-orientation_estimation} will be used to estimate the orientation in quaternions, which can then be mapped into Euler angles. \par 
 
 Before orientation estimation occurs, the smartphone \ac{IMU} sensor will be calibrated using the method of \cref{sec:sensor_calibration}. This will need to be done in the indoor environment where the experiments will be performed, away from magnetic disturbances. The calibration will also need to be performed again if significant time has passed between calibration. During indoor localization experiments, if 30 minutes passed between experiments, sensor calibration was performed.\par 
 
@@ -275,7 +275,6 @@ In order to use spatial context with the Particle Filter, different sources were
 		\label{fig:house_google_maps}
 	\end{subfigure} \quad
 	\label{fig:particle_map_construction}
-		\setlength{\belowcaptionskip}{-20pt}
 	\caption{Particle filter map creation from indoor blueprint and satellite image distance measurement}
 \end{figure}
 
@@ -362,6 +361,7 @@ where $\mathbf{x}^i_k$ is the state of particle $i$ at time $k$, $\mathbf{p}_k$ 
 	\begin{figure}[]
 			\centering
 			\includegraphics[trim=240 0 220 0, clip, width=0.35\linewidth]{images/pf_diagram}
+					\setlength{\belowcaptionskip}{-10pt}
 			\caption{ Particles with a bivariate normal probability density function, represented by color gradient. At door interaction detection, particle weight is determined by probability at location of door in individual density functions.}
 			\label{fig:pfdiagram}
 	\end{figure}
@@ -487,8 +487,8 @@ In \cref{sec:method-particle_filter}, the Particle Filter is fashioned to use do
 
 Activity recognition is a large research field in which methods span a broad range of complexity, from simple thresholding to the use of deep learning techniques such as neural networks  \cite{Lima2019}. Even the subset of activity recognition that use \ac{IMU} sensors does not decrease the amount of possibilities significantly \cite{cornacchia2016survey}. The choice for a particular activity recognition method is often a trade-off between performance and computational complexity \cite{Bulling2014}. \par 
 
-A smartwatch \ac{IMU} dataset was recorded in which interaction with door handle was indicated manually.
-\cref{fig:smartwatch_acc_with_gt_door_and_door_detect} shows the smartphone accelerometer data for the three orthogonal axis. The vertical green and red lines indicating the start and end of the manually indicated interaction with a door handle, respectively. From this figure defining time domain characteristics can be spotted in the \ac{IMU} data when a door handle is being used. Within the door interaction intervals, the accelerometer signal clearly rises in the x-axis, with similar characteristics in the other axis.  Considering the scope of this thesis, where the goal is not focused on activity recognition, putting thresholds that encapsulate these characteristics is simple to implement and potentially sufficient in detect door interaction reliably.
+A smartwatch \ac{IMU} dataset was recorded in which interaction with doors was indicated manually. In this thesis door interaction is defined as a hand making contact with a door handle and pushing down on it.
+\cref{fig:smartwatch_acc_with_gt_door_and_door_detect} shows the smartphone accelerometer data for the three orthogonal axis. The vertical green and red lines indicating the start and end of the manually indicated interaction with a door handle, respectively. From this figure defining time domain characteristics can be spotted in the \ac{IMU} data when a door handle is being used. Within the door interaction intervals, the accelerometer signal clearly rises in the x-axis, with similar characteristics in the other axes.  Considering the scope of this thesis, where the goal is not focused on activity recognition, putting thresholds that encapsulate these characteristics is simple to implement and potentially sufficient in detect door interaction reliably.
 
 \begin{figure}[H]
 	\centering
@@ -514,7 +514,7 @@ A smartwatch \ac{IMU} dataset was recorded in which interaction with door handle
 	\label{fig:smart_watch_acc_with_gt_door_and_door_detect_2}
 \end{figure}
 
-\cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis mean and maximum of the y and z-axis mean from \cref{fig:axis_acceleration_per_activity_segment}, thresholds are defined.
+\cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis mean and maximum of the y and z-axis mean from \cref{fig:axis_acceleration_per_activity_segment}, detection thresholds are defined.
 
 In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the original data, presenting the performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure it shows that all activity segments have detection points, hence that threshold method is working. Unfortunately there are also detections not in activity segments, such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter, since it will trigger a landmark measurement update. This will unjustifiably increase the weight of particles close to doors, increasing the chance of them being resampling and potentially skewing the indoor localization estimate.  \par 
 

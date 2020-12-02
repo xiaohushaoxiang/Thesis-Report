@@ -1,25 +1,28 @@
-\chapter{Experimental Results}
+\chapter{Experimental Results and Discussion}
 
-\textit{In this chapter, the  different components of the proof of concept explained in \cref{chap:method}are tested and the results shown. First, the  experimental setups are outlined. Afterwards the \ac{SHS} components outlined in \cref{chap:method} are tested individually. Hereafter the whole SHS-PF with activity recognition is treated.}
+\textit{In this chapter, the  different components of the proof of concept explained in \cref{chap:method} are tested and the results shown. These results are discussed afterwards. First, the  experimental setups are outlined that facilitated the results. Afterwards the \ac{SHS} components are tested individually. Hereafter the whole SHS-PF with activity recognition is treated.}
 
 \section{Experimental Setups}
 \label{sec:results-experimental setup}
-In order to determine the performance of the \ac{SHS} \ac{PF} and its components, different experiments were devised. \par 
+In order to determine the performance of the Step and Heading System Particle Filter and its components, different experiments were devised. For some components within the system, tests were performed outdoors, while others were confined to indoors. \par 
 
+\subsection{Outdoor Experiments}
 The step detection and step length estimation components are tested using a combination of data made available online under an open license and original data collected. The online data used for step detection and length estimation derive from the research upon which the individual methods are based on. The advantage of using online data is that it allows testing of techniques using the data from multiple test subjects holding a smartphone in multiple carrying modes, without having to perform extensive experiments.  \par 
 
-The original data was collected personally, using an available smartwatch and smartphone. The step detection and step length estimation experiments for gathering original data  were performed outdoors using only a smartphone carried in the "in front, in hand" carrying mode, as in \cref{fig:experiment_carrying_position}. This was done since the location has no effect on accelerometer readings and outdoor testing allows for long straight walking distances, which are also easily measured from satellite images.\par 
+The original data was collected personally, using an available smartwatch and smartphone. The step detection and step length estimation experiments for gathering original data  were performed outdoors using only a smartphone carried in the "in front, in hand" carrying mode, as in \cref{fig:experiment_carrying_position}. The experiments were performed outdoors since location has no effect on accelerometer readings and outdoor testing allows for long straight walking distances, which are also easily measured from satellite images.\par 
 
 For step detection, accelerometer measurements were recorded using different carrying modes while counting the number of steps. For step length estimation, known distance were walked and compared with the total distance estimated using the devised method. Further details on the experiments can be found in their respective sections, \cref{sec:results-step_detection} and \cref{sec:results-step_length_estimation}.    \par
 
-Since orientation estimation and the whole indoor localization system are location-dependent, experiments were performed indoors. This was located at the residential property introduced in \cref{sec:method-particle_filter}. The tests consisted of walking around indoors with an android smartphone in hand and recording the \ac{IMU} signals in the phone through a dedicated android app. In addition, a smartwatch was worn around the wrist of the hand that was not holding the smartphone. This hand was used to open and close doors. The opening of doors was also indicated manually through the app on the smartphone, which had a button to record timestamps when pressed.\par 
+\subsection{Indoor Experiments}
+\label{sec:results-experi_setup-indoor_experi}
+The whole indoor localization system experiments were performed indoors. This was located at the residential property introduced in \cref{sec:method-particle_filter}. The tests consisted of walking around indoors with an android smartphone in hand and recording the \ac{IMU} signals in the phone through a dedicated android app. In addition, a smartwatch was worn around the wrist of the hand that was not holding the smartphone. This hand was used to open and close doors. The opening of doors was also indicated manually through the app on the smartphone, which had a button to record timestamps when pressed.\par 
 
 In addition to recording \ac{IMU} data from both smartphone and smartwatch while the path was being walked, the trials were also being filmed from a breast pocket by another device. The video recordings are used to get a rough estimate of the path walked during the trial. This was done by replaying the video and pausing it at one second intervals. At the paused moments, the approximate position was manually indicating on the map of the experiment location. The map position and time elapsed since the start of the trial were recorded. The resulting trajectory can be used to give a rough performance indication of the indoor localization method. The full experimental process can be found in \cref{appendix:shs_experiment}. \par
 
-A total of 6 successful trials were walked by one test subject, each trial trying to generate a different trajectory than the previous trials. The same person that generated the original data for the step detection and step length estimation experiments was also used for the indoor orientation and localization experiments.\par 
+A total of 6 trials were walked by one test subject, each trial with a different trajectory than the previous trials. The same person that generated the original data for the step detection and step length estimation experiments was also used for the indoor orientation and localization experiments.\par 
 
 
-\section{Step Detection Performance}
+\section{Step Detection Testing}
 \label{sec:results-step_detection}
 The step detection method presented in \cref{sec:meth - step detection} is tested on both online and original data. In this section, first an overview of the relevant online data will be given, followed by several different metrics with which the performance of the step detection method from \cref{sec:meth - step detection} is evaluated. 
 
@@ -80,7 +83,7 @@ The results show that most detections are within 0.1 seconds from the closest gr
 
 One problem with time difference between detections and step taken is that two subsequent detections may have the same ground truth point as the nearest point, indicating that there is no unique detection of the step occurring. \par 
 
-An approach to determining unique step detection performance was fashioned. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined around ground truth step where if it is detected once within the interval using the method in \cref{sec:meth - step detection}, the detection counts as a unique step. If in this interval two steps are detected, no unique step is indicated. The time interval is increased itteratively in an attempt to find the highest unique step counts. The results for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
+An approach to determining unique step detection performance was fashioned. Since it is unrealistic to expect the step detection to be at the exact time an actual step occurs, intervals are defined around ground truth step where if it is detected once within the interval using the method in \cref{sec:meth - step detection}, the detection counts as a unique step. If in this interval two steps are detected, no unique step is indicated. The time interval is increased iteratively in an attempt to find the highest unique step counts. The results for each user and carrying mode can be found in \cref{fig:sd_tp_fp_comparison}. 
 
 \begin{figure}[H]
 	\centering
@@ -94,7 +97,7 @@ These results show that the number of unique step is close to the total number o
 
 From all results in step detection, the in front, in hand carrying mode has proven to be the best with low total counting error, small time difference to ground truth step and little to no double detections of the same step. This is likely caused by the fact that when held in hand, the smartphone is more or less attached to the user and has little possibility to wiggle in its constraints, in contrast to when the device is placed in pockets. It is fortunate that this carrying mode works best, since it also the carrying mode used for pedestrian heading estimation when testing the whole system.
 
-\section{Step Length Estimation}
+\section{Step Length Estimation Testing}
 \label{sec:results-step_length_estimation}
 For step length estimation, the linear relationships between dependent variables and step length, outlined in \cref{sec:rw - step detection} need to be determined using step detection method in \cref{sec:meth - step detection}. The step detection algorithm cannot guarantee that all steps are counted, potentially affecting the tunable parameter for both methods.  From \cref{sec:rw - step detection} the best performing algorithm for global parameters according to \cite{Vezocnik2019} is reiterated for convenience,
 
@@ -115,11 +118,13 @@ The best algorithm for individual parameters is
 
 where $A_{\max}$ and $A_{\min}$ are the maximum and minimum acceleration within a step interval. The two approaches will be used and compared to see if similar results are achieved as within \cite{Vezocnik2019}.
 
+\subsection{Online Data}
+
 \citet{Vezocnik2019} have made their accelerometer data available under an open license, consists of smartphone accelerometer data of 15 different people for three walking speeds and in different carrying modes, including in front of the torso and in hand with the screen pointing up. This carrying mode will be used for step length estimation in this section, since it performed best in step detection and is used for heading estimation. \par 
 Within the dataset metrics for each test subject are collected, including height, gender, and leg length. The walking speeds were defined qualitative, in that they were either slow, normal, or fast. Each person has two measurements for each walking speed, one for a 15-meter long straight path and another for a 108-meter long straight path. Within \cite{Vezocnik2019}, the smaller set is used to determine parameters for step length estimation methods, while the longer distance is used as a performance measure. This same process will be used to determine the performance of step detection and step length estimation.First the tuneable parameters $ K_1$ and $ K_2$ will be determined using the shorter length walking distances in the opensource data. \par 
 
 \subsection{Parameter Estimation}
-
+\label{sec:results-step_length-parameter_estimation}
 In \cref{fig:step_length_tian}, the dependent variables of \eqref{eq:Tian2016_sle2} are plotted against average step length. The data from the smaller distances in the \citet{Vezocnik2019} dataset are used. The average step length is calculated by dividing the distance traveled by the number of steps detected. In the figure each test subject is shown as a different color with the form of the different markers indicating the speed at which that trial was walked at. The positive upward trend indicated in \eqref{eq:Tian2016_sle2} can be observed for all test subjects as walking speed increases. In order to find the universal constant $K_1$ in \eqref{eq:Tian2016_sle2}, a linear least square estimation is performed across all test subject data points. The result is shown by the green striped line in \cref{fig:step_length_tian}, where $ K_1 = 0.3116$. \par 
 
 A similar plot is shown in \cref{fig:step_length_weinberg}, using the same data as in \cref{fig:step_length_tian} but for the \eqref{eq:weinberg_stepsize2} dependent variables. The positive trend indicated by \eqref{eq:weinberg_stepsize2} can be noticed. Since \eqref{eq:weinberg_stepsize2} works best for personalized variable the tunable parameter $ K_2 $ is calculated per test subject, instead of all together as with \eqref{eq:Tian2016_sle2}. This is also done through the linear least square approach.
@@ -127,6 +132,7 @@ A similar plot is shown in \cref{fig:step_length_weinberg}, using the same data 
 	\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201128_1304_}
+	\setlength{\belowcaptionskip}{-10pt}
 	\caption{Dependent variables of \eqref{eq:Tian2016_sle2} plotted against average step length over the smaller distances in the \citet{Vezocnik2019} dataset with step detection from \cref{sec:meth - step detection}. Green striped line represents \eqref{eq:Tian2016_sle2}, where $ K_1 = 0.3116$.  }
 	\label{fig:step_length_tian}
 	\end{figure}
@@ -134,6 +140,7 @@ A similar plot is shown in \cref{fig:step_length_weinberg}, using the same data 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201128_1317_}
+	\setlength{\belowcaptionskip}{-10pt}
 	\caption{Dependent variables of \eqref{eq:weinberg_stepsize2} plotted against average step length over the smaller distances in the \citet{Vezocnik2019} dataset.}
 	\label{fig:step_length_weinberg}
 \end{figure}
@@ -153,17 +160,15 @@ This outlier affects the eventual tunable parameter for both step length approac
 %\end{figure}
 
 \subsection{Step Length Method Validation}
-
+\label{sec:results-step_length-validation}
 The performance of both step length estimators is evaluated by applying them to the data of the longer walking distance in the \citet{Vezocnik2019} dataset. The estimated total distance from both \eqref{eq:Tian2016_sle2} and \eqref{eq:weinberg_stepsize2} can be compared with the actual distance walked. The results are shown in  \cref{fig:202011131943_wienberg_vs_tian_vezocnik_data1}. This data surprisingly shows that depending on the test subject one or the other method is better at estimating distance traveled at different walking speeds. This does not coincide with the results of \cite{Vezocnik2019}, where \eqref{eq:weinberg_stepsize2}, which uses personalized parameters for $ K_2 $, performed better than \eqref{eq:Tian2016_sle2}, which uses general parameters for $ K_1 $. \par 
 
-What is noticeable from the results is that there is an outlier. This is with the slow walking speed of test subject 14, which is are also the test subject with which the tunable parameter estimation had an outlier. This further supports that there is something significantly different when this test subject is performing at this walking speed.\par 
+What is noticeable from the results is that there is an outlier. This is with the slow walking speed of test subject 14, which is also the test subject with which the tunable parameter estimation had an outlier. This further supports that there is something significantly different when this test subject is performing at this walking speed.\par 
 
  Without the outlier, the mean absolute error for \eqref{eq:Tian2016_sle2} method is 9.7 percent with a standard deviation of 8.0 percent. For the \eqref{eq:weinberg_stepsize2} method the mean is 10.38 percent error with a standard deviation of 7.8 percent error. Both results differ from those cited by \cite{Vezocnik2019}, which indicate a mean of 7 percent with a standard deviation of 5 percent for the former and 3 percent with a 2.5 percent standard deviation for the latter.
  This is most likely caused by the difference in step detection methods, which \cite{Vezocnik2019} does not state explicitly.
- 
-\par
 
-\begin{figure}[]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{images/20201128_1403_Online_data_step_length_estimation_comparison}
 	\caption{Total distance traveled estimation error from in front, in hand carrying mode from long distance data from \citet{Vezocnik2019} dataset, using \eqref{eq:Tian2016_sle2} and \eqref{eq:weinberg_stepsize2} with step detection from \cref{sec:meth - step detection}. }
@@ -185,11 +190,26 @@ The different step length estimation methods were applied to the original accele
 	\label{fig:step_length_personal_testing}
 \end{figure}
 
-For both the opensource data and the original data the accelerometer based method in \eqref{eq:weinberg_stepsize2} does not necessarily work better than frequency based method in \eqref{eq:Tian2016_sle2}, as indicated by \citet{Vezocnik2019}. For future work it may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there are any other differences between the outcomes. 
+For both the opensource data and the original data the accelerometer based method in \eqref{eq:weinberg_stepsize2} does not necessarily work better than frequency based method in \eqref{eq:Tian2016_sle2}, as indicated by \citet{Vezocnik2019}. For future work it may be worthwhile to test the other algorithms outlined by \cite{Vezocnik2019} to see if there are any other differences between the outcomes. \par 
 
-\section{Indoor Orientation Estimation}
+Another observation that can be made from the above results is that the linear relationships of both \eqref{eq:Tian2016_sle2} and \eqref{eq:weinberg_stepsize2} are ill fitted to the data that is used for parameter estimation in \cref{sec:results-step_length-parameter_estimation}. The models are theoretically sound, in that they intersect with the origin. For the models this corresponds to zero frequency having a step length zero, and no difference in acceleration difference within a step interval having a step length of zero. From the figures for parameter estimation of both models, this perspective is not shared. While there does seem to be a general positive linear trend, the slopes are much steeper than the origin intersecting linear model. Fitting a linear model using this observation would require adding an offset to the different models, of the form
 
-Determining the performance of orientation estimation during the indoor experiments is difficult since no ground truth was available for comparison. A sanity check that can be performed is comparing the orientation estimations of the EKF with the orientation estimations calculated by the android operating system. The results will not be able to give an indication of which performed best with respect to reality, but could potentially highlight any very diverging behavior. \par 
+\begin{align}
+	\text{step size} &= K_1 h \sqrt{F} + c_1. \\
+	\text{step size} &= K_2 \sqrt[4]{A_{\max }-A_{\min }} + c_2,
+\end{align}
+
+where $ c $ is the offset applied to the different models. Applying these offset will make the models work only within an interval of frequencies and acceleration differences, since step length cannot be negative. This will have to be researched further in future work.
+
+
+\section[SHS Testing]{Step and Heading System Testing}
+
+The step heading component of the Step and Heading System is tested using the data from the indoor experiment. This was required since it was designed to handle magnetic disturbance found within the built environment. Once this component is tested, a qualitative evaluation of the resulting Step and Heading System trajectories is performed.
+
+
+\subsection{Indoor Orientation Estimation}
+\label{sec-results-Indoor orientation_estimation}
+Determining the performance of orientation estimation during the indoor experiments is difficult since no ground truth was available for comparison. A sanity check that can be performed is comparing the orientation estimations of the EKF with the orientation estimations calculated by the Android operating system. The results will not be able to give an indication of performance with respect to reality, but could potentially highlight any very diverging behavior. \par 
 
 In order to calculate an orientation difference, a difference quaternion ($	\Delta q_t$) can be used, defined as \cite{Kok2017}
 
@@ -197,162 +217,342 @@ In order to calculate an orientation difference, a difference quaternion ($	\Del
 	\Delta q_t = \hat{q}_{t}^{nb} \odot \left( \hat{q}_{comp,t}^{nb}  \right)^c,
 \end{equation} 
 
-where $\hat{q}_{comp,t}^{nb}$ is the unit quaternion that $ \hat{q}_{t}^{nb} $ is compared with.  In order to compare the orientation estimates of the android system and the EKF from \cref{algo:indoor_EKF}, the difference in angle between the first quaternion estimate and the following quaternions estimate is calculate for both orientation estimates. This is done to calculate the relative orientation estimate to the initial orientation, which are the angles used by the \ac{SHS}.\par 
+where $\hat{q}_{comp,t}^{nb}$ is the unit quaternion that $ \hat{q}_{t}^{nb} $ is compared with.  In order to compare the orientation estimates of the android system and the EKF from \cref{algo:indoor_EKF}, the difference in angle between the first quaternion estimate and the following quaternions estimate is calculate for both orientation estimates. This is done to calculate the relative orientation estimate to the initial orientation. It is this relative orientation that is used by the \ac{SHS}.\par 
 
-Since both relative orientation estimates start at the same initial quaternion, the two estimates can now be compared. Applying the difference quaternion calculation to these estimates, the difference quaternions over the whole orientation estimate are determined.  \par 
+Since both relative orientation estimates start at the same initial quaternion, the two estimates can now be compared. Applying the difference quaternion calculation between the two relative orientation estimates, the difference quaternions over the whole orientation estimate are determined.  \par 
 
-Once calculated, the difference quaternions can be converted into Euler angles for more intuitive interpretation. The mean difference in yaw component for each trial is shown in  \cref{fig:yaw_difference_between_android_and_ekf_1}. From the results, the difference between both orientation estimations seems larger for trial 3 and 6, requiring further investigation.
+Once calculated, the difference quaternions can be converted into Euler angles for more intuitive interpretation. The mean difference in the yaw component for each trial is shown in  \cref{fig:yaw_difference_between_android_and_ekf_1}. From the results, the difference between both orientation estimations seems larger for trial 5 and 6, requiring further investigation.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/20201128_1646_mean_yaw_difference_1}
-	\setlength{\belowcaptionskip}{-20pt}
-	\caption{Mean yaw difference between \cref{algo:indoor_EKF} and android orientation estimates.}
+	\includegraphics[width=0.7\linewidth]{images/20201201_1212_Mean_yaw_difference_between_EKF_android_1}
+	\setlength{\belowcaptionskip}{-10pt}
+	\caption{Yaw difference between EKF estimate in \cref{algo:indoor_EKF} and android orientation estimates. Trial 5 and 6 show much larger spread in yaw difference with the orientation estimate of the android phone.The red markers represent outliers in the box and whisker plot implementation.}
 	\label{fig:yaw_difference_between_android_and_ekf_1}
 \end{figure}
 
-\newpage
-\section{Step and Heading System Particle Filter Testing}
+The yaw traces of the android system and EKF for trial 5 and 6 can be found in \cref{fig:trial5_yawdifferencebetweenmethods} and \cref{fig:trial6_yawdifferencebetweenmethods}, respectively. At the start of the orientation estimation a large jump between 1.4 and 1.8 rad by the EKF can be noticed at both datasets, that slowly converges back to the orientation estimate of the android operating system. This is not present in trials 1 to 4. It is not clear what is causing this spike, but it is evident that this can have an effect on the SHS output, and potentially the position estimate of the Particle Filter. One hypothesis is that the initial orientation state is far off reality. The large initial covariance at this time point allows the EKF in \cref{algo:indoor_EKF} to make a large estimate jump when a magnetometer measurement update occurs. Using a prior estimating technique such as the TRIAD algorithm \cite{Kok2017} could be used to mitigate this. \par 
 
-Through the indoor experiment outlined in \cref{sec:results-experimental setup} the complete indoor localization system could be tested from input sensor measurements and map information to postion estimate. The IMU data is passed through the \ac{SHS} subsystem of \cref{sec:method-SHS} to produce a \ac{SHS} trajectory. The smartwatch IMU data is passed through the activity recognition method in \cref{sec:method-AR} to  detect door interaction. Combining the \ac{SHS} trajectory and door interaction detection with the floor map generated in \cref{sec:method-particle_filter}, the Particle Filter propagates position estimates through the indoor environment, while taking spatial context into account. The resulting trajectories from the particles at the last time step of the SHS are averaged to produce the indoor position estimate over the experiment , as explained in \cref{sec:method-pf_location_estimate}. The whole system combined will be referred to as the Step and Heading Particle Filter (SHS-PF).  \par 
+Although not ideal, it is still possible that the Particle Filter can handle this jump, since it occurs at the start of the trials and a step may not have been taken yet. Furthermore the Particle Filter uses the \textit{change} in step heading between steps to alter the heading of the particles, not the heading itself. From the figures, a qualitative observation can be made that the general trend of the yaw estimate does seem to coincide with that of the Android system, albeit with an offset caused by the yaw jump at the start. \par 
 
-By using the video recordings made during the different trials, a rough position trajectory was created. This rough estimate can be used for comparison with the position estimate of the \ac{SHS} Particle Filter, in order to get an indication of the estimating performance. This can be done by calculating the root-mean-square error between the two position estimate as
+In the case that these trials are unable to complete the Particle Filter runs correctly, the orientation estimate of the phone can be used to determine if it is caused by the orientation estimate of \cref{sec:meth-indoor_heading_estimation} or not.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_1218_Yaw_difference_between_methods}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:trial5_yawdifferencebetweenmethods}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201201_1219_Yaw_difference_between_methods}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:trial6_yawdifferencebetweenmethods}
+\end{figure}
+
+\subsection{Step and Heading System Trajectories}
+
+The \acl{SHS} alone is not a viable position estimate. It generates a relative trajectory and has no way of align itself with the indoor environment. The particle filter translates the relative trajectory to a absolute one.\par 
+
+While no reasonable quantitative comparison can be done between \ac{SHS} output and camera position estimate, a qualitative comparison can. By heuristically rotating the SHS trajectory to fit the general video estimate, \cref{fig:trial1_shs_gt_comparison} and \cref{fig:trial6_shs_gt_comparison} were generated.\par 
+
+There are some observations that can be made from this qualitative approach. First, for trial 1, the general trend along the x and y axis of the SHS output is comparable to that of the video estimate as can be seen in \cref{fig:trial1_comparison}. The position as seen in \cref{fig:trial1_on_map} is also relatively close, although it naturally does not conform with the spatial constraints. For \cref{fig:trial6_shs_gt_comparison}, the trend of the SHS trajectory shows similar changes in position over time when compared to the video estimate. The trend in the x axis follows the video estimate relatively close, with the position also relatively the same. While the trend on the y axis also is similar to that of the video position estimate, the distance error along the axis is over 5 meters most of the time. \par 
+
+This qualitative comparison highlights that the quality between SHS output can vary. Variables that can influence this could be the route walked, which may pass different magnetic disturbances, calibration error and incorrectly detected steps.
+
+
+%todo show that shs is not enough 
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=0.85\linewidth]{images/20201201_2209_Qualitative_trajectory_comparison_for_Trial_1_1}
+		\caption{trajectory comparison}
+		\label{fig:trial1_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201202_0913_Qualitative_trajectory_axes_comparison_for_Trial_1_1}
+		\caption{axis comparison}
+		\label{fig:trial1_comparison}
+	\end{subfigure}
+\setlength{\belowcaptionskip}{-10pt}
+	\caption{Qualitative step and heading system comparison of trial 1 with ground truth}
+	\label{fig:trial1_shs_gt_comparison}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=0.85\linewidth]{images/20201201_2220_Qualitative_trajectory_comparison_for_Trial_6_1}
+		\caption{trajectory comparison}
+		\label{fig:trial6_on_map}
+	\end{subfigure}
+	\begin{subfigure}[t]{.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/20201201_2253_Qualitative_trajectory_axes_comparison_for_Trial_6_1}
+		\caption{Axis comparison between video estimate and heuristically rotated SHS trajectory.}
+		\label{fig:trial6_comparison}
+	\end{subfigure}
+\setlength{\belowcaptionskip}{-20pt}
+	\caption{Qualitative step and heading system comparison of trial 6 with ground truth}
+	\label{fig:trial6_shs_gt_comparison}
+\end{figure}
+
+\section[SHS-PF Testing]{Step and Heading System Particle Filter Testing}
+
+Through the indoor experiment outlined in \cref{sec:results-experimental setup}, the complete indoor localization system could be tested, from input sensor measurements and map information to postion estimate. The IMU data is passed through the \ac{SHS} subsystem of \cref{sec:method-SHS} to produce \ac{SHS} information, consisting of step heading and step length each time a step is detected. The smartwatch IMU data is passed through the activity recognition method in \cref{sec:method-AR} to  detect door interaction. Combining the \ac{SHS} data and door interaction detection with the floor map generated in \cref{sec:method-particle_filter}, the Particle Filter propagates position estimates through the indoor environment, while taking spatial context into account. The resulting trajectories from the particles at the last time step of the SHS data are averaged to produce the indoor position estimate over the experiment, as explained in \cref{sec:method-pf_location_estimate}. The whole system combined will be referred to as the Step and Heading Particle Filter (SHS-PF).  \par 
+
+By using the video recordings made during the different trials, a rough position estimate was created. This rough estimate can be used for comparison with the position estimate of the \ac{SHS} Particle Filter, in order to get an indication of the estimating performance. This can be done by calculating the root-mean-square error between the two position estimates as
 
 \begin{equation}
-	\displaystyle \operatorname {RMSE} ={\sqrt {\frac {\sum _{t=1}^{T}({\hat {y}}_{t}-y_{t})^{2}}{T}}},
+	\displaystyle \operatorname {RMSE} ={\sqrt {\frac {\sum _{n=1}^{N}({\hat {y}}_{n}-y_{n})^{2}}{N}}},
 	\label{eq:RMSE}
 \end{equation}
 
-where $T$ is the total time of the trial, $\hat{y_t}$ the postion estimate at time $t$ of the SHS-PF and $y_t$ the video trajectory position at time $t$.
+where $N$ is the total number of steps detected by the SHS, $\hat{y_n}$ the postion estimate at step $n$ of the SHS-PF and $y_n$ the video trajectory position at the time of the step $n$. \par 
 
-\subsection{SHS-PF with Manually Labeled Door Interaction}
-\label{sec:results-SHS_PF_manually indicated}
-During the experiment, timestamps were recorded to indicate the beginning of interaction with a door within the indoor environment. The recorded timestamps can be used to trigger a Particle Filter door interaction measurement update. Using this method, the potential effect of activity recognition for indoor localization in the ideal case can be evaluated, since there is no chance for false positives to occur.\par
+In this section, reference will be made to "Particle Filter runs". A run consists of feeding the Particle Filter the input data multiple times. This is done to get an indication of reproducibility, since the resampling step in the Particle Filter samples from a particle distribution, which is a stochastic process, not necessarily generating the same results each time.\par 
+A run is considered completed if there are still particles present at the last time step of the SHS data. The inability to complete a run indicates that the SHS and door interaction inputs are causing all particles to run into spatial constraints at some point and in the process eliminating themselves. This leaves no particle over for the Particle Filter to propagate, hence no further position estimate to produce.
 
-This section will first use these additional position measurements to find model parameters, through an iterative process. First the number of particles to use will be estimated. Afterwards the standard deviations in the time update of the Particle Filter will be determined. Once these parameters are defined, the performance of SHS-PF with manually labeled door interaction is evaluated.
+\subsection{SHS-PF without Door Interaction Measurement Update}
+
+In order to compare the effect that activity recognition has on the performance of the SHS-PF, scenarios must be performed in which they are and are not available. Since different information is available 
 
 \subsubsection{Determining Particle Filter Time Update Standard Deviations}
 
-\subsubsection{Determining Number of Particles}
+\subsection{SHS-PF with Door Interaction}
 
-This represent particle runs that have been able to propagate particles for the whole \ac{SHS} trajectory.
+\subsection{SHS-PF with Manually Labeled Door Interaction}
+\label{sec:results-SHS_PF_manually indicated}
+During the indoor experiment, timestamps were recorded to indicate the beginning of interaction with a door within the indoor environment. This is the moment when a hand makes contact with a door handle. The recorded timestamps can be used to trigger a Particle Filter door interaction measurement update. Using this method, the potential effect of activity recognition for indoor localization in the ideal case can be evaluated, since there is no chance for false positives to occur. False positives are when an activity is detected, but has not actually occurred. \par
+
+This section will first use these additional position measurements to find model parameters, through an iterative process. First the standard deviations in the time update of the Particle Filter will be determined. Afterwards, the number of particles to use will be estimated.  Once these parameters are defined, the performance of SHS-PF with manually labeled door interaction is evaluated.
+
+\subsubsection{Determining Particle Filter Time Update Standard Deviations}
+
+The Particle Filter time update presented in \cref{sec:meth-pf-SHS_time_update} uses predefined standard deviations for the noise realizations on step heading and step length. These values are found iteratively by trying different combinations of standard deviations for both variables for all the different experimental trials. Step heading standard deviation is tested between a range of 0.1 to 0.2 rad. Step length standard deviation is tested between a range of 0.1 to 0.2 meters. For each combination 5 runs are performed, with 2000 particles, with the manually indicated door interactions being used to trigger Particle Filter measurement updates. The parameter sweep of trial 3 can be found in \cref{fig:rmse_between_video_trajectory_andshs-pf_for_trial_3_1}, while all others can be found in \cref{sec:app-shs_pf_noise_realization}. \par 
+
+Using the results from all trials, a combination of standard deviations was chosen . This was based on a combination which for all trials resulted in all runs completed and similar RMSE values. This was set at 0.14 rad for step heading standard deviation and 0.18 meters for step length standard deviation. \par 
+
+For trial 4 and 5 no combination of step heading and step length standard deviations was able to generate completed particle filter runs. Increasing the number of particles did not change this. In addition, using the android orientation estimate instead of the orientation estimate of \cref{sec:meth-indoor_heading_estimation} also did not give better results. This suggests that the underlying step and heading system trajectory is not sufficient in propagating the position estimate within the spatial constraints. \par
+
+An interesting observation that can be made is that even though trial 6 had a similar spike in yaw orientation as with trial 5, a combination of standard deviations can be found where all runs using them were able to be completed. This supports the hypothesis that the yaw spike does not effect performance since it occurs before a step is yet to be taken. Since the \textit{change} in yaw is used, an initial difference has little effect.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\linewidth]{images/20201201_1326_parameter_search_trial3_1}
+	\caption{}
+	\label{fig:rmse_between_video_trajectory_andshs-pf_for_trial_3_1}
+\end{figure}
+
+\subsubsection{Determining Number of Particles}
+\label{key}
+Now that the standard deviations of the particle filter time update have been found using 2000 particles, test can be performed to see what effect the number of particles has on the eventual position estimate. The results for trial 1 can be found in \cref{fig:trial1_nr_particles}, where 10 runs with an increasing number of particles was performed.  \cref{fig:trial1_nr_particles_complete} shows how many runs were completed with increasing number of particles. \cref{fig:trial1_nr_particles_RMSE} shows how the RMSE between the video trajectory and the SHS-PF position estimate changes with increasing particle filters. The same type of figures are shown in \cref{fig:trial3_nr_particles}, but then for trial 3. \par 
+
+The results in \cref{fig:trial1_nr_particles} shows that for trial 1 using 1000 particles is enough for all runs to complete the SHS trajectory. The results also show that the variance of the RMSE between the SHS-PF trajectory and the video trajectory does not change significantly as the number of particles increases. The results for trial 2 are very similar to those of trial 1, requiring only 500 particles to complete ten runs successfully, with little change in RMSE variation. The figures of trial 2 can be found in \cref{app:SHS-PF trials}.\par
  
 \begin{figure}[H]
 	\centering
-	\begin{subfigure}[t]{.38\textwidth}
+	\begin{subfigure}[t]{.4\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{images/20201129_1147_Trial_1_nr_particles_1}
-		\caption{}
-		\label{fig:trial1_nr_particles}
+		\caption{Number of completed runs out of 10 runs for SHS-PF with increasing number of particles.}
+		\label{fig:trial1_nr_particles_complete}
 	\end{subfigure} \quad
 	\begin{subfigure}[t]{.4\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{images/20201129_1154_Trial_1_RMSE_nr_particles_1}
-		\caption{}
-		\label{fig:trial3_nr_particles}
-	\end{subfigure} \quad
+		\caption{RMSE between video trajectory and SHS-PF with manually indicated door interaction, with increasing number of particles}
+		\label{fig:trial1_nr_particles_RMSE}
+	\end{subfigure}
+\setlength{\belowcaptionskip}{-20pt}
+\caption{Increasing number of particles for SHS-PF in trial 1.}
+\label{fig:trial1_nr_particles}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[H]	
 	\centering
 	\begin{subfigure}[t]{.4\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{images/20201129_1147_Trial_3_nr_particles_1}
-		\caption{}
-		\label{fig:trial3_nr_particles}
+		\caption{Number of completed runs for SHS-PF with increasing number of particles.}
+		\label{fig:trial3_nr_particles_completed}
 	\end{subfigure} \quad
 \begin{subfigure}[t]{.4\textwidth}
 	\centering
 	\includegraphics[width=\linewidth]{images/20201129_1154_Trial_3_RMSE_nr_particles_1}
-	\caption{}
-	\label{fig:trial3_nr_particles}
-\end{subfigure} \quad
+	\caption{RMSE between video trajectory and SHS-PF with manually indicated door interaction, with increasing number of particles}
+	\label{fig:trial3_nr_particles_RMSE}
+\end{subfigure}
+\setlength{\belowcaptionskip}{-10pt}
+\caption{Increasing number of particles for SHS-PF in trial 3.}
+\label{fig:trial3_nr_particles}
 \end{figure}
 
-\subsubsection{Performance}
-All trials were run through the complete SHS-PF with the manually recorded door interactions, with 4000 particles. This was done for five runs per trial, in order to show reproducibility. The results can be found in \cref{fig:pf_boxplot}. The figure shows the root-mean-square errors values per experimental trial over 5 runs. At the top of the figure the amount of completed runs is indicated.
+The results of trial 3 in \cref{fig:trial3_nr_particles} differs from trial 1 and 2 in that the number of particles need to complete all runs successfully is larger, with one run out of 10 not completing the SHS trajectory at 3000 particles. Furthermore, the results also show that an increase in the number of particles decreases the variance of the RMSE between video trajectory and SHS-PF trajectory. This is as expected since more particles define the distribution better. %TODO check this and find a source
+\par 
+
+\subsubsection{SHS-PF with Manually Indicated Door Interaction Performance}
+Using the above results for initial parameters for model standard deviation and number of particle, all trials were run through the complete SHS-PF with the manually recorded door interactions, using 3000 particles. This was done for five runs per trial, in order to show reproducibility. The results can be found in \cref{fig:pf_boxplot}. The figure shows the root-mean-square errors values per experimental trial over 5 runs. At the top of the figure the amount of completed runs is indicated.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{images/20201129_1419_RMSE_manually_indicated_ar_shspf_trials_1}
+	\includegraphics[width=0.7\textwidth]{images/20201201_1850_RMSE_per_trial_with_manually_indicated_door_interaction}
 	\caption[Particle Filter position estimation performance with manual door interaction]{Particle Filter position estimation root mean square error compared to rough video generated estimate. Manually indicated door interactions were used for Particle Filter measurement update.}	
 	\label{fig:pf_boxplot}
 \end{figure}
 
-The results show that for trials 1 to 3 and trial 6 that all five runs were completed, with their individual runs having similar RMSE values to the rough video estimate. The RMSE value per trial do vary, which can be explained by looking at the trajectory that the system generates. \par  
+The results show that for trials 1 to 3 and trial 6 all five runs were completed, with their individual runs having similar RMSE values. The RMSE value between trials do vary, which can be explained by looking at the trajectory that the system generates. \par  
 
-While the particles for trial 1 and 2 complete all iterations, however both do not follow the complete trajectory derived from video analysis. This can be seen in  \cref{fig:shspf_trial1_shs_gt_comparison} where the structure circled in green is circled by the rough estimate but not by the Particle Filter. For \cref{fig:shspf_trial2_shs_gt_comparison} the Particle Filter seems to walk too far and is unable to make the correct turn.
+While the particles for trial 1 and 2 complete all five runs, both diverge from the trajectory derived from video analysis. This can be seen for trial 1 in  \cref{fig:shspf_trial1_shs_gt_comparison}, where the particle filter position estimate does not go around the structure circled in green, while the video trajectory does. \cref{fig:shspf_trial2_shs_gt_comparison} shows the position estimate of Trial 2, where the Particle Filter seems to walk too far, through the opening indicated by the green,  and is unable to make the correct turn. \par 
+
+Trial 3 and 6, shown in \cref{fig:shspf_trial3_shs_gt_comparison} and \cref{fig:shspf_trial6_shs_gt_comparison} respectively, are able to follow their routes better. Trial 3 produces a position estimate that is very comparable to the one generated from video for . Trial 6 diverges halfway through the SHS trajectory, but is able to recuperate and generate a position estimate similar to that of the video trajectory afterwards.
+
+A potential reason why the Particle Filter position estimate diverges from the video trajectory is that step length estimation may be overestimating the distance traveled in some cases. This hypothesis originates from post processing the video data, where it was qualitatively noticed that when turning a corner that the distance traveled in those steps was smaller than when walking straight. All step length testing in this thesis so far used data from test subjects that walked in a straight line, and has therefore not been effected by the phenomenon this hypothesis states.\par 
+
+%todo door interaction help but does not gaurantee that the estimate does not diverge from the actual path. This highlights the importance of the step and heading system estimate.
+
+%A comparison is made between the total distance traveled according to the \ac{SHS} and the video estimate. The results can be seen in \cref{fig:distance_travelled_comparison_1}. The results do not seem to support the above hypothesis, since the \ac{SHS} has underestimated the distance in all but one of the trials. While the total distance traveled is underestimated
 
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
 		\begin{tikzpicture}
-			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.9\textwidth]{images/20201118_1900_trial1_output_2}};
+			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.91\textwidth]{images/20201129_1907_trial_1_map_1}};
 			\begin{scope}[x={(image.south east)},y={(image.north west)}]
-				\draw[green,ultra thick,rounded corners] (0.6,0.625) rectangle (0.73,0.66);
+				\draw[green,ultra thick,rounded corners] (0.557,0.625) rectangle (0.687,0.66);
 			\end{scope}
 		\end{tikzpicture}		
-		\caption{trajectory comparison}
+		\caption{Position estimate trajectory comparison.}
 		\label{fig:shspf_trial1_on_map}
 	\end{subfigure}
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{images/20201118_1900_trial1_output_1}
-		\caption{axis comparison}
+		\includegraphics[width=\linewidth]{images/20201129_1946_trial_1_traj_1}
+		\caption{Position estimate axis comparison.}
 		\label{fig:shspf_trial1_comparison}
 	\end{subfigure}
-	\setlength{\belowcaptionskip}{-20pt}
-	\caption{SHS-PF comparison of trial 1 with ground truth}
+	\caption{Trial 1 position comparison between SHS-PF and video position estimate.}
 	\label{fig:shspf_trial1_shs_gt_comparison}
 \end{figure}
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
-		\includegraphics[width=0.9\linewidth]{images/20201118_1902_trial2_output_2}
-		\caption{trajectory comparison}
+		\begin{tikzpicture}
+			\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.95\textwidth]{images/20201129_1904_trial_2_map_1}};
+			\begin{scope}[x={(image.south east)},y={(image.north west)}]
+				\draw[green,ultra thick,rounded corners] (0.42,0.38) rectangle (0.37,0.4);
+			\end{scope}
+		\end{tikzpicture}
+		\caption{Position estimate trajectory comparison.}
 		\label{fig:shspf_trial2_on_map}
 	\end{subfigure}
 	\begin{subfigure}[t]{.45\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{images/20201118_1902_trial2_output_1}
-		\caption{axis comparison}
+		\includegraphics[width=\linewidth]{images/20201129_1904_trial_2_traj_1}
+		\caption{Position estimate axis comparison.}
 		\label{fig:shspf_trial2_comparison}
 	\end{subfigure}
-	\caption{SHS-PF comparison of trial 2 with ground truth}
+	\caption{Trial 2 position comparison between SHS-PF and video position estimate.}
 	\label{fig:shspf_trial2_shs_gt_comparison}
 \end{figure}
+ 
+ \begin{figure}[H]
+ 	\centering
+ 	\begin{subfigure}[t]{.45\textwidth}
+ 		\centering
+ 		\includegraphics[width=1.02\linewidth]{images/20201129_1900_trial_3_map_1}
+ 		\caption{Position estimate trajectory comparison.}
+ 		\label{fig:shspf_trial3_on_map}
+ 	\end{subfigure}
+ 	\begin{subfigure}[t]{.45\textwidth}
+ 		\centering
+ 		\includegraphics[width=\linewidth]{images/20201129_1900_trial_3_traj_1}
+ 		\caption{Position estimate axis comparison.}
+ 		\label{fig:shspf_trial3_comparison}
+ 	\end{subfigure}
+ 	\caption{Trial 3 position comparison between SHS-PF and video position estimate.}
+ 	\label{fig:shspf_trial3_shs_gt_comparison}
+ \end{figure}
+ \begin{figure}[H]
+ 	\centering
+ 	\begin{subfigure}[t]{.45\textwidth}
+ 		\centering
+ 		\includegraphics[width=0.95\linewidth]{images/20201129_1857_trial_6_map_1}
+ 		\caption{Position estimate trajectory comparison}
+ 		\label{fig:shspf_trial6_on_map}
+ 	\end{subfigure}
+ 	\begin{subfigure}[t]{.45\textwidth}
+ 		\centering
+ 		\includegraphics[width=\linewidth]{images/20201129_1858_trial_6_traj_1}
+ 		\caption{Position estimate axis comparison.}
+ 		\label{fig:shspf_trial6_comparison}
+ 	\end{subfigure}
+ 	\caption{Trial 6 position comparison between SHS-PF and video position estimate.}
+ 	\label{fig:shspf_trial6_shs_gt_comparison}
+ \end{figure}
 
- Trial 3 and 7 are able to follow the route better. corresponding to lower RMSE values, the outputs are shown in \cref{fig:shspf_trial7_shs_gt_comparison}.
-I have a hypothesis that step length estimation is overestimating distance traveled in some cases. This can be caused by turning not having the same displacement as a straight step.
-Show a table of the distance walked according to rough video estimate and what the \ac{SHS}estimated.
+%todo using the same standard deviation the experiment was run without door interaction results are below
+ In order to see what effect activity recognition measurement updates have on position estimation, the Particle Filter needs to be run without them. The same test as before was performed, where 5 runs per trial were executed. All other parameters were kept the same. The results can be found in \cref{fig:pf_boxplot_no_doors}.
+ 
+ \begin{figure}[H]
+ 	\centering
+ 	\includegraphics[width=0.7\textwidth]{images/20201201_1847_RMSE_per_trial_with_no_door_interaction_measurement_update}
+ 	\caption[Particle Filter position estimation performance without door interaction]{Particle Filter position estimation performance without door interaction measurement update, 5 iterations per trial. Number under "completed" indicates how many iteration had particles surviving for the whole \ac{SHS} trajectory.}
+ 	\label{fig:pf_boxplot_no_doors}
+ \end{figure}
+ 
+ The results show that all trials except trial 2 were unable to complete all runs using the same parameter as used when door interaction measurement updates were used. This indicates that for the SHS-PF implementation constructed in this thesis, the use of activity recognition measurement updates facilitates the Particle Filter to complete more runs successfully.  The Trial 2 results shows no difference in performance compared to when activity recognition is used. \par 
+ 
+ 
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.7\linewidth]{images/20201129_2024_distance_travelled_comparison_1}
+% 	\caption{Comparison between distance traveled estimate of SHS and video trajectory.}
+% 	\label{fig:distance_travelled_comparison_1}
+% \end{figure}
 
-Trials 5 and 6 are unable to complete any iteration reliably even with "perfect" activity recognition. This seems to suggest that the output of the \ac{SHS}is not good enough. This needs to be shown in figures.
-
-
-The total SHS-PF solution was unable to get a reliable output for trials 4 and 5.\par 
-
-\subsection{SHS- PF with Door Interaction Detection}
-Applying the activity recognition method on the smartwatch data outline in Algorithm 3, door interactions could be detected. Using these detections instead of the manually indicated ones, the results in \cref{fig:rmse_per_trial_with_activity_recognition} were generated
+\subsubsection{SHS- PF with Door Interaction Detection}
+So far the ideal case of door interaction detection has been treated and has shown to have a positive effect compared to when they are not used. Applying the activity recognition method on the smartwatch data outline in Algorithm 3 on the indoor experiment data, door interactions could be detected. Using these detections instead of the manually indicated ones, the results in \cref{fig:rmse_per_trial_with_activity_recognition} were generated.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\linewidth]{images/RMSE_door_interaction_detections_ar_shspf_trials}
+	\includegraphics[width=0.7\linewidth]{images/20201201_1851_RMSE_per_trial_with_door_interaction_detection}
 	\caption[Particle Filter position estimation performance with door interaction]{Particle filter position estimation root mean square error compared to rough video generated estimate using detected door interactions.}
 	\label{fig:rmse_per_trial_with_activity_recognition}
 \end{figure}
 
-Trials 1,2 and 6 show similar results as when "perfect" activity recognition was used. Also the inability to complete all iterations for trials 5 and 6 is still present. In contrast trial 3 is also unable to complete all iterations, with the completed iterations leading to much larger RMSE values than before. 
+Trials 1,2 and 6 show similar results as when manually indicated door interaction are used, as shown in \cref{fig:pf_boxplot}. Also the inability to complete all runs for trials 5 and 6 is still present. \par 
 
-\subsection{SHS-PF without Door Interaction Measurement Update}
-In order to see what effect activity recognition measurement updates have on estimating the trajectory, the Particle Filter needs to be run without them. All other parameters were kept the same. The results can be found in \cref{fig:pf_boxplot_no_doors}.
+In contrast trial 3 is also unable to complete all runs, with the completed iterations leading to larger RMSE values than before. The reason for this can be seen in \cref{fig:video_traj_trial3_door_detect_vs_manual_1}. In this plot the position estimate from video can be seen as the blue line. The markers on the path indicate the position at the time point in the video trajectory when door interactions are detected and indicated manually, green and red respectively. The plot shows clear structures of detections and manually indicated points. There is however one outlier at a X position of 10.5 meters and Y position of 27.6 meters. This point is clearly not placed close to door interaction clusters, and can therefore be labeled a false positive. \par 
+
+This false positive can also be seen in \cref{fig:trial_3_door_interaction_detection_using_smartwatch1}, where the smartwatch accelerometer data per axis is shown. The vertical lines represent manually indicated interaction and the start of door interaction detection sections. The red dots represent accelerometer samples that meet the threshold requirements set for door detection in \cref{sec:method-AR}. The detection at 142 seconds is what caused the false positive. Replaying the video for this trial, the test subject is seen interacting with the smartwatch with the hand holding the smartphone, attempting to check whether smartphone IMU recording is functioning properly. This action unintentionally performed a movement that meets the threshold requirement for a door interaction detection. \par 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{images/20201129_1438_RMSE_with_no_door_interaction_1}
-	\caption[Particle Filter position estimation performance without door interaction]{Particle Filter position estimation performance without door interaction measurement update, 5 iterations per trial. Number under "completed" indicates how many iteration had particles surviving for the whole \ac{SHS}trajectory.}
-	\label{fig:pf_boxplot_no_doors}
+	\includegraphics[width=0.9\linewidth]{images/20201201_1505_Trial_3_door_interaction_detection_using_smartwatch_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{Trial 3 door interaction detection using smartwatch accelerometer data. The detection at 142 seconds is a false positive.}
+	\label{fig:trial_3_door_interaction_detection_using_smartwatch1}
 \end{figure}
 
-The results show that trials 3, and 5 to 7 were unable to complete all iterations. Trial 2 seems to have no difference in performance compared to when activity recognition is used. The RMSE value for trial 1 is similar to that when activity recognition is used, while the spread is larger.
+The false positive door interaction detection in trial 3 highlights some of the shortcomings with the indoor localization implementation presented in this thesis. It indicates that falsely triggered Particle Filter measurement updates causes position estimates to diverge and potentially unable to generate a position estimate for all SHS time steps. Furthermore the robustness of the threshold based 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/20201129_2330_video_traj_Trial_3_door_detect_vs_manual_1}
+	\setlength{\belowcaptionskip}{-10pt}
+	\caption{}
+	\label{fig:video_traj_trial3_door_detect_vs_manual_1}
+\end{figure}
+ 
+ 
+ 
+ 
