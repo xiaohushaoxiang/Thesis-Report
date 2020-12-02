@@ -39,7 +39,7 @@ These matrices can be used to express a vector $x$ in frame $v$ to frame $u$ as
 	x^{\mathfrak{u}}=R^{\mathfrak{u} \mathrm{v}} x^{\mathrm{v}}.
 \end{equation}
 
-Transposing a rotation matrix represent a rotation back to it's original coordinate frame:
+Transposing a rotation matrix represent a rotation back to it's experimental coordinate frame:
 \begin{subequations}
 	\begin{align}
 		\label{eq:app_rot_mat_trans}
@@ -407,69 +407,6 @@ For \emph{each test run} perform the following steps:
 	the performance of the estimate of the \ac{SHS}system. 
 \end{enumerate}
 
-\chapter{Extended Future Work List}
-\label{chap:app-extended_future_work}
-The following appendix chapter elaborates on the future research directions given within the thesis. For completeness the points in the thesis are listed as well. Within this chapter the different subsystem and their components will be treated through this perspective.
-
-\subsection{Step and Heading System }
-
-The different components of the step and heading system subsystem have generated results with varying success. First the components are discussed, whereafter a closer look is taken of the whole subsystem.
-
-\subsubsection*{Step Detection}
-
-The step detection method outlined in \cref{sec:meth - step detection} has proven to work well for different carrying modes, with many carrying modes having a detection error around 5\% or less. One limitation of the method is that it was tested in environment in which the test subject were only walking around, not performing any other tasks. Testing how well it works with more complex movement will give more insight into the robustness of the approach. Movements typical of being performed in a residential setting could be considered.
-
-\subsubsection*{Step Length Estimation}
-
-Step length estimation using the step detection method outlined in thesis has shown different results than what was found in literature. No conclusive result could be made whether the accelerometer or frequency based method worked better, with performance of the approaches changing per test subject when applied to the opensource data of \citet{Vezocnik2019}. From original data, the performance of the approaches suggested that walking speed determined which worked best. The frequency based approach was chosen, with the reasoning that walking indoors was generally in the range of normal speed to slow speed, speeds with which this approach seemed to work best. \par 
-
-Further research could focus on determining whether any of the other methods from \cite{Vezocnik2019} are able to estimate step length better when using the thesis step detection implementation of \cref{sec:meth - step detection}. The observation made that the models used do not seem to correspond well with the data used for parameter estimation could also be investigated further. More research can be done on techniques that apply similar offsets as introduced in \cref{sec:results-step_length-validation}. \par 
-
-Another research direction worth considering is quantifying the effect that turning has on the step length, since all step length testing so far has been done while walking in a straight line. In addition, step length estimation in different carrying modes is a logical next step in increasing the applicability of the system in realistic situations. \par
-
-The dataset of \citet{Bayev2019} can potentially help with improving step length estimation. The very large dataset contains data from smartphones carried in different carrying modes for over 60 people. It also has a ground truth estimate based off of a foot based INS-ZUPT method, as introduced in \cref{sec:rw-INS}. The combination allows for accurate step length measurements through INS-ZUPT, providing more measurement resolution that \cite{Vezocnik2019}. The size of the set provides opportunities for not only classical approaches as within this thesis, but more complex machine learning algorithms.\par
-
-\subsubsection{Heading Estimation}
-
-By simplifying heading estimation by only considering one carrying mode, the yaw Euler angle of the EKF orientation estimation of \cref{sec:meth-indoor_heading_estimation} represented the step heading within the Step and Heading System. Within this implementation, thresholds were used to adhere to the assumptions made by the orientation motion model used in the filter. \par 
-
-One limitation within this thesis is that no quantitative comparison could be made to determine the orientation estimation performance. Only a comparison between orientation estimate of the Android system could be performed. Within the trials performed within the indoor experiments, trial 6 showed a large mean yaw difference with the Android system. Upon further inspection, the orientation estimation has a large spike close to the beginning of the trial. It is unclear what is causing this, and will need to be investigated further. Although faulty, this spike does not seem to effect the performance of position estimate. Using the orientation estimate of the android system for the step heading with the SHS did not position estimation by the particle filter. The particle filter was unable to complete any runs successfully. \par 
-
-In general more experimentation is required to determine the performance of the heading estimation implementation used in this thesis. This could be done by performing the indoor experiments in combination with a higher quality \ac{IMU}, such as those produced by Xsens. A comparison can then be made between the orientation estimate of the Xsens device and the EKF implementation of \cref{sec:meth-indoor_heading_estimation}.\par 
-
-The current heading estimation implementation can be enhanced to use different carrying modes, instead of just one. This would require implementing one of or a combination of the methods outlined in \cref{sec:rw-step_heading_estimation}.
-
-
-\subsubsection{Overall Step and Heading Subsystem }
-
-Quantifying the criteria that an SHS trajectory must meet in order to lead to successful SHS-PF runs.
-
-\subsection{Particle Filter}
-The particle filter uses spatial context to propagate position estimates. It does this by taking spatial constraints into account while estimating positions and performing a measurement update if a door interaction is detected or indicated manually. The movement of the estimates, called particles, is defined by a motion model based on the output of the SHS subsystem. The eventual position estimate of the particle filter is by calculating the trajectory of the particles at the last time step of the SHS, by determining the ancestor particles. These trajectories are averaged.
-
-One aspect that was not for seen was that the method with which the position trajectory is determined within the Particle Filter is that it suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. A method such as Forward Filter - Backward Smoothing is worth considering \cite{Lindsten2013}.
-
-Another approach is to use a Back Tracking Particle Filter . The BTPF takes particles that are not valid at some time step $ k $ and calculates the particle trajectories that lead to those particles up to some point $ k - n $, where n is set beforehand. The state estimates at time k-n are then recalculated without the removed particles using for example RMSE or MAP. Each particle has to remember its state history or trajectory to facilitate backtracking. 
-
-There are multiple additions that can be made to the particle filter. One addition could be to add more position dependent landmarks that, when detected, trigger measurement updates. This can also be landmarks that are not activity recognition based. Augmenting the Particle Filter to work across multiple floors is also worth considering. A different map representation can also be an interesting research direction.
-
-\subsection{Door Interaction Activity Recognition}
-
-The door interaction measurement update performed by the spatial context Particle Filter compares particle positions to the closest door if an interaction is detected, changing their weights accordingly. The door interaction detection method used in this thesis uses thresholds on the accelerometer data from a smartwatch in combination with standstill detection based on step detection of the \ac{SHS}. The smartwatch was placed on the wrist of the hand that interacted with the doors during the experiments.\par 
-
-The scope of this thesis was not to create the best activity recognition implementation. However, the experiments indicated that the door interaction detection method, although relatively simple, was effective at detecting door interactions. Only one false positive was observed throughout all 6 trials. \par 
-
-During the indoor experiments, the hand with the smartwatch was only used to open doors. The door detection implementation would need to be tested for robustness against other activities performed with the smartwatch hand, to get a further indication of performance in a realistic setting. \par 
-
-Activity recognition through smartwatch IMU data could also be enhanced to detect other position dependent activities, which could be used to trigger measurement updates within the spatial context Particle Filter. The same could be  done with the combination of smartphone and smartwatch IMU data, a combination that has been shown to improve activity recognition \cite{Shoaib2016}.
-
-\subsection{Indoor Experiment Setup}
-
-The experiments performed to test the complete SHS-PF indoor localization system were performed in a residential building, while filming the trials from a breast pocket. In post processing the videos per trial were replayed and used to manually indicate the position of the test subject over time within the indoor environment. This manually generated trajectory within the indoor environment was used to determine performance of the SHS-PF. \par 
-
-An improvement that can be made for this experimental setup is a more accurate ground truth estimate. A test environment in which the infrastructure dependent solutions can be leveraged could potentially generate a viable solution. Additional research would be required to determine if visual odometry can produce another possibility. \par
-
-An interesting research direction worth considering is testing the current implementation in different types of buildings. It has currently been tested in a residential building, in which there are no clear walking paths. In larger buildings with a more corridor style indoor environment, the position estimates of the Particle Filter could be more restricted, therefore having better position estimation.
 
 \chapter{SHS Trajectories}
 
@@ -498,44 +435,43 @@ An interesting research direction worth considering is testing the current imple
 
 \chapter{Indoor Experiment Results}
 
-\section{SHS-PF noise realization parameter search}
+\section{SHS-PF noise realization parameter search \textbf{without} door interactions}
+\label{sec:app-shs_pf_noise_realization_no_detection}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{"../../../Code and Datasets/SHS Code/pictures/20201202_1257_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_NO_DETECTIONS1_1"}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012021257rmsebetweenvideotrajectoryandshs-pffortrialnodetections11}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{"../../../Code and Datasets/SHS Code/pictures/20201202_1257_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_NO_DETECTIONS2_1"}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012021257rmsebetweenvideotrajectoryandshs-pffortrialnodetections21}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{"../../../Code and Datasets/SHS Code/pictures/20201202_1258_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_NO_DETECTIONS3_1"}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012021258rmsebetweenvideotrajectoryandshs-pffortrialnodetections31}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{"../../../Code and Datasets/SHS Code/pictures/20201202_1259_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_NO_DETECTIONS6_1"}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012021259rmsebetweenvideotrajectoryandshs-pffortrialnodetections61}
+\end{figure}
+
+
+
+\section{SHS-PF noise realization parameter search \textbf{with} door interactions}
 \label{sec:app-shs_pf_noise_realization}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\linewidth]{images/20201201_0952_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_6_1}
-		\setlength{\belowcaptionskip}{-20pt}
-	\caption{}
-	\label{fig:202012010952rmsebetweenvideotrajectoryandshs-pffortrial61}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_5_1}
-		\setlength{\belowcaptionskip}{-20pt}
-	\caption{}
-	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial51}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_4_1}
-		\setlength{\belowcaptionskip}{-20pt}
-	\caption{}
-	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial41}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_3_1}
-		\setlength{\belowcaptionskip}{-20pt}
-	\caption{}
-	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial31}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_2_1}
-		\setlength{\belowcaptionskip}{-20pt}
-	\caption{}
-	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial21}
-\end{figure}
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_1_1}
@@ -543,6 +479,43 @@ An interesting research direction worth considering is testing the current imple
 	\caption{}
 	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial11}
 \end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_2_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial21}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_3_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial31}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_4_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial41}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_0951_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_5_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012010951rmsebetweenvideotrajectoryandshs-pffortrial51}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/20201201_0952_RMSE_between_video_trajectory_and_SHS-PF_for_Trial_6_1}
+	\setlength{\belowcaptionskip}{-20pt}
+	\caption{}
+	\label{fig:202012010952rmsebetweenvideotrajectoryandshs-pffortrial61}
+\end{figure}
+
+
 
 
 \newpage
@@ -724,4 +697,66 @@ An interesting research direction worth considering is testing the current imple
 	\label{fig:202011292332videotrajtrial6doordetectvsmanual1}
 \end{figure}
 
+\chapter{Extended Future Work List}
+\label{chap:app-extended_future_work}
+The following appendix chapter elaborates on the future research directions given within the thesis. For completeness the points in the thesis are listed as well. Within this chapter the different subsystem and their components will be treated through this perspective.
 
+\subsection{Step and Heading System }
+
+The different components of the step and heading system subsystem have generated results with varying success. First the components are discussed, whereafter a closer look is taken of the whole subsystem.
+
+\subsubsection*{Step Detection}
+
+The step detection method outlined in \cref{sec:meth - step detection} has proven to work well for different carrying modes, with many carrying modes having a detection error around 5\% or less. One limitation of the method is that it was tested in environment in which the test subject were only walking around, not performing any other tasks. Testing how well it works with more complex movement will give more insight into the robustness of the approach. Movements typical of being performed in a residential setting could be considered.
+
+\subsubsection*{Step Length Estimation}
+
+Step length estimation using the step detection method outlined in thesis has shown different results than what was found in literature. No conclusive result could be made whether the accelerometer or frequency based method worked better, with performance of the approaches changing per test subject when applied to the opensource data of \citet{Vezocnik2019}. From experimental data, the performance of the approaches suggested that walking speed determined which worked best. The frequency based approach was chosen, with the reasoning that walking indoors was generally in the range of normal speed to slow speed, speeds with which this approach seemed to work best. \par 
+
+Further research could focus on determining whether any of the other methods from \cite{Vezocnik2019} are able to estimate step length better when using the thesis step detection implementation of \cref{sec:meth - step detection}. The observation made that the models used do not seem to correspond well with the data used for parameter estimation could also be investigated further. More research can be done on techniques that apply similar offsets as introduced in \cref{sec:results-step_length-validation}. \par 
+
+Another research direction worth considering is quantifying the effect that turning has on the step length, since all step length testing so far has been done while walking in a straight line. In addition, step length estimation in different carrying modes is a logical next step in increasing the applicability of the system in realistic situations. \par
+
+The dataset of \citet{Bayev2019} can potentially help with improving step length estimation. The very large dataset contains data from smartphones carried in different carrying modes for over 60 people. It also has a ground truth estimate based off of a foot based INS-ZUPT method, as introduced in \cref{sec:rw-INS}. The combination allows for accurate step length measurements through INS-ZUPT, providing more measurement resolution that \cite{Vezocnik2019}. The size of the set provides opportunities for not only classical approaches as within this thesis, but more complex machine learning algorithms.\par
+
+\subsubsection{Heading Estimation}
+
+By simplifying heading estimation by only considering one carrying mode, the yaw Euler angle of the EKF orientation estimation of \cref{sec:meth-indoor_heading_estimation} represented the step heading within the Step and Heading System. Within this implementation, thresholds were used to adhere to the assumptions made by the orientation motion model used in the filter. \par 
+
+One limitation within this thesis is that no quantitative comparison could be made to determine the orientation estimation performance. Only a comparison between orientation estimate of the Android system could be performed. Within the trials performed within the indoor experiments, trial 6 showed a large mean yaw difference with the Android system. Upon further inspection, the orientation estimation has a large spike close to the beginning of the trial. It is unclear what is causing this, and will need to be investigated further. Although faulty, this spike does not seem to effect the performance of position estimate. Using the orientation estimate of the android system for the step heading with the SHS did not position estimation by the particle filter. The particle filter was unable to complete any runs successfully. \par 
+
+In general more experimentation is required to determine the performance of the heading estimation implementation used in this thesis. This could be done by performing the indoor experiments in combination with a higher quality \ac{IMU}, such as those produced by Xsens. A comparison can then be made between the orientation estimate of the Xsens device and the EKF implementation of \cref{sec:meth-indoor_heading_estimation}.\par 
+
+The current heading estimation implementation can be enhanced to use different carrying modes, instead of just one. This would require implementing one of or a combination of the methods outlined in \cref{sec:rw-step_heading_estimation}. It would be interesting to see if the unconstrained methods are viable when taking spatial context into account.
+
+
+\subsubsection{Overall Step and Heading Subsystem }
+
+In \cref{sec:results-SHS_trajectories} a qualitative approach is used to give an indication of SHS performance with respect to the video position estimate. Further investigating this and generating a qualitative measure to compare performance could give more insight in to the criteria that an SHS trajectory must meet in order to lead to successful SHS-PF runs.
+
+\subsection{Particle Filter}
+The particle filter uses spatial context to propagate position estimates. It does this by taking spatial constraints into account while estimating positions and performing a measurement update if a door interaction is detected or indicated manually. The movement of the estimates, called particles, is defined by a motion model based on the output of the SHS subsystem. The eventual position estimate of the particle filter is by calculating the trajectory of the particles at the last time step of the SHS, by determining the ancestor particles. These trajectories are averaged.
+
+One aspect that was not for seen was that the method with which the position trajectory is determined within the Particle Filter is that it suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. A method such as Forward Filter - Backward Smoothing is worth considering \cite{Lindsten2013}.
+
+Another approach is to use a Back Tracking Particle Filter (BTFP) . The BTPF takes particles that are not valid at some time step $ k $ and calculates the particle trajectories that lead to those particles up to some point $ k - n $, where n is set beforehand. The state estimates at time k-n are then recalculated without the removed particles using for example RMSE or MAP. Each particle has to remember its state history or trajectory to facilitate backtracking. 
+
+More research in the effect of different particle numbers is also a direction worthe considering.
+
+\subsection{Door Interaction Activity Recognition}
+
+The door interaction measurement update performed by the spatial context Particle Filter compares particle positions to the closest door if an interaction is detected, changing their weights accordingly. The door interaction detection method used in this thesis uses thresholds on the accelerometer data from a smartwatch in combination with standstill detection based on step detection of the \ac{SHS}. The smartwatch was placed on the wrist of the hand that interacted with the doors during the experiments.\par 
+
+The scope of this thesis was not to create the best activity recognition implementation. However, the experiments indicated that the door interaction detection method, although relatively simple, was effective at detecting door interactions. Only one false positive was observed throughout all 6 trials. \par 
+
+During the indoor experiments, the hand with the smartwatch was only used to open doors. The door detection implementation would need to be tested for robustness against other activities performed with the smartwatch hand, to get a further indication of performance in a realistic setting. \par 
+
+Activity recognition through smartwatch IMU data could also be enhanced to detect other position dependent activities, which could be used to trigger measurement updates within the spatial context Particle Filter. The same could be  done with the combination of smartphone and smartwatch IMU data, a combination that has been shown to improve activity recognition \cite{Shoaib2016}.
+
+\subsection{Indoor Experiment Setup}
+
+The experiments performed to test the complete SHS-PF indoor localization system were performed in a residential building, while filming the trials from a breast pocket. In post processing the videos per trial were replayed and used to manually indicate the position of the test subject over time within the indoor environment. This manually generated trajectory within the indoor environment was used to determine performance of the SHS-PF. \par 
+
+An improvement that can be made for this experimental setup is a more accurate ground truth estimate. A test environment in which the infrastructure dependent solutions can be leveraged could potentially generate a viable solution. Additional research would be required to determine if visual odometry can produce another possibility. \par
+
+An interesting research direction worth considering is testing the current implementation in different types of buildings. It has currently been tested in a residential building, in which there are no clear walking paths. In larger buildings with a more corridor style indoor environment, the position estimates of the Particle Filter could be more restricted, therefore having better position estimation.

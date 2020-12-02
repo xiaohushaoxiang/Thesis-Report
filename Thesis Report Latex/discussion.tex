@@ -1,24 +1,29 @@
-\chapter{Conclusion and Future Research Directions}
+\chapter{Conclusion and Future Work}
+\textit{In this chapter the results of the experiments will be summarized in \cref{sec:conclusion-conclusion}, followed by the limitations in both experimentation and implementation in \cref{sec:conclusion-limitations}, concluding with future work using the indoor localization design presented in this thesis in \cref{sec:conclusion-future_work}.}
+
 
 \section{Conclusion}
-
-Within this thesis, an indoor localization method is designed in an attempt to answer the research question \\
+\label{sec:conclusion-conclusion}
+Within this thesis, a pedestrian focused indoor localization method is designed in an attempt to answer the research question \\
 
 \textbf{Can smartwatch based activity recognition improve a smartphone based \ac{PDR} system with indoor localization?} \\
 
 The developed proof of concept consists of a Step and Heading System combined with a Particle Filter with spatial context. Particle Filter measurements updates apply spatial constraints and determine distance difference between particle locations and door locations when a door interaction is detected. Smartwatch accelerometer data is used by a thresholding method to detect door interactions. \par
 
-Results from indoor experiments indicate that smartwatch based activity recognition can improve a smartphone based \ac{PDR} system, however it is not a requirement. The results have also shown that in the presence of false positives that a measurement update can be counter productive, in that it can "pull" estimates to the landmarks that the false positives represent. This highlights the importance of good activity recognition with the current implemented localization scheme.
+Results from indoor experiments indicate that smartwatch based activity recognition can improve a smartphone based \ac{PDR} system, however it is not a requirement and does not always lead to better results. \par 
+
+The results have also shown that in the presence of false positives an activity recognition measurement update can be counter productive, in that it can "pull" estimates to the landmarks that the false positives represent, which is not where the pedestrian is. This highlights the importance of good activity recognition with the current implemented localization scheme.
 
 \section{Limitations}
-In this thesis there are limitations in both the system implementation and  experimentation. These will be addressed in the following section.
+\label{sec:conclusion-limitations}
+In this thesis there are limitations in both the system implementation and  experimentation. These will be addressed in the following section. Future work will be suggested in the following section to improve upon this limitations.
 
 \subsubsection{Video Position Estimate}
 The experimental setup for indoor testing used video recorded from a breast pocket to get a rough estimate of how the test subject moved within the indoor environment, as explained in \cref{sec:results-experi_setup-indoor_experi}. \par 
 
 This was a manual process in which the position estimate of the user was based on what was visible in the frame when the video was paused and knowledge of the indoor environment. The position at the times between two manually indicated points is calculated through interpolation. The accuracy of this estimate varies over each trial. Visually estimating the position of the test subject at a door or moving close to a recognizable object is easier than when moving in a more open space. This method generates a rudimentary position estimate, with a high certainty that the general trend reflects what happened in reality.  \par 
 
-This video position estimate is currently the only measurement available with which the position estimate of the SHS-PF can be compared with. It is therefore used for system performance measure, albeit a crude one. Devising an approach to measure indoor movement better would be able to give a more consistent position estimate to use for performance measurement. A potential option is considering the use of visual odometry or using the infrastructure dependent options explained in the introduction of this thesis. \par 
+This video position estimate is currently the only measurement available with which the position estimate of the SHS-PF can be compared with. It is therefore used for system performance measure, albeit a crude one. Devising an approach to measure indoor movement better would be able to give a more consistent position estimate to use for performance measurement. \par 
 
 
 
@@ -29,20 +34,21 @@ This can be overcome by more precise measurement of the furniture dimensions, a 
 
 \subsubsection{ Orientation Estimation Quantitative Performance Measure}
 
-As indicated in \cref{sec-results-Indoor orientation_estimation} there was no possibility within the indoor experiment to compare the orientation estimation calculate by the implementation in \cref{sec:meth-indoor_heading_estimation} with a more accurate estimate. The limitation is that it is much more difficult to determine what is causing a wrongful estimate, if any is occurring. \par  
+As indicated in \cref{sec-results-Indoor orientation_estimation} there was no possibility within the indoor experiment to compare the orientation estimation calculate by the implementation in \cref{sec:meth-indoor_heading_estimation} with a more accurate estimate. The limitation is that it is much more difficult to determine what is causing a wrongful orientation estimate, if any is occurring. 
+Within the indoor environment magnetic disturbances are likely the culprit of wrong estimates. While the orientation estimation implementation uses thresholds to filter out the disturbances, its effectiveness is yet to be determined. Further experimentation would be required with either new experimental data or opensource data.
 
-Within the indoor environment magnetic disturbances are likely the culprit of wrong estimates. While the orientation estimation implementation uses thresholds to filter out the disturbances, its effectiveness is yet to be determined. Further experimentation would be required with either new experimental data or opensource data. The former could be done by comparing the estimate with that of a higher quality IMU, such as the ones made by Xsens. An example of the latter is gathered by \citet{Michel2018}, where smartphone is passed along magnetic disturbances while being tracked by a visual tracking system.
-
+Unknown performance in orientation estimation has direct consequence in determining the performance of the overall Step and Heading System. 
 
 \subsubsection{Ancestor Trajectory Generation}
-The Particle Filter position trajectory determined  only by a particle's ancestors suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. From the start of estimation until this common ancestor, the trajectory no longer represent the posterior distribution correctly. 
+The Particle Filter position trajectory determined  only by a particle's ancestors suffers from path degeneracy, where all particles share a common ancestor \cite{Lindsten2013}. From the start of estimation until this common ancestor, the trajectory no longer represent the posterior distribution correctly. While it is a form of indicating performance, further work should you attempt to overcome the path degeneracy problem.
 
-\section{Future Research Directions}
-The smartphone based indoor localization method constructed in this thesis provides a good basis on which to build on further. There are subsystem components that can be improved further and additional research directions to investigate. The following section will give an overview of a few different research directions worth considering per subsystem. A more exhaustive list can be found in \cref{chap:app-extended_future_work}. 
+\section{Future Work}
+\label{sec:conclusion-future_work}
+The smartphone based indoor localization method constructed in this thesis provides a good basis on which to build on further. There are subsystem components that can be improved further and additional research directions to investigate. The following section will give an overview of a few key research directions worth considering per subsystem and with the limitations discussed in the previous section. A more exhaustive list of future work can be found in \cref{chap:app-extended_future_work}. 
 
 \subsection{Step and Heading System }
 
-The Step and Heading System generates an initial trajectory walked based on IMU data from a smartphone. The different components of the \ac{SHS} subsystem have generated results with varying success. Considering the results generated within this research, there are some research direction worth considering:
+The Step and Heading System generates an initial trajectory walked based on IMU data from a smartphone. The different components of the \ac{SHS} subsystem have generated results with varying success. Considering the results generated within this research, there are some research directions worth considering:
 
 \begin{itemize}
 	\item \textbf{Step detection robustness against complex movement.} \\

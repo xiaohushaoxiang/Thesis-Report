@@ -1,6 +1,6 @@
 \chapter{Method}
 \label{chap:method}
-\textit{Using the information from \cref{chap:related work}, a proof of concept was designed where a step and heading system was combined with spatial context and activity recognition from IMU data from a smartwatch. This chapter begins with a design overview, whereafter each subsystem of the proof of concept and their respective components will be treated.}
+\textit{Using the information from \cref{chap:related work}, a proof of concept was designed in pursuit of answering the research question. The design consists of a step and heading system combined with spatial context and activity recognition from IMU data from a smartwatch. This chapter begins with a design overview, whereafter each subsystem of the proof of concept and their respective components will be treated.}
 
 \section{Proof of Concept System Overview}
 The overall proof of concept, with all of its individual components, can be found in \cref{fig:system_design}. This system will be referred to as the Step and Heading System-Particle Filter (SHS-PF) in the rest of this thesis.
@@ -16,25 +16,25 @@ The inputs to the system are map information and data from smartphone and smartw
 
 \section{Smartphone based Step and Heading System}
 \label{sec:method-SHS}
-In the following section the different components of the \ac{SHS}, indicated by the blue box in \cref{fig:system_design}, will be presented. The only input to this subsystem is the data from the smartphone IMU. The output is a trajectory consisting of connected step vectors,each with a step length and direction. The section will start with step detection, followed by step length estimation, heading estimation and drift reduction through a particle filter with spatial context.
+In the following section the different components of the \ac{SHS}, indicated by the blue box in \cref{fig:system_design}, will be presented. The only input to this subsystem is the data from the smartphone IMU. The output is a trajectory consisting of connected step vectors, each with a step length and direction. The section will start with step detection, followed by step length estimation, heading estimation and drift reduction through a particle filter with spatial context.
 
 \subsection{Step Detection}
 \label{sec:meth - step detection}
 
-Steps are reflected in accelerometer magnitude measurements by peaks in the trace. This caused by the impact of the foot with the ground. An extract of accelerometer magnitude data can be seen in \cref{fig:accelerometer_in_different_carrying_modes}. This figure shows how the accelerometer data changes per carrying mode. Peak detection can be used to extract the peaks from the accelerometer data. In \cref{sec:rw - step detection}, it was indicated that \citet{Brajdic2013} determined that windowed peak detection was a good approach in detecting steps from accelerometer data. \citet{Salvi2018} used this approach to optimize parameters for high performance step detection.
+Steps are reflected in accelerometer magnitude measurements by peaks in the trace. This caused by the impact of the foot with the ground. An extract of accelerometer magnitude data can be seen in \cref{fig:accelerometer_in_different_carrying_modes}. This figure shows how the accelerometer data characteristics changes per carrying mode. Peak detection can be used to extract the peaks from the accelerometer data. In \cref{sec:rw - step detection}, it was indicated that \citet{Brajdic2013} determined that windowed peak detection was a good approach in detecting steps from accelerometer data. \citet{Salvi2018} used this approach to optimize parameters for high performance step detection.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{images/20201127_1110__frontpocket_}
-	\caption{Accelerometer magnitude in different smartphone carrying modes, showing difference in trace per carrying mode.}
+	\caption{Accelerometer magnitude in different smartphone carrying modes, showing difference in trace per carrying mode. Note how signal characteristics changed depending on the carrying mode used.}
 	\label{fig:accelerometer_in_different_carrying_modes}
 \end{figure}
  
 
-The windowed peak detection method used in this thesis for step detection uses the implementation of \citet{Salvi2018}. The method consists of three stages applied to all \ac{IMU} accelerometer data, one after the other. \par  
-The first stage of windowed peak detection consists of calculating the acceleration norm followed by the mean and standard deviation of the acceleration magnitude over a trailing moving window. All samples from this calculation with a standard deviation higher than a set threshold are considered walking and are used for further processing. The second technique is applying a Gaussina window function to the walk accelerometer magnitude data to smoothen it and amplifying peaks within the data using a score system. The third stage uses the output of the scoring technique to detect outliers, after which local maxima are flagged as steps.\par  
+The Windowed Peak Detection method used in this thesis for step detection uses the implementation of \citet{Salvi2018}. The method consists of three stages applied to all \ac{IMU} accelerometer data, one after the other. \par  
+The first stage of Windowed Peak Detection consists of calculating the acceleration norm followed by the mean and standard deviation of the acceleration magnitude over a trailing moving window. All samples from this calculation with a standard deviation higher than a set threshold are considered walking and are used for further processing. The second technique is applying a Gaussian window function to the walk accelerometer magnitude data. This is done to smoothen it and amplifying peaks within the data using a score system. The third stage uses the output of the scoring technique to detect outliers, after which local maxima are flagged as steps.\par  
 
-The thesis method augments the step detection method of \cite{Salvi2018} by adding the walk detection method from \cite{Brajdic2013}, since no formal walk detection was implemented in the original algorithm. This is used in order to filter out activities that are not walking, in an attempt to decrease the chance of false positives.\par 
+The thesis method augments the step detection method of \cite{Salvi2018} by adding the walk detection method from \cite{Brajdic2013}, since no formal walk detection was implemented in the experimental algorithm. This is used in order to filter out activities that are not walking, in an attempt to decrease the chance of false positives.\par 
 
 The three stages used in step detection for this thesis will be handled in more detail next.
 
@@ -151,23 +151,23 @@ An example of the step detection method and its different stages can be found in
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/20200924_1204_All_stages_of_step_detection}
-	\caption[All stages of step detection ]{All stages of step detection from recorded accelerometer data, with the x's in the last graph indicating the accelerometer points that are flagged as being steps. }
+	\caption[All stages of Windowed Peak Detection ]{All stages of Windowed Peak Detection from recorded accelerometer data, with the x's in the last graph indicating the accelerometer points that are flagged as being steps. }
 	\label{fig:all_stages_of_step_detection}
 \end{figure}
 
 \subsection{Step Length Estimation}
 For step length estimation the methods introduced in \cref{sec:step_length_estimation} using either global or personalized variables will be compared. These step length estimation methods use linear regression between their dependent variables and step length. All dependent variables can be distilled from accelerometer data and the output of the step detection component of the \ac{SHS}. \par 
 
-In order to determine the linear relationships for the different models, accelerometer data recorded during walking is required where the traveled distance is known. Luckily, \cite{Vezocnik2019} have made the IMU data they used for their research available online under an open license. Running this data through the thesis step detection component, the result can be used for parameter estimation. Once the relevant parameters have been estimated, the performance of the methods can determined. This can be done by recording accelerometer data when walking, estimating the distance traveled using the step length methods and comparing it to the distance actually traveled.
+In order to determine the linear relationships for the different models, accelerometer data recorded during walking is required where the traveled distance is known. Luckily, \cite{Vezocnik2019} have made the IMU data they used for their research available online under an open license. Running this data through the thesis step detection component, the result can be used for parameter estimation of the individual models. Once the relevant parameters have been estimated, the performance of the methods can determined. This can be done by recording accelerometer data when walking, estimating the distance traveled using the step length methods and comparing it to the distance actually traveled.
 
 \newpage
 \subsection{Indoor Heading Estimation during Locomotion}
 \label{sec:meth-indoor_heading_estimation}
-For heading estimation for the \ac{SHS}, the simplification was made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods is outside the scope of this research. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization. \par 
+For heading estimation for the \ac{SHS}, the simplification is made to constrain the smartphone to one carrying mode, namely held in front of the body with screen pointing up, as shown in \cref{fig:experiment_carrying_position}. This was done because the unconstrained options outlined in \cref{sec:rw-step_heading_estimation} have low accuracy and detecting carrying mode through machine learning methods is outside the scope of this research. More importantly, the form of heading estimation does not directly help towards answering the research question of how activity recognition can help smartphone based indoor localization. \par 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.4\linewidth]{images/IMG_4705}
-	\caption{Smartphone "in front, in hand" carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
+	\caption{Smartphone in front of the body with screen pointing up carrying mode for indoor localization experiments with smartphone coordinate frame indicated by arrows.}
 	\label{fig:experiment_carrying_position}
 \end{figure}
 %TODO write about euler angles
@@ -178,7 +178,7 @@ Before orientation estimation occurs, the smartphone \ac{IMU} sensor will be cal
 In \cref{sec:motion_and_measurement_models}, the orientation model in the EKF is defined using certain assumptions. These will need to be accommodated by the heading estimation algorithm.
 The assumptions made by the orientation model  are that the gravity vector and a homogeneous magnetic field are dominant in the accelerometer and magnetometer readings, respectively. This is of importance with Pedestrian Dead Reckoning, as a walking motion will induce additional external forces caused by feet striking on the floor, affecting the acceleration measured by the IMU. Additionally, when localizing indoors, ferromagnetic structures within the built environment will affect the magnetometer readings \cite{Michel2015a}.\par 
 
-In order to facilitate these assumptions, intervals will be applied to accelerometer and magnetometer readings. If the measurements fall within the interval only then will the appropriate measurement update occur. Accelerometer intervals assume that there will be time periods in which the acceleration measured is that only of the gravity vector. Magnetometer intervals assume that there are time periods magnetic field is only that of the homogeneous magnetic field within the indoor environment. \par 
+In order to facilitate these assumptions, intervals will be applied to accelerometer and magnetometer readings. If the measurements fall within the interval only then will the appropriate measurement update occur. Accelerometer intervals assume that there will be time periods in which the acceleration measured is only that of the gravity vector. Magnetometer intervals assume that there are time periods where magnetic measurement is only that of the homogeneous magnetic field within the indoor environment. \par 
 
 The intervals for the accelerometer and magnetometer measurements were found empirically. For the accelerometer measurements a measurement update is performed if the accelerometer magnitude is between 10 and 9.6 $ m/s^2 $. For magnetometer measurements, the interval is set between 110\% and 90\% of the magnetic field strength found during sensor calibration in \cref{sec:sensor_calibration}. \par 
 
@@ -209,7 +209,7 @@ The resulting algorithm combines the EKF from \cref{sec:rw-EKF} with the above m
 	}
 		
 		\underline{measurement update:}\\
-		\If{$ y_{*,k}  $== $ y_{a,k}$ and $ 9.6 m/s^2 <\norm{y_{a,k}} < 10 m/s^2 $ }{
+		\If{$ y_{*,k}  $== $ y_{a,k}$ and $ 9.6\: m/s^2 <\norm{y_{a,k}} < 10\: m/s^2 $ }{
 		\begin{subequations}
 			\begin{align}
 				y_{k}&=
@@ -392,10 +392,9 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 	\SetAlgoLined
 	\caption{Indoor Localization Particle Filter with Activity Recognition}
 	\label{algo:bootstrap_PF}
-	\KwIn{}
-	\KwOut{}
+	\KwIn{ Number of particle $ N $, initial position distribution $ p_{x_1} $, step length $ l_k $ and change in orientation $ \phi_{k} $,  door interaction $ D_k $, for $ k=1,...,M $ where M is the number of step taken, step length standard deviation $ \sigma_\theta $, orientation standard deviation $ \sigma_l $. }
+	\KwOut{Posterior distribution $ \mathbf{x_k} $ for $ k=1,...,M $}
 	\underline{Initialization:}\\
-	Choose the number of particles N.
 	Generate initial distribution with
 	\begin{subequations}
 		\begin{equation}
@@ -407,7 +406,7 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 		\end{equation}
 	\end{subequations}
 	
-	\For{k = 1,2,...}{
+	\For{k = 1,2,...,M}{
 		\underline{Measurement update:}\\
 		\begin{subequations}
 			\begin{align}
@@ -422,7 +421,7 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 		
 		\begin{subequations}
 			
-			\If{(door interaction detected)}{
+			\If{($ D_k $ = true)}{
 				\begin{align}
 					c^*_{k}&=\sum_{i=1}^{N} w_{k | k}^{i} p_{\scaleto{door}{4pt}}\left(\mathbf{y}_{k} | \mathbf{x}_{k}^{i}\right)
 					\label{eq:pf_door_normalization} \\			
@@ -469,7 +468,7 @@ The resulting Particle Filter from the previous steps is summarized in \cref{alg
 \label{sec:method-pf_location_estimate}
 For the Particle Filter method outlined in this thesis, both minimum mean square error (MMSE) and maximum a posteriori (MAP) outline in \cref{sec:rw-pf} have disadvantages.
 Firstly, MMSE does not work well in situations in which there are multiple equal likely hypotheses \cite{Saha2009}. In such a case it will take the position in between the different hypothesis as the position estimate. A good example of this can be found in \cref{fig:lopen_11_mmse_estimator}. The figure shows the output of a Particle Filter after 10 time steps. There are clear particle groups visible, all moving in different directions. The position estimate is expected to be in one of the particle clouds, however RMSE puts it between the different clouds, a position in which no particles are found, making it a subpar estimate. \par 
-Implementing MAP as the state estimate in the Particle Filter is actually similar to MMSE. The measurement update that occurs every time step of the step and heading trajectory is the one that compares particle trajectories to map constraints. After this update all feasible particles will have the same weight. Since all particles have the same weight, a MAP cannot be defined. A MAP can only be defined sporadically when a door interaction measurement update occurs. 
+Implementing MAP as the state estimate in the Particle Filter is limited in the current implementation. The measurement update that occurs every time step of the Step and Heading trajectory is the one that compares particle trajectories to map constraints. After this update all feasible particles will have the same weight. Since all particles have the same weight, a MAP cannot be defined. A MAP can only be defined sporadically when a door interaction measurement update occurs. 
 
 \begin{figure}[H]
 	\centering
@@ -492,7 +491,7 @@ A smartwatch \ac{IMU} dataset was recorded in which interaction with doors was i
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\linewidth]{images/20201123_1010_Acceleration_Z_axis}
+	\includegraphics[width=0.75\linewidth]{images/20201123_1010_Acceleration_Z_axis}
 	\setlength{\belowcaptionskip}{-20pt}
 	\caption{Smartwatch accelerometer data with vertical green and red lines indicating start and end of manually indicated door handle interaction.}
 	\label{fig:smartwatch_acc_with_gt_door_and_door_detect}
@@ -516,7 +515,7 @@ A smartwatch \ac{IMU} dataset was recorded in which interaction with doors was i
 
 \cref{fig:axis_acceleration_per_activity_segment} shows the average signal value for each accelerometer axis in each activity segment of \cref{fig:smartwatch_acc_with_gt_door_and_door_detect}. By taking the minimum of the x-axis mean and maximum of the y and z-axis mean from \cref{fig:axis_acceleration_per_activity_segment}, detection thresholds are defined.
 
-In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the original data, presenting the performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure it shows that all activity segments have detection points, hence that threshold method is working. Unfortunately there are also detections not in activity segments, such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter, since it will trigger a landmark measurement update. This will unjustifiably increase the weight of particles close to doors, increasing the chance of them being resampling and potentially skewing the indoor localization estimate.  \par 
+In \cref{fig:smart_watch_acc_with_gt_door_and_door_detect_2} the thresholds are applied to the experimental data, presenting an indication of performance of this approach. It shows the accelerometer data per axis, and the start and end of each activity segment. The cyan dots are samples that satisfy the activity thresholds defined before, and therefore represent door interaction detection. From this figure it shows that all activity segments have detection points, hence that threshold method is working. Unfortunately there are also detections not in activity segments, such as at 119 seconds. Such false positives will likely have an effect on the position estimate of the indoor localization Particle Filter, since it will trigger a landmark measurement update. This will unjustifiably increase the weight of particles close to doors, increasing the chance of them being resampling and potentially skewing the indoor localization estimate.  \par 
 
 In an attempt to curb false positives, detections can be grouped in activity segments. Activity segments are defined by groups of detections that are below a set distance from their neighboring detections. This set distance is currently at 1 second. Segments that have less than 3 detections are disregarded. The start of a segment will be used for the door interaction measurement update in the indoor localization particle filter.\par
 
@@ -526,7 +525,7 @@ Another source of information that can help with the detection of door interacti
 	\centering
 	\includegraphics[width=0.55\linewidth]{images/20201122_1605_Step_period_from_step_detection_while_walking_indoors}
 		\setlength{\belowcaptionskip}{-30pt}
-	\caption{Step period while walking indoors with manually indicated start of door interactions. Data suggests that door interactions are often linked with temporary increases in step period.}
+	\caption{Step period while walking indoors with manually indicated start of door interactions. The figure supports the hypothesis that door interactions are often linked with temporary increases in step period.}
 	\label{fig:step_period_from_step_detection_while_walking_indoors}
 \end{figure}
 
